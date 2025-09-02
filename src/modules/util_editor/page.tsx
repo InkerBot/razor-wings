@@ -9,13 +9,17 @@ import {sendActivityText} from "../../util/message.ts";
 
 export default function UtilEditorPage() {
   const [value, setValue] = React.useState('[]');
-  const [character, setCharacter] = React.useState<Character | null>(null);
+  const [character, setCharacter] = React.useState<Character | null>(Player);
   const [applying, setApplying] = React.useState(false);
 
   const applyCharacter = () => {
     setApplying(true);
     (async () => {
       if (!razorIsPro()) {
+        if (character !== Player) {
+          ToastManager.error("edit others is not supported.");
+          return;
+        }
         await sendActivityText(`${Player.Nickname || Player.Name} 编辑了 ${character.Nickname || character.Name} 的外观代码。`);
       }
       const applier = character.CharacterID === Player.CharacterID ? ForceSyncSelfApplier : UpdatePropertyApplier;
@@ -47,7 +51,7 @@ export default function UtilEditorPage() {
         display: 'flex',
         flexShrink: 0
       }}>
-        <PlayerSelector characterId={character?.CharacterID} onChange={setCharacter}/>
+        {razorIsPro() && <PlayerSelector characterId={character?.CharacterID} onChange={setCharacter}/>}
         <button onClick={() => setValue(serializeAppearance(character))} disabled={!character}>Load</button>
         <button onClick={() => setValue(JSON.stringify(JSON.parse(value), null, 2))}>Format</button>
         <button disabled={!character || applying} onClick={applyCharacter}>{applying ? 'applying' : 'Apply'}</button>
