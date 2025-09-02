@@ -3,6 +3,7 @@ import './Layer.css';
 import modules, {type ModuleConfig} from "./modules.ts";
 import waitFor from "./util/waitFor.ts";
 import FloatingWindow from './components/FloatingWindow';
+import {razorIsPro} from "./util/pro.ts";
 
 interface LayerState {
   isExpanded: boolean;
@@ -181,7 +182,7 @@ class Layer extends Component<object, LayerState> {
       <FloatingWindow
         isExpanded={isExpanded}
         onToggleExpanded={this.toggleExpanded}
-        title="Razor Wings"
+        title={"Razor Wings" + (razorIsPro() ? ' Pro' : '')}
         initialSize={{width: 400, height: 300}}
         minSize={{width: 300, height: 200}}
         maxSize={{width: 1152, height: 864}}
