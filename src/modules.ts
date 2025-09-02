@@ -59,7 +59,6 @@ const modules: { [key: string]: ModuleConfig } = {
     'screen': ['*'],
     'moduleProvider': async () => (await import('./modules/util_remove_limit/module.ts')).default,
     'pageProvider': async () => (await import('./modules/util_remove_limit/page.tsx')).default,
-    'precondition': () => razorIsPro(),
   },
   /*
   'util_packet': {
