@@ -13,12 +13,7 @@ const main: { shadowRoot?: ShadowRoot, resourceUrl: (path: string) => string } =
 };
 
 (async () => {
-  if (document.getElementById('razor-wing-overlay')) {
-    ToastManager.error('[RazorWings] Razor Wings is already running.');
-    return;
-  }
   const razorWingOverlay = document.createElement('div');
-  razorWingOverlay.id = 'razor-wing-overlay';
   document.body.appendChild(razorWingOverlay);
   main.shadowRoot = razorWingOverlay.attachShadow({mode: 'open'});
   const root = document.createElement('div');
