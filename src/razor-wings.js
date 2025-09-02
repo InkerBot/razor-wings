@@ -31,7 +31,7 @@ const razorModSdk = bcModSdk.registerMod({
   name: 'RazorWings',
   fullName: 'Razor Wings',
   version: '1.0.0',
-  repository: 'github.com/HongYunCloud/razor-wings',
+  repository: 'https://github.com/InkerBot/razor-wings',
 }, { allowReplace: true })
 
 export default razorModSdk;
