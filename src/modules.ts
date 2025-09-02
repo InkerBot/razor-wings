@@ -60,6 +60,12 @@ const modules: { [key: string]: ModuleConfig } = {
     'moduleProvider': async () => (await import('./modules/util_remove_limit/module.ts')).default,
     'pageProvider': async () => (await import('./modules/util_remove_limit/page.tsx')).default,
   },
+  'util_remove_submissive': {
+    'displayName': '辅助_移除奴隶',
+    'module': ['*'],
+    'screen': ['*'],
+    'pageProvider': async () => (await import('./modules/util_remove_submissive/page.tsx')).default,
+  },
   /*
   'util_packet': {
     'displayName': '辅助_网络调试',
