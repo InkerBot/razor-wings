@@ -15,4 +15,4 @@
 // @run-at document-end
 // ==/UserScript==
 
-import(`https://inkerbot.github.io/razor-wings/assets/main.js?v=${(Date.now()/10000).toFixed(0)}`);
+import(`https://inkerbot.github.io/razor-wings/assets/main.js`);
