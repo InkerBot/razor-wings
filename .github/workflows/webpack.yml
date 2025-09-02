@@ -25,7 +25,7 @@ jobs:
     - name: Build
       run: |
         npm install
-        npn run build
+        npm run build
 
     - name: Upload static files as artifact
       uses: actions/upload-pages-artifact@v3
