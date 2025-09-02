@@ -1,0 +1,16 @@
+.editor-page {
+    height: 80vh;
+    width: 100%;
+    min-width: 40vw;
+    display: flex;
+    flex-direction: column;
+}
+
+.editor-page-editor {
+    flex: 1;
+    min-height: 0;
+}
+
+.editor-page-buttons {
+    display: flex;
+}

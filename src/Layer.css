@@ -1,0 +1,123 @@
+.floating-window {
+    z-index: 1;
+    position: fixed;
+    user-select: none;
+
+    line-height: 1.2;
+    min-height: 1.2em;
+    font-size: 12px; /* Fixed font size - scaling handled by transform */
+}
+
+.floating-window.expanded {
+    background: rgba(0, 0, 0, 0.45);
+    border: 1px solid rgba(30, 64, 175, 0.6);
+    color: white;
+    opacity: 0.85;
+}
+
+.floating-window.collapsed {
+    background: rgba(0, 0, 0, 0.8);
+    border: 1px solid rgba(30, 64, 175, 0.5);
+    color: white;
+}
+
+.window-content {
+    padding: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.window-header {
+    background: linear-gradient(90deg, #1e40af, #1e3a8a);
+    padding: 0 4px;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(30, 64, 175, 0.3);
+    flex-shrink: 0;
+}
+
+.window-header h3 {
+    margin: 0;
+    font-weight: 600;
+    pointer-events: none;
+}
+
+.collapse-btn {
+    background: rgba(255, 255, 255, 0.15);
+    border: none;
+    color: white;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+
+.collapse-btn:hover {
+    background: rgba(30, 64, 175, 0.4);
+}
+
+.window-body {
+    padding: 2px 2px;
+    background: transparent;
+    color: white;
+    line-height: 1.2;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.window-body p {
+    margin: 0 0 1px 0;
+}
+
+.window-body p:last-child {
+    margin-bottom: 0;
+}
+
+.floating-button {
+    background: linear-gradient(135deg, #1e40af, #1e3a8a);
+    border: none;
+    width: 22px;
+    height: 22px;
+    color: white;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.floating-button:hover {
+    background: linear-gradient(135deg, #1e3a8a, #1e40af);
+}
+
+.module-header {
+    flex-shrink: 0;
+    padding: 4px 0;
+}
+
+.module-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+.module-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+    overflow-y: auto;
+}

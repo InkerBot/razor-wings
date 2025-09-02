@@ -1,0 +1,41 @@
+import {useEffect, useState} from "react";
+import module, {switchEntries} from "./module.ts";
+
+export default function UtilRemoveLimitPage() {
+  const [switchStates, setSwitchStates] = useState<{ [key: string]: boolean }>({});
+
+  useEffect(() => {
+    const initialStates: { [key: string]: boolean } = {};
+    switchEntries.forEach(entry => {
+      initialStates[entry.name] = module.enabled[entry.name];
+    });
+    setSwitchStates(initialStates);
+  }, []);
+
+  const handleSwitchChange = (name: string, isEnabled: boolean) => {
+    setSwitchStates(prev => ({...prev, [name]: isEnabled}));
+    module.enabled[name] = isEnabled;
+    module.saveConfig();
+
+    const entry = switchEntries.find(e => e.name === name);
+    if (entry && entry.onUpdate) {
+      entry.onUpdate(isEnabled);
+    }
+  };
+
+  return (<>
+    <p>此页面用于解除游戏中的各种限制</p>
+    {switchEntries.map(entry => (
+      <div key={entry.name}>
+        <label>
+          <input
+            type="checkbox"
+            checked={switchStates[entry.name] || false}
+            onChange={(e) => handleSwitchChange(entry.name, e.target.checked)}
+          />
+          {entry.description}
+        </label>
+      </div>
+    ))}
+  </>);
+}

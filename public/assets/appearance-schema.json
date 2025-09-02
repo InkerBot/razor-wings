@@ -1,0 +1,470 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ServerAppearanceBundle",
+  "description": "角色外观数据包，包含角色穿戴的所有物品信息",
+  "type": "array",
+  "items": {
+    "$ref": "#/definitions/ServerItemBundle"
+  },
+  "definitions": {
+    "ServerItemBundle": {
+      "title": "ServerItemBundle",
+      "description": "服务器物品包，包含单个物品的完整信息",
+      "type": "object",
+      "required": ["Group", "Name"],
+      "properties": {
+        "Group": {
+          "title": "AssetGroupName",
+          "description": "物品组名称",
+          "type": "string",
+          "enum": [
+            "Eyebrows", "Eyes", "Eyes2", "Mouth", "Pussy", "Blush", "Fluids", "Emoticon",
+            "AnkletLeft", "AnkletRight", "ArmsLeft", "ArmsRight", "BodyStyle", "BodyLower",
+            "BodyUpper", "BodyMarkings", "Bra", "Bracelet", "Cloth", "ClothAccessory",
+            "ClothLower", "ClothOuter", "Corset", "EyeShadow", "FacialHair", "Garters",
+            "Glasses", "Gloves", "HairAccessory1", "HairAccessory2", "HairAccessory3",
+            "HairBack", "HairFront", "HandAccessoryLeft", "HandAccessoryRight", "Hat",
+            "Head", "Height", "Jewelry", "Mask", "Necklace", "Nipples", "Panties",
+            "Pronouns", "Shoes", "Socks", "SocksLeft", "SocksRight", "Suit", "SuitLower",
+            "TailStraps", "Wings", "HandsLeft", "HandsRight", "FaceMarkings",
+            "ItemAddon", "ItemArms", "ItemBoots", "ItemBreast", "ItemButt", "ItemDevices",
+            "ItemEars", "ItemFeet", "ItemHands", "ItemHead", "ItemHood", "ItemLegs",
+            "ItemMisc", "ItemMouth", "ItemMouth2", "ItemMouth3", "ItemNeck",
+            "ItemNeckAccessories", "ItemNeckRestraints", "ItemNipples",
+            "ItemNipplesPiercings", "ItemNose", "ItemPelvis", "ItemTorso", "ItemTorso2",
+            "ItemVulva", "ItemVulvaPiercings", "ItemHandheld", "ItemScript"
+          ]
+        },
+        "Name": {
+          "title": "Name",
+          "description": "物品名称",
+          "type": "string"
+        },
+        "Difficulty": {
+          "title": "Difficulty",
+          "description": "物品难度等级",
+          "type": "number",
+          "minimum": 0
+        },
+        "Color": {
+          "title": "ItemColor",
+          "description": "物品颜色，可以是单个颜色字符串或颜色数组",
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "Property": {
+          "title": "ItemProperties",
+          "description": "物品属性",
+          "type": "object",
+          "properties": {
+            "Type": {
+              "description": "扩展物品类型字符串",
+              "type": ["string", "null"]
+            },
+            "TypeRecord": {
+              "description": "扩展物品类型记录",
+              "type": ["object", "null"]
+            },
+            "Expression": {
+              "description": "面部表情",
+              "type": ["string", "null"]
+            },
+            "Mode": {
+              "description": "振动器模式",
+              "type": "string",
+              "enum": ["Off", "Low", "Medium", "High", "Maximum", "Random", "Escalate", "Tease", "Deny", "Edge"]
+            },
+            "Intensity": {
+              "description": "振动器强度",
+              "type": "number",
+              "enum": [-1, 0, 1, 2, 3]
+            },
+            "State": {
+              "description": "振动器状态",
+              "type": "string",
+              "enum": ["Default", "Deny", "Orgasm", "Rest"]
+            },
+            "Modules": {
+              "description": "KD模块",
+              "type": "array",
+              "items": {
+                "type": "number"
+              }
+            },
+            "LockedBy": {
+              "description": "锁定类型",
+              "type": "string",
+              "enum": [
+                "CombinationPadlock", "ExclusivePadlock", "HighSecurityPadlock",
+                "IntricatePadlock", "LoversPadlock", "LoversTimerPadlock", "FamilyPadlock",
+                "MetalPadlock", "MistressPadlock", "MistressTimerPadlock",
+                "OwnerPadlock", "OwnerTimerPadlock", "PandoraPadlock",
+                "PasswordPadlock", "PortalLinkPadlock", "SafewordPadlock", "TimerPadlock",
+                "TimerPasswordPadlock"
+              ]
+            },
+            "LockMemberNumber": {
+              "description": "锁定者会员号",
+              "oneOf": [
+                {"type": "number"},
+                {"type": "string"}
+              ]
+            },
+            "Password": {
+              "description": "密码锁密码",
+              "type": "string",
+              "pattern": "^[A-Z]{1,8}$"
+            },
+            "LockPickSeed": {
+              "description": "开锁种子",
+              "type": "string"
+            },
+            "CombinationNumber": {
+              "description": "组合锁号码",
+              "type": "string",
+              "pattern": "^[0-9]{4}$"
+            },
+            "MemberNumberListKeys": {
+              "description": "高安全锁会员号列表",
+              "type": "string"
+            },
+            "Hint": {
+              "description": "密码提示",
+              "type": "string"
+            },
+            "LockSet": {
+              "description": "是否已设置密码",
+              "type": "boolean"
+            },
+            "RemoveItem": {
+              "description": "定时锁解锁时是否移除物品",
+              "type": "boolean"
+            },
+            "RemoveOnUnlock": {
+              "description": "解锁时移除（仅密码锁）",
+              "type": "boolean"
+            },
+            "ShowTimer": {
+              "description": "是否显示剩余时间",
+              "type": "boolean"
+            },
+            "EnableRandomInput": {
+              "description": "是否启用随机输入",
+              "type": "boolean"
+            },
+            "MemberNumberList": {
+              "description": "公开修改时间的会员列表",
+              "type": "array",
+              "items": {
+                "type": "number"
+              }
+            },
+            "InflateLevel": {
+              "description": "充气物品的充气等级",
+              "type": "number",
+              "enum": [0, 1, 2, 3, 4]
+            },
+            "SuctionLevel": {
+              "description": "吸吮效果等级",
+              "type": "number",
+              "enum": [0, 1, 2, 3, 4]
+            },
+            "Text": {
+              "description": "用户输入文本第1行",
+              "type": "string"
+            },
+            "Text2": {
+              "description": "用户输入文本第2行",
+              "type": "string"
+            },
+            "Text3": {
+              "description": "用户输入文本第3行",
+              "type": "string"
+            },
+            "LockButt": {
+              "description": "是否阻止臀部访问",
+              "type": "boolean"
+            },
+            "OpenPermission": {
+              "description": "是否允许所有玩家使用未来主义头部设备",
+              "type": "boolean"
+            },
+            "OpenPermissionArm": {
+              "description": "是否允许所有玩家使用未来主义手臂设备",
+              "type": "boolean"
+            },
+            "OpenPermissionLeg": {
+              "description": "是否允许所有玩家使用未来主义腿部设备",
+              "type": "boolean"
+            },
+            "OpenPermissionChastity": {
+              "description": "是否允许所有玩家使用未来主义贞操设备",
+              "type": "boolean"
+            },
+            "BlockRemotes": {
+              "description": "是否阻止遥控器使用",
+              "type": "boolean"
+            },
+            "HeartRate": {
+              "description": "未来主义胸罩的心率值",
+              "type": "number"
+            },
+            "AutoPunish": {
+              "description": "物品自动惩罚敏感度",
+              "type": "number",
+              "enum": [0, 1, 2, 3]
+            },
+            "AutoPunishUndoTime": {
+              "description": "口塞自动充气的剩余时间",
+              "type": "number"
+            },
+            "AutoPunishUndoTimeSetting": {
+              "description": "口塞自动充气的默认时间",
+              "type": "number",
+              "enum": [120000, 300000, 900000, 3600000, 72000000]
+            },
+            "OriginalSetting": {
+              "description": "触发自动充气前的口塞模块索引",
+              "type": "number",
+              "enum": [0, 1, 2, 3]
+            },
+            "BlinkState": {
+              "description": "口塞闪烁灯是否开启",
+              "type": "boolean"
+            },
+            "PunishStruggle": {
+              "description": "尝试移除腰带是否导致惩罚",
+              "type": "boolean"
+            },
+            "PunishStruggleOther": {
+              "description": "尝试移除物品是否导致惩罚",
+              "type": "boolean"
+            },
+            "PunishOrgasm": {
+              "description": "高潮是否导致惩罚",
+              "type": "boolean"
+            },
+            "PunishStandup": {
+              "description": "站立是否导致惩罚",
+              "type": "boolean"
+            },
+            "PunishActivity": {
+              "description": "进行活动是否导致惩罚",
+              "type": "boolean"
+            },
+            "PunishSpeech": {
+              "description": "说话惩罚类型",
+              "type": "number",
+              "enum": [0, 1, 2, 3]
+            },
+            "PunishRequiredSpeech": {
+              "description": "未说必需词汇的惩罚类型",
+              "type": "number",
+              "enum": [0, 1, 2, 3]
+            },
+            "PunishRequiredSpeechWord": {
+              "description": "逗号分隔的必需词汇",
+              "type": "string"
+            },
+            "PunishProhibitedSpeech": {
+              "description": "说禁止词汇的惩罚类型",
+              "type": "number",
+              "enum": [0, 1, 2, 3]
+            },
+            "PunishProhibitedSpeechWords": {
+              "description": "逗号分隔的禁止词汇",
+              "type": "string"
+            },
+            "NextShockTime": {
+              "description": "自动电击的内部冷却计时器",
+              "type": "number"
+            },
+            "PublicModeCurrent": {
+              "description": "腰带振动器的当前模式",
+              "type": "number",
+              "enum": [0, 1, 2, 3, 4, 5, 6]
+            },
+            "PublicModePermission": {
+              "description": "可以访问腰带的权限级别",
+              "type": "number",
+              "enum": [0, 1, 2]
+            },
+            "TriggerValues": {
+              "description": "未来主义振动器的触发词汇",
+              "type": "string"
+            },
+            "AccessMode": {
+              "description": "谁有权限使用振动器的触发词汇",
+              "type": "string",
+              "enum": ["", "ProhibitSelf", "LockMember"]
+            },
+            "ShockLevel": {
+              "description": "电击强度",
+              "type": "number",
+              "enum": [0, 1, 2]
+            },
+            "InsertedBeads": {
+              "description": "插入的珠子数量",
+              "type": "number",
+              "enum": [1, 2, 3, 4, 5]
+            },
+            "ShowText": {
+              "description": "是否向房间内其他人显示聊天消息",
+              "type": "boolean"
+            },
+            "TriggerCount": {
+              "description": "物品被触发的次数",
+              "type": "number"
+            },
+            "OrgasmCount": {
+              "description": "穿戴者高潮次数",
+              "type": "number"
+            },
+            "RuinedOrgasmCount": {
+              "description": "穿戴者失败高潮次数",
+              "type": "number"
+            },
+            "TimeWorn": {
+              "description": "物品被穿戴的时间",
+              "type": "number"
+            },
+            "TimeSinceLastOrgasm": {
+              "description": "上次检测到高潮后的时间",
+              "type": "number"
+            },
+            "Iterations": {
+              "description": "行李箱被破解的次数",
+              "type": "number"
+            },
+            "Revert": {
+              "description": "允许在退出扩展菜单时恢复这些属性",
+              "type": "boolean"
+            },
+            "Door": {
+              "description": "狗舍门是否开启",
+              "type": "boolean"
+            },
+            "Padding": {
+              "description": "狗舍是否有垫子",
+              "type": "boolean"
+            },
+            "UnHide": {
+              "description": "仅作为脚本物品的覆盖可用",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "Texts": {
+              "description": "幸运轮盘的分段标签",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "TargetAngle": {
+              "description": "轮盘应该旋转到的角度",
+              "type": "number"
+            },
+            "PortalLinkCode": {
+              "description": "PortalLink: 用于将遥控器链接到其目标资产",
+              "type": "string"
+            }
+          },
+          "additionalProperties": true
+        },
+        "Craft": {
+          "title": "CraftingItem",
+          "description": "制作物品信息",
+          "type": "object",
+          "properties": {
+            "Name": {
+              "description": "制作物品的名称",
+              "type": "string"
+            },
+            "MemberName": {
+              "description": "制作者名称",
+              "type": "string"
+            },
+            "MemberNumber": {
+              "description": "制作者会员号",
+              "type": "number"
+            },
+            "Description": {
+              "description": "自定义物品描述",
+              "type": "string"
+            },
+            "Property": {
+              "description": "制作物品属性",
+              "type": "string",
+              "enum": [
+                "Normal", "Large", "Small", "Thick", "Thin", "Secure", "Loose", "Decoy",
+                "Malleable", "Rigid", "Simple", "Puzzling", "Painful", "Comfy", "Strong",
+                "Flexible", "Nimble", "Arousing", "Dull", "Edging", "Heavy", "Light"
+              ]
+            },
+            "Color": {
+              "description": "物品的逗号分隔颜色",
+              "type": "string"
+            },
+            "Lock": {
+              "description": "锁的名称，如果不存在则为空字符串",
+              "type": "string",
+              "enum": [
+                "", "CombinationPadlock", "ExclusivePadlock", "HighSecurityPadlock",
+                "IntricatePadlock", "LoversPadlock", "LoversTimerPadlock", "FamilyPadlock",
+                "MetalPadlock", "MistressPadlock", "MistressTimerPadlock",
+                "OwnerPadlock", "OwnerTimerPadlock", "PandoraPadlock",
+                "PasswordPadlock", "PortalLinkPadlock", "SafewordPadlock", "TimerPadlock",
+                "TimerPasswordPadlock"
+              ]
+            },
+            "Item": {
+              "description": "物品名称",
+              "type": "string"
+            },
+            "Private": {
+              "description": "制作物品是否应该私有",
+              "type": "boolean"
+            },
+            "Type": {
+              "description": "制作物品的类型",
+              "type": ["string", "null"]
+            },
+            "OverridePriority": {
+              "description": "物品分层优先级",
+              "type": ["number", "null"]
+            },
+            "ItemProperty": {
+              "description": "额外的物品属性记录",
+              "type": ["object", "null"]
+            },
+            "TypeRecord": {
+              "description": "扩展物品的屏幕名称到选项索引的映射记录",
+              "type": ["object", "null"]
+            },
+            "Disabled": {
+              "description": "制作物品是否有资格使用",
+              "type": "boolean"
+            },
+            "DifficultyFactor": {
+              "description": "收紧/放松特定的难度因子",
+              "type": "number"
+            }
+          },
+          "required": ["Name", "Description", "Property", "Color", "Lock", "Item", "Private"]
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

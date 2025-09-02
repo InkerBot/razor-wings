@@ -1,0 +1,20 @@
+.razorwings-translation-text {
+    margin-bottom: 0;
+    font-size: 12px;
+}
+
+.razorwings-translation-pending {
+    color: #888;
+}
+
+.razorwings-translation-success {
+    color: #49bbcf;
+}
+
+.razorwings-translation-error {
+    color: #d9534f;
+}
+
+.razorwings-language-selector-select {
+    display: block;
+}
