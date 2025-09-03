@@ -66,6 +66,12 @@ const modules: { [key: string]: ModuleConfig } = {
     'screen': ['*'],
     'pageProvider': async () => (await import('./modules/util_remove_submissive/page.tsx')).default,
   },
+  'chat_export': {
+    'displayName': '聊天导出',
+    'module': ['Online'],
+    'screen': ['ChatRoom'],
+    'pageProvider': async () => (await import('./modules/chat_export/page.tsx')).default,
+  },
   /*
   'util_packet': {
     'displayName': '辅助_网络调试',
