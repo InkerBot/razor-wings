@@ -9,6 +9,6 @@ export default function ChatExportPage() {
       包含私聊消息
     </label>
 
-    <button onClick={() => extract()}>run</button>
+    <button onClick={() => extract(includePrivate)}>run</button>
   </>)
 }
