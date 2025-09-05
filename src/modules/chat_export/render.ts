@@ -130,6 +130,20 @@ export default function render(data: unknown) {
 
         contentEl.appendChild(senderNameEl);
         contentEl.appendChild(document.createTextNode(item.content));
+      } else if (item.type === 'private') {
+        if (item.replyTo) {
+          const replyEl = document.createElement('div');
+          replyEl.className = 'reply';
+          replyEl.textContent = item.replyTo;
+          contentEl.appendChild(replyEl);
+        }
+
+        const senderNameEl = document.createElement('span');
+        senderNameEl.style.color = getColorBySenderId(item.sender);
+        senderNameEl.textContent = '悄悄话 ' + item.senderNickname + ': ';
+
+        contentEl.appendChild(senderNameEl);
+        contentEl.appendChild(document.createTextNode(item.content));
       } else if (item.type === 'action') {
         contentEl.className += ' action-message';
         contentEl.textContent = item.content;
