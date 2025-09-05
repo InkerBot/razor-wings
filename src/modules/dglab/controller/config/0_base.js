@@ -47,7 +47,7 @@ export default function configureIntensitySystem(registry) {
     registry.registerAction('ShockItem', {
         priority: 30,
         comment: '道具电击: 0.6',
-        effect: (intensity, context) => 0.8
+        effect: (intensity, context) => 0.6
     })
     registry.registerAction(['MasturbateHand', 'MasturbateItem', 'MasturbateFist'], {
         priority: 30,
