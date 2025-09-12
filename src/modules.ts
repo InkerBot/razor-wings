@@ -72,6 +72,13 @@ const modules: { [key: string]: ModuleConfig } = {
     'screen': ['ChatRoom'],
     'pageProvider': async () => (await import('./modules/chat_export/page.tsx')).default,
   },
+  'map_script': {
+    'displayName': '地图脚本',
+    'module': ['*'],
+    'screen': ['*'],
+    'moduleProvider': async () => (await import('./modules/map_script/module.ts')).default,
+    'pageProvider': async () => (await import('./modules/map_script/page.tsx')).default,
+  },
   /*
   'util_packet': {
     'displayName': '辅助_网络调试',

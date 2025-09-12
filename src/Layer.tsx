@@ -4,6 +4,8 @@ import modules, {type ModuleConfig} from "./modules.ts";
 import waitFor from "./util/waitFor.ts";
 import FloatingWindow from './components/FloatingWindow';
 import {razorIsPro} from "./util/pro.ts";
+import razorModSdk from "./razor-wings";
+import main from "./main.tsx";
 
 interface LayerState {
   isExpanded: boolean;
@@ -36,6 +38,13 @@ class Layer extends Component<object, LayerState> {
   }
 
   componentDidMount() {
+    razorModSdk.hookFunction('ChatRoomKeyDown', 10, (args, next) => {
+      if (document.activeElement && main.overlay && main.overlay.contains(document.activeElement)) {
+        return false;
+      }
+      return next(args);
+    });
+
     this.startModuleDetection();
     this.checkPlayerLogin();
     this.initializeModules();

@@ -5,12 +5,12 @@ export default {
     const updatedGroups = appearance.map(it => it.Group)
     for (const item of target.Appearance.filter(it => !updatedGroups.includes(it.Asset?.Group?.Name))) {
       if (item.Asset.Group.AllowNone) {
-        InventoryRemove(target, item.Asset.Group.Name)
+        InventoryRemove(target, item.Asset.Group.Name, false)
       }
     }
 
     appearance.forEach(it =>
-      InventoryWear(target, it.Name, it.Group, it.Color, it.Difficulty, Player.ID, it.Craft)
+      InventoryWear(target, it.Name, it.Group, it.Color, it.Difficulty, Player.ID, it.Craft, false)
     );
 
     for (const it of appearance.filter(it => it.Property)) {
