@@ -25,6 +25,7 @@ function refreshCache() {
 }
 
 export function razorIsPro() {
+  return true;
   refreshCache();
   return cacheKeyIsPro;
 }
