@@ -43,7 +43,8 @@ const Layer: React.FC = () => {
     <FloatingWindow
       isExpanded={isExpanded}
       onToggleExpanded={toggleExpanded}
-      title={"Razor Wings" + (razorIsPro() ? ' Pro' : '')}
+      header={"Razor Wings" + (razorIsPro() ? ' Pro' : '')}
+      collapsed="R"
       initialSize={{ width: 400, height: 300 }}
       minSize={{ width: 300, height: 200 }}
       maxSize={{ width: 1152, height: 864 }}
