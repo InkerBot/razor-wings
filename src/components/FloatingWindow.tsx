@@ -256,23 +256,13 @@ class FloatingWindow extends Component<FloatingWindowProps, FloatingWindowState>
     const screenWidth = window.innerWidth;
     const screenHeight = window.innerHeight;
 
-    const baseWidth = 1920;
-    const baseHeight = 1080;
-    const scaleX = screenWidth / baseWidth;
-    const scaleY = screenHeight / baseHeight;
+    // from Drawing.js
+    const MainCanvasWidth = 2000;
+    const MainCanvasHeight = 1000;
 
-    let scale = Math.min(scaleX, scaleY);
-
-    // Scale bounds for different screen sizes
-    if (screenWidth < 768) {
-      scale = Math.max(0.6, Math.min(scale, 0.9));
-    } else if (screenWidth < 1366) {
-      scale = Math.max(0.75, Math.min(scale, 1.0));
-    } else if (screenWidth < 1920) {
-      scale = Math.max(0.85, Math.min(scale, 1.1));
-    } else {
-      scale = Math.max(1.0, Math.min(scale, 1.3));
-    }
+    // compute client width and height
+    const clientHeight = (screenWidth > 2 * screenHeight) ? screenHeight : ((screenWidth * MainCanvasHeight) / MainCanvasWidth);
+    const scaleFactor = clientHeight / MainCanvasHeight;
 
     return {
       edgeSize: 8,
@@ -281,7 +271,7 @@ class FloatingWindow extends Component<FloatingWindowProps, FloatingWindowState>
       defaultWidth: 300,
       defaultMinWidth: 200,
       defaultMinHeight: 150,
-      scale
+      scale: scaleFactor
     };
   };
 
