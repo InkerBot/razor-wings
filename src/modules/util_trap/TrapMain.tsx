@@ -2,6 +2,7 @@ import React from "react";
 import module from "./module.ts";
 import type { TrapScript } from "./TrapConfig.ts";
 import ScriptEditor from "../map_script/component/ScriptEditor.tsx";
+import PlayerSelector from "../../components/PlayerSelector.tsx";
 
 interface TrapMainState {
   scripts: TrapScript[];
@@ -9,6 +10,7 @@ interface TrapMainState {
   editingContent: string;
   editingName: string;
   trapRoomEnabled: boolean;
+  selectedCharacter: Character | null;
 }
 
 export default class TrapMain extends React.Component<object, TrapMainState> {
@@ -17,7 +19,8 @@ export default class TrapMain extends React.Component<object, TrapMainState> {
     selectedScriptId: null,
     editingContent: '',
     editingName: '',
-    trapRoomEnabled: module.trapRoomEnabled
+    trapRoomEnabled: module.trapRoomEnabled,
+    selectedCharacter: null
   };
 
   configChangeListener = () => {
@@ -230,6 +233,18 @@ export default class TrapMain extends React.Component<object, TrapMainState> {
                   }}
                 />
                 <button onClick={this.handleSaveScript}>保存</button>
+                <PlayerSelector onChange={(character) => this.setState({ selectedCharacter: character })} />
+                <button onClick={() => {
+                  if (this.state.selectedCharacter) {
+                    try {
+                      module.runTrapOnCharacter(this.state.selectedCharacter, selectedScript, this.state.editingContent);
+                    } catch (e) {
+                      console.error(e);
+                    }
+                  }
+                }}>
+                  运行脚本
+                </button>
               </div>
               <div style={{flex: 1, minHeight: 0, overflow: 'hidden'}}>
                 <ScriptEditor

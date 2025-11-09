@@ -45,18 +45,27 @@ class UtilTrapModule implements AbstractModule {
       if (this.trapRoomEnabled) {
         try {
           const script = this.randomScript();
-          let compiled = this.scriptCache.get(script.id);
-          if (!compiled) {
-            compiled = this.sandbox.compile(script.content, true);
-            this.scriptCache.set(script.id, compiled);
-          }
-          compiled({character: character}).run();
+          this.runTrapOnCharacter(character, script);
         } catch (e) {
           console.error('Error executing trap script:', e);
         }
       }
       return result;
     });
+  }
+
+  runTrapOnCharacter(character: Character, script: TrapScript, overrideContent?: string) {
+    if (!overrideContent) {
+      let compiled = this.scriptCache.get(script.id);
+      if (!compiled) {
+        compiled = this.sandbox.compile(script.content, true);
+        this.scriptCache.set(script.id, compiled);
+      }
+      compiled({character: character}).run();
+    } else {
+      const compiled = this.sandbox.compile(overrideContent);
+      compiled({character: character}).run();
+    }
   }
 
   loadConfig() {
