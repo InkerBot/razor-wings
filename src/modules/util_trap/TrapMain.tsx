@@ -239,6 +239,7 @@ export default class TrapMain extends React.Component<object, TrapMainState> {
                     try {
                       module.runTrapOnCharacter(this.state.selectedCharacter, selectedScript, this.state.editingContent);
                     } catch (e) {
+                      ToastManager.error('运行脚本时出错，详情请查看控制台');
                       console.error(e);
                     }
                   }
