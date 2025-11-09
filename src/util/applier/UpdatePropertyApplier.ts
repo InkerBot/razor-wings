@@ -5,7 +5,7 @@ export default {
   async apply(target: Character, appearance: AppearanceBundle, config?: ApplyConfig) {
     const updatedGroups = appearance.map(it => it.Group)
     for (const item of target.Appearance.filter(it => !updatedGroups.includes(it.Asset?.Group?.Name))) {
-      if (item.Asset.Group.AllowNone && !configDisabledGroup(config, item.Asset.Group)) {
+      if (!config?.disableRemove && item.Asset.Group.AllowNone && !configDisabledGroup(config, item.Asset.Group)) {
         InventoryRemove(target, item.Asset.Group.Name, false)
       }
     }

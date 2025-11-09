@@ -14,6 +14,7 @@ export default function UtilEditorPage() {
     disableCloth: false,
     disableUnderwear: false,
     disableCosplay: false,
+    disableRemove: false
   });
   const [value, setValue] = React.useState('[]');
   const [character, setCharacter] = React.useState<Character | null>(Player);
@@ -95,6 +96,14 @@ export default function UtilEditorPage() {
               disableCosplay: e.target.checked
             })}/>
             禁用角色
+          </label>
+        </div>
+        <div>
+          <label>
+            <input type="checkbox" checked={applyConfig.disableRemove} onChange={(e) => updateApplierConfig({
+              disableRemove: e.target.checked
+            })}/>
+            不移除现有装扮
           </label>
         </div>
         <button onClick={() => setValue(serializeAppearance(character))} disabled={!character}>Load</button>

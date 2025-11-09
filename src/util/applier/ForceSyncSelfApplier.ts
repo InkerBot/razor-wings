@@ -11,9 +11,13 @@ export default {
     historyModule.pushReason({ text: "razor-wings editor" }, () => {
       Player.Appearance = [
         ...Player.Appearance.filter(it => {
-          return configDisabledGroup(config, it.Asset.Group) ||
-            (!it.Asset.Group.AllowNone
-              && !appearance.some(newIt => newIt.Group === it.Asset.Group.Name))
+          if (configDisabledGroup(config, it.Asset.Group)) {
+            return true;
+          }
+          if (it.Asset.Group.AllowNone && !appearance.some(newIt => newIt.Group === it.Asset.Group.Name)) {
+            return false;
+          }
+          return !!(config?.disableRemove)
         }),
         ...appearance.map(it => ServerBundledItemToAppearanceItem(target.AssetFamily, it))
           .filter(it => it && !configDisabledGroup(config, it.Asset.Group))

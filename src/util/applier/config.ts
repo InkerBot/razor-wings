@@ -3,6 +3,7 @@ export interface ApplyConfig {
   disableCloth: boolean;
   disableUnderwear: boolean;
   disableCosplay: boolean;
+  disableRemove: boolean;
 }
 
 export function configDisabledGroup(config: ApplyConfig | undefined, group: AssetGroup | string): boolean {
