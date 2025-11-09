@@ -6,11 +6,24 @@ import {deserializeAppearance, serializeAppearance} from "../../util/appearanceC
 import ForceSyncSelfApplier from "../../util/applier/ForceSyncSelfApplier.ts";
 import {razorIsPro} from "../../util/pro.ts";
 import {sendActivityText} from "../../util/message.ts";
+import type {ApplyConfig} from "../../util/applier/config.ts";
 
 export default function UtilEditorPage() {
+  const [applyConfig, setApplyConfig] = React.useState<ApplyConfig>({
+    disableItem: false,
+    disableCloth: false,
+    disableUnderwear: false,
+    disableCosplay: false,
+  });
   const [value, setValue] = React.useState('[]');
   const [character, setCharacter] = React.useState<Character | null>(Player);
   const [applying, setApplying] = React.useState(false);
+
+  const updateApplierConfig = (config: Partial<ApplyConfig>) => {
+    setApplyConfig(prev => {
+      return {...prev, ...config};
+    });
+  }
 
   const applyCharacter = () => {
     setApplying(true);
@@ -24,7 +37,7 @@ export default function UtilEditorPage() {
       }
       const applier = character.CharacterID === Player.CharacterID ? ForceSyncSelfApplier : UpdatePropertyApplier;
       const appearance = deserializeAppearance(value);
-      await applier.apply(character, appearance);
+      await applier.apply(character, appearance, applyConfig);
     })().finally(() => setApplying(false))
       .catch(e => {
         console.error("Failed to apply appearance:", e);
@@ -52,6 +65,30 @@ export default function UtilEditorPage() {
         flexShrink: 0
       }}>
         {razorIsPro() && <PlayerSelector characterId={character?.CharacterID} onChange={setCharacter}/>}
+        <label>
+          <input type="checkbox" checked={applyConfig.disableItem} onChange={(e) => updateApplierConfig({
+            disableItem: e.target.checked
+          })}/>
+          禁用物品
+        </label>
+        <label>
+          <input type="checkbox" checked={applyConfig.disableCloth} onChange={(e) => updateApplierConfig({
+            disableCloth: e.target.checked
+          })}/>
+          禁用衣服
+        </label>
+        <label>
+          <input type="checkbox" checked={applyConfig.disableUnderwear} onChange={(e) => updateApplierConfig({
+            disableUnderwear: e.target.checked
+          })}/>
+          禁用内衣
+        </label>
+        <label>
+          <input type="checkbox" checked={applyConfig.disableCosplay} onChange={(e) => updateApplierConfig({
+            disableCosplay: e.target.checked
+          })}/>
+          禁用角色
+        </label>
         <button onClick={() => setValue(serializeAppearance(character))} disabled={!character}>Load</button>
         <button onClick={() => setValue(JSON.stringify(JSON.parse(value), null, 2))}>Format</button>
         <button disabled={!character || applying} onClick={applyCharacter}>{applying ? 'applying' : 'Apply'}</button>
