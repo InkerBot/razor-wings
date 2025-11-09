@@ -1,4 +1,4 @@
-import {useEffect, useState} from "react";
+import {useEffect, useState, useCallback, useMemo, useRef} from "react";
 
 interface PlayerSelectorProps {
   characterId?: string;
@@ -10,15 +10,27 @@ export default function PlayerSelector({
                                          onChange,
                                        }: PlayerSelectorProps) {
   const [players, setPlayers] = useState<Character[]>([]);
+  const onChangeRef = useRef(onChange);
+
+  useEffect(() => {
+    onChangeRef.current = onChange;
+  }, [onChange]);
 
   useEffect(() => {
     const updatePlayers = () => {
-      setPlayers([...ChatRoomCharacter]);
+      const currentPlayers = ChatRoomCharacter || [];
 
-      if (ChatRoomCharacter.length > 0 && !characterId && onChange) {
-        const firstPlayer = ChatRoomCharacter[0];
-        onChange(firstPlayer);
-      }
+      setPlayers(prev => {
+        if (prev.length !== currentPlayers.length) {
+          return [...currentPlayers];
+        }
+
+        const hasChanged = currentPlayers.some((char, idx) =>
+          char.CharacterID !== prev[idx]?.CharacterID
+        );
+
+        return hasChanged ? [...currentPlayers] : prev;
+      });
     };
 
     updatePlayers();
@@ -27,32 +39,48 @@ export default function PlayerSelector({
     return () => {
       clearInterval(intervalId);
     };
-  }, [characterId, onChange]);
+  }, []);
 
-  const handlePlayerChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const playerId = e.target.value;
-    if (playerId) {
-      const selectedPlayer = players.find(it => it.CharacterID === playerId);
-      if (onChange) {
-        onChange(selectedPlayer);
-      }
+  useEffect(() => {
+    if (players.length > 0 && !characterId && onChangeRef.current) {
+      onChangeRef.current(players[0]);
     }
-  };
+  }, [players.length, characterId]);
 
-  return (<label htmlFor="player-select">选择玩家:
-    <select
-      id="player-select"
-      value={characterId}
-      onChange={handlePlayerChange}
-    >
-      <option value="" disabled>
-        请选择玩家
-      </option>
-      {players.map((character) => (
-        <option key={character.CharacterID} value={character.CharacterID}>
-          {character.Nickname || character.Name} ({character.Name})
+  const handlePlayerChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+    const playerId = e.target.value;
+    if (playerId && onChange) {
+      const selectedPlayer = players.find(it => it.CharacterID === playerId);
+      onChange(selectedPlayer);
+    }
+  }, [players, onChange]);
+
+  const playerOptions = useMemo(() =>
+    players.map((character) => ({
+      id: character.CharacterID,
+      displayName: character.Nickname || character.Name,
+      name: character.Name,
+    })),
+    [players]
+  );
+
+  return (
+    <label htmlFor="player-select">
+      选择玩家:
+      <select
+        id="player-select"
+        value={characterId || ""}
+        onChange={handlePlayerChange}
+      >
+        <option value="" disabled>
+          请选择玩家
         </option>
-      ))}
-    </select>
-  </label>);
+        {playerOptions.map(({id, displayName, name}) => (
+          <option key={id} value={id}>
+            {displayName} ({name})
+          </option>
+        ))}
+      </select>
+    </label>
+  );
 }
