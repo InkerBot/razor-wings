@@ -11,14 +11,11 @@ type languageCode =
   | 'DE'
   | 'EL'
   | 'EN'
-  | 'EN-GB'
-  | 'EN-US'
   | 'ES'
   | 'ES-419'
   | 'ET'
   | 'FI'
   | 'FR'
-  | 'HE'
   | 'HU'
   | 'ID'
   | 'IT'
@@ -52,15 +49,12 @@ const languages: Record<languageCode, LanguageEntry> = {
   'DA': {code: "DA", name: "Danish"},
   'DE': {code: "DE", name: "German"},
   'EL': {code: "EL", name: "Greek"},
-  'EN': {code: "EN", name: "English (all variants)"},
-  'EN-GB': {code: "EN-GB", name: "English (British)"},
-  'EN-US': {code: "EN-US", name: "English (American)"},
+  'EN': {code: "EN", name: "English"},
   'ES': {code: "ES", name: "Spanish (all variants)"},
   'ES-419': {code: "ES-419", name: "Spanish (Latin American)"},
   'ET': {code: "ET", name: "Estonian"},
   'FI': {code: "FI", name: "Finnish"},
   'FR': {code: "FR", name: "French"},
-  'HE': {code: "HE", name: "Hebrew (next-gen only)"},
   'HU': {code: "HU", name: "Hungarian"},
   'ID': {code: "ID", name: "Indonesian"},
   'IT': {code: "IT", name: "Italian"},
@@ -100,7 +94,6 @@ type sourceLanguageCode =
   | 'ET'
   | 'FI'
   | 'FR'
-  | 'HE'
   | 'HU'
   | 'ID'
   | 'IT'
@@ -135,7 +128,6 @@ const sourceLanguages: Record<sourceLanguageCode, LanguageEntry> = {
   'ET': languages['ET'],
   'FI': languages['FI'],
   'FR': languages['FR'],
-  'HE': languages['HE'],
   'HU': languages['HU'],
   'ID': languages['ID'],
   'IT': languages['IT'],
@@ -167,14 +159,11 @@ type targetLanguageCode =
   | 'DE'
   | 'EL'
   | 'EN'
-  | 'EN-GB'
-  | 'EN-US'
   | 'ES'
   | 'ES-419'
   | 'ET'
   | 'FI'
   | 'FR'
-  | 'HE'
   | 'HU'
   | 'ID'
   | 'IT'
@@ -216,7 +205,6 @@ const targetLanguages: Record<string, LanguageEntry> = {
   'ET': languages['ET'],
   'FI': languages['FI'],
   'FR': languages['FR'],
-  'HE': languages['HE'],
   'HU': languages['HU'],
   'ID': languages['ID'],
   'IT': languages['IT'],
