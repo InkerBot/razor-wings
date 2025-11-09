@@ -66,6 +66,13 @@ const modules: { [key: string]: ModuleConfig } = {
     'screen': ['*'],
     'pageProvider': async () => (await import('./modules/util_remove_submissive/page.tsx')).default,
   },
+  'util_trap': {
+    'displayName': '工具_陷阱',
+    'module': ['*'],
+    'screen': ['*'],
+    'moduleProvider': async () => (await import('./modules/util_trap/module.ts')).default,
+    'pageProvider': async () => (await import('./modules/util_trap/page.tsx')).default,
+  },
   'chat_export': {
     'displayName': '聊天导出',
     'module': ['Online'],
