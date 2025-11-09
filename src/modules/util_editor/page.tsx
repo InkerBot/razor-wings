@@ -65,30 +65,38 @@ export default function UtilEditorPage() {
         flexShrink: 0
       }}>
         {razorIsPro() && <PlayerSelector characterId={character?.CharacterID} onChange={setCharacter}/>}
-        <label>
-          <input type="checkbox" checked={applyConfig.disableItem} onChange={(e) => updateApplierConfig({
-            disableItem: e.target.checked
-          })}/>
-          禁用物品
-        </label>
-        <label>
-          <input type="checkbox" checked={applyConfig.disableCloth} onChange={(e) => updateApplierConfig({
-            disableCloth: e.target.checked
-          })}/>
-          禁用衣服
-        </label>
-        <label>
-          <input type="checkbox" checked={applyConfig.disableUnderwear} onChange={(e) => updateApplierConfig({
-            disableUnderwear: e.target.checked
-          })}/>
-          禁用内衣
-        </label>
-        <label>
-          <input type="checkbox" checked={applyConfig.disableCosplay} onChange={(e) => updateApplierConfig({
-            disableCosplay: e.target.checked
-          })}/>
-          禁用角色
-        </label>
+        <div>
+          <label>
+            <input type="checkbox" checked={applyConfig.disableItem} onChange={(e) => updateApplierConfig({
+              disableItem: e.target.checked
+            })}/>
+            禁用物品
+          </label>
+        </div>
+        <div>
+          <label>
+            <input type="checkbox" checked={applyConfig.disableCloth} onChange={(e) => updateApplierConfig({
+              disableCloth: e.target.checked
+            })}/>
+            禁用衣服
+          </label>
+        </div>
+        <div>
+          <label>
+            <input type="checkbox" checked={applyConfig.disableUnderwear} onChange={(e) => updateApplierConfig({
+              disableUnderwear: e.target.checked
+            })}/>
+            禁用内衣
+          </label>
+        </div>
+        <div>
+          <label>
+            <input type="checkbox" checked={applyConfig.disableCosplay} onChange={(e) => updateApplierConfig({
+              disableCosplay: e.target.checked
+            })}/>
+            禁用角色
+          </label>
+        </div>
         <button onClick={() => setValue(serializeAppearance(character))} disabled={!character}>Load</button>
         <button onClick={() => setValue(JSON.stringify(JSON.parse(value), null, 2))}>Format</button>
         <button disabled={!character || applying} onClick={applyCharacter}>{applying ? 'applying' : 'Apply'}</button>
