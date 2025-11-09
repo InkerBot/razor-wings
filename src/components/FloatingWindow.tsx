@@ -659,7 +659,7 @@ class FloatingWindow extends Component<FloatingWindowProps, FloatingWindowState>
   };
 
   private handleWindowResize = () => {
-    this.checkAndConstrainPosition();
+    this.forceUpdate(() => this.checkAndConstrainPosition());
   };
 
   private handleToggleExpanded = (e: React.MouseEvent) => {
