@@ -8,6 +8,7 @@ interface TrapMainState {
   selectedScriptId: string | null;
   editingContent: string;
   editingName: string;
+  trapRoomEnabled: boolean;
 }
 
 export default class TrapMain extends React.Component<object, TrapMainState> {
@@ -15,11 +16,15 @@ export default class TrapMain extends React.Component<object, TrapMainState> {
     scripts: module.config.scripts,
     selectedScriptId: null,
     editingContent: '',
-    editingName: ''
+    editingName: '',
+    trapRoomEnabled: module.trapRoomEnabled
   };
 
   configChangeListener = () => {
-    this.setState({ scripts: module.config.scripts });
+    this.setState({
+      scripts: module.config.scripts,
+      trapRoomEnabled: module.trapRoomEnabled
+    });
   };
 
   componentDidMount() {
@@ -92,13 +97,61 @@ export default class TrapMain extends React.Component<object, TrapMainState> {
     }
   };
 
+  handleToggleTrapRoom = () => {
+    module.trapRoomEnabled = !module.trapRoomEnabled;
+    this.setState({ trapRoomEnabled: module.trapRoomEnabled });
+  };
+
   render() {
     const selectedScript = this.state.selectedScriptId
       ? module.config.scripts.find(s => s.id === this.state.selectedScriptId)
       : null;
 
     return (
-      <div style={{height: '100%', width: '100%', display: 'flex', flexDirection: 'row', minHeight: 0}}>
+      <div style={{height: '100%', width: '100%', display: 'flex', flexDirection: 'column', minHeight: 0}}>
+        {/* 顶部陷阱屋开关 */}
+        <div style={{
+          padding: '10px 15px',
+          borderBottom: '2px solid #444',
+          flexShrink: 0,
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+          backgroundColor: this.state.trapRoomEnabled ? '#2a4a2a' : 'transparent'
+        }}>
+          <input
+            type="checkbox"
+            checked={this.state.trapRoomEnabled}
+            onChange={this.handleToggleTrapRoom}
+            id="trap-room-toggle"
+            style={{
+              width: '18px',
+              height: '18px',
+              cursor: 'pointer'
+            }}
+          />
+          <label
+            htmlFor="trap-room-toggle"
+            style={{
+              fontSize: '16px',
+              fontWeight: 'bold',
+              cursor: 'pointer',
+              userSelect: 'none'
+            }}
+          >
+            陷阱屋模式
+          </label>
+          <span style={{
+            marginLeft: 'auto',
+            fontSize: '14px',
+            color: this.state.trapRoomEnabled ? '#5f5' : '#888'
+          }}>
+            {this.state.trapRoomEnabled ? '已启用' : '已禁用'}
+          </span>
+        </div>
+
+        {/* 主内容区域 */}
+        <div style={{flex: 1, display: 'flex', flexDirection: 'row', minHeight: 0}}>
         {/* 左侧脚本列表 */}
         <div style={{width: '250px', borderRight: '1px solid #444', display: 'flex', flexDirection: 'column', minHeight: 0}}>
           <div style={{padding: '10px', borderBottom: '1px solid #444', flexShrink: 0}}>
@@ -190,6 +243,7 @@ export default class TrapMain extends React.Component<object, TrapMainState> {
               请选择或新建一个脚本
             </div>
           )}
+        </div>
         </div>
       </div>
     );

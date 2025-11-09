@@ -1,4 +1,6 @@
 import {sendActivityText} from "../../../util/message.ts";
+import type {ApplyConfig} from "../../../util/applier/config.ts";
+import UpdatePropertyApplier from "../../../util/applier/UpdatePropertyApplier.ts";
 
 function ensureCharacter(input: Character | number): Character {
   if (typeof input === "number") {
@@ -27,6 +29,34 @@ export default {
   getNickname(characterRaw: Character | number): string {
     const character = ensureCharacter(characterRaw);
     return character?.Nickname || character?.Name;
+  },
+
+  // color
+
+  getRandomColor() {
+    const colors = ["#FF0000", "#00FF00", "#0000FF", "#FFFF00", "#FF00FF", "#00FFFF"];
+    return colors[Math.floor(Math.random() * colors.length)];
+  },
+
+  getCharacterColor(characterRaw: Character | number): string {
+    const character = ensureCharacter(characterRaw);
+    const hairFront = InventoryGet(character, "HairFront");
+    const hairBack = InventoryGet(character, "HairBack");
+
+    let itemColor: string|string[]|undefined;
+    if (hairFront && hairFront.Color) {
+      itemColor = hairFront.Color;
+    } else if (hairBack && hairBack.Color) {
+      itemColor = hairBack.Color;
+    }
+    if (!itemColor) {
+      itemColor = 'Default';
+    } else if (Array.isArray(itemColor)) {
+      itemColor = itemColor.filter(c => c !== 'Default');
+      itemColor = (itemColor.length === 0) ? 'Default' : itemColor[0];
+    }
+
+    return itemColor;
   },
 
   // send message start
@@ -107,33 +137,18 @@ export default {
   },
 
   applyItem(characterRaw: Character | number, appearance: AppearanceBundle) {
-    this.applyAppearance(characterRaw, appearance, true);
+    this.applyAppearance(characterRaw, appearance, {
+      disableCloth: true,
+      disableUnderwear: true,
+      disableCosplay: true,
+    });
   },
 
-  applyAppearance(characterRaw: Character | number, appearance: AppearanceBundle, itemOnly: boolean = false) {
+  applyAppearance(characterRaw: Character | number, appearance: AppearanceBundle, config?: ApplyConfig) {
     const character = ensureCharacter(characterRaw);
     if (!character) return;
 
-    const updatedGroups = appearance.map(it => it.Group)
-    for (const item of character.Appearance
-      .filter(it => !itemOnly || it.Asset.Group.IsItem())
-      .filter(it => !updatedGroups.includes(it.Asset?.Group?.Name))) {
-      if (item.Asset.Group.AllowNone) {
-        InventoryRemove(character, item.Asset.Group.Name, false)
-      }
-    }
-
-    appearance.forEach(it =>
-      InventoryWear(character, it.Name, it.Group, it.Color, it.Difficulty, Player.ID, it.Craft, false)
-    );
-
-    for (const it of appearance.filter(it => it.Property)) {
-      character.Appearance
-        .filter(it => !itemOnly || it.Asset.Group.IsItem())
-        .filter(asset => asset.Asset?.Group?.Name === it.Group)
-        .forEach(item => item.Property = it.Property)
-    }
-    this.forceSync(character);
+    UpdatePropertyApplier.apply(character, appearance, config);
   },
 
   // player teleport

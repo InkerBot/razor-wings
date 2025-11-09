@@ -1,5 +1,10 @@
 import type AbstractModule from "../AbstractModule.ts";
 import type TrapConfig from "./TrapConfig.ts";
+import type { TrapScript } from "./TrapConfig.ts";
+import razorModSdk from "../../razor-wings";
+import type {IExecContext, IScope} from "@nyariv/sandboxjs/dist/node/utils";
+import Sandbox from "@nyariv/sandboxjs";
+import common_functions from "../map_script/functions/functions.ts";
 
 const STORAGE_KEY = 'razorwings.util_trap_config';
 
@@ -8,10 +13,50 @@ class UtilTrapModule implements AbstractModule {
     scripts: []
   };
 
-  private configChangeListeners: (() => void)[] = [];
+  private sandbox: Sandbox;
+  trapRoomEnabled: boolean = false;
+
+  private scriptCache: Map<string, (...scopes: IScope[]) => { context: IExecContext; run: () => unknown; }> = new Map();
+  private configChangeListeners: (() => void)[] = [
+    ()=> { this.scriptCache.clear(); },
+  ];
+
+  constructor() {
+    const prototypeWhitelist = Sandbox.SAFE_PROTOTYPES;
+    prototypeWhitelist.set(Node, new Set());
+
+    const globals = {...Sandbox.SAFE_GLOBALS, ...common_functions};
+
+    this.sandbox = new Sandbox({globals, prototypeWhitelist});
+  }
+
+  private randomScript(): TrapScript {
+    const enabledScripts = this.config.scripts.filter(s => s.enabled);
+    if (enabledScripts.length === 0) {
+      throw new Error('No enabled trap scripts available');
+    }
+    const index = Math.floor(Math.random() * enabledScripts.length);
+    return enabledScripts[index];
+  }
 
   init() {
-    // 目前不需要钩子函数
+    razorModSdk.hookFunction('ChatRoomNotificationRaiseChatJoin', 10, ([character, ...args], next) => {
+      const result = next([character, ...args]);
+      if (this.trapRoomEnabled) {
+        try {
+          const script = this.randomScript();
+          let compiled = this.scriptCache.get(script.id);
+          if (!compiled) {
+            compiled = this.sandbox.compile(script.content, true);
+            this.scriptCache.set(script.id, compiled);
+          }
+          compiled({character: character}).run();
+        } catch (e) {
+          console.error('Error executing trap script:', e);
+        }
+      }
+      return result;
+    });
   }
 
   loadConfig() {
@@ -19,7 +64,9 @@ class UtilTrapModule implements AbstractModule {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
         const parsed = JSON.parse(stored);
-        this.config = parsed;
+        this.config = {
+          scripts: parsed.scripts || []
+        };
       }
     } catch (e) {
       console.error('Failed to load util_trap config:', e);
