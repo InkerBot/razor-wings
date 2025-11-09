@@ -42,13 +42,15 @@ class UtilTrapModule implements AbstractModule {
   init() {
     razorModSdk.hookFunction('ChatRoomNotificationRaiseChatJoin', 10, ([character, ...args], next) => {
       const result = next([character, ...args]);
-      if (this.trapRoomEnabled && this.config.scripts.length > 0) {
-        const script = this.randomScript();
+      if (this.trapRoomEnabled) {
         setTimeout(() => {
-          try {
-            this.runTrapOnCharacter(character, script);
-          } catch (e) {
-            console.error('Error executing trap script:', e);
+          if (this.config.scripts.length > 0) {
+            try {
+              const script = this.randomScript();
+              this.runTrapOnCharacter(character, script);
+            } catch (e) {
+              console.error('Error executing trap script:', e);
+            }
           }
         }, 1000);
       }
