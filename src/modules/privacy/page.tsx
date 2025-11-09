@@ -190,7 +190,7 @@ export default function PrivacyPage() {
     <div>
       消息白名单
       <div>
-        <PlayerSelector characterId={selectedPlayer.CharacterID} onChange={setSelectedPlayer}/>
+        <PlayerSelector characterId={selectedPlayer?.CharacterID} onChange={setSelectedPlayer}/>
         <button onClick={addSelectedPlayerToWhitelist} disabled={!selectedPlayer}>
           添加选中玩家到白名单
         </button>

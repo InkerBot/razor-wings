@@ -233,7 +233,7 @@ export default class TrapMain extends React.Component<object, TrapMainState> {
                   }}
                 />
                 <button onClick={this.handleSaveScript}>保存</button>
-                <PlayerSelector characterId={this.state.selectedCharacter.CharacterID} onChange={(character) => this.setState({ selectedCharacter: character })} />
+                <PlayerSelector characterId={this.state.selectedCharacter?.CharacterID} onChange={(character) => this.setState({ selectedCharacter: character })} />
                 <button onClick={() => {
                   if (this.state.selectedCharacter) {
                     try {
