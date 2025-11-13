@@ -31,6 +31,10 @@ export class DeeplxTranslationProvider implements TranslationProvider {
 
     const responseBody = await response.json();
 
+    if (!responseBody || typeof responseBody !== 'object') {
+      throw new Error('Invalid response from translation API');
+    }
+
     if (responseBody.code !== 200) {
       throw new Error(`Translation failed with code ${responseBody.code}: ${responseBody.message}`);
     }

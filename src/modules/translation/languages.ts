@@ -198,8 +198,6 @@ const targetLanguages: Record<string, LanguageEntry> = {
   'DE': languages['DE'],
   'EL': languages['EL'],
   'EN': languages['EN'],
-  'EN-GB': languages['EN-GB'],
-  'EN-US': languages['EN-US'],
   'ES': languages['ES'],
   'ES-419': languages['ES-419'],
   'ET': languages['ET'],
