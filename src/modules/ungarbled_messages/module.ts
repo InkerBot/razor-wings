@@ -9,7 +9,9 @@ class UngarbledMessagesModule implements AbstractModule {
       const oldValue = Player?.ImmersionSettings?.ShowUngarbledMessages ?? true;
       let result: unknown;
       try {
-        Player.ImmersionSettings.ShowUngarbledMessages = true;
+        if (Player && Player.ImmersionSettings) {
+          Player.ImmersionSettings.ShowUngarbledMessages = true;
+        }
         result = next([data, ...msg]);
       } finally {
         if (Player && Player.ImmersionSettings) {
