@@ -115,6 +115,13 @@ const modules: { [key: string]: ModuleConfig } = {
     'module': ['*'],
     'screen': ['*'],
     'pageProvider': async () => (await import('./modules/cheat_allthings/page.tsx')).default,
+  },
+  'ungarbled_messages': {
+    'displayName': '强制开启绒语翻译器',
+    'module': ['Online'],
+    'screen': ['ChatRoom'],
+    'moduleProvider': async () => (await import('./modules/ungarbled_messages/module.ts')).default,
+    'pageProvider': async () => (await import('./modules/ungarbled_messages/page.tsx')).default,
   }
 }
 
