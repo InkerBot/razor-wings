@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import './Layer.css';
 import FloatingWindow from './components/FloatingWindow';
 import LoadingProgress from './components/LoadingProgress';
 import ModuleHeader from './components/ModuleHeader';

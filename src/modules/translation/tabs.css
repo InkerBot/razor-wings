@@ -1,0 +1,29 @@
+.rw-tabs {
+    display: flex;
+    gap: 4px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    margin-bottom: 8px;
+}
+
+.rw-tab {
+    padding: 6px 12px;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: inherit;
+    cursor: pointer;
+    opacity: 0.6;
+}
+
+.rw-tab:hover {
+    opacity: 0.8;
+}
+
+.rw-tab-active {
+    opacity: 1;
+    border-bottom-color: #49bbcf;
+}
+
+.rw-tab-content {
+    padding-top: 4px;
+}

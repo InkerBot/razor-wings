@@ -1,6 +1,8 @@
 import React, {StrictMode} from 'react'
 import {createRoot} from 'react-dom/client'
 import './index.css'
+import './Layer.css'
+import {setShadowRoot} from './shadow-style.ts'
 import Layer from './Layer.tsx'
 
 const main: {
@@ -21,12 +23,12 @@ const main: {
   main.overlay = document.createElement('div');
   document.body.appendChild(main.overlay);
   main.shadowRoot = main.overlay.attachShadow({mode: 'open'});
+  setShadowRoot(main.shadowRoot);
   main.root = document.createElement('div');
   main.shadowRoot.appendChild(main.root);
 
   createRoot(main.root).render(
     <StrictMode>
-      <link rel="stylesheet" type="text/css" href={main.resourceUrl('main.css')}/>
       <Layer/>
     </StrictMode>,
   );

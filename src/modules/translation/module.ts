@@ -1,13 +1,22 @@
-import style_css from './style.css?raw'
+import './style.css?page'
 import {DeeplxTranslationProvider} from "./provider/deeplx.ts";
+import {AiTranslationProvider} from "./provider/ai.ts";
 import type {sourceLanguageCode, targetLanguageCode} from "./languages.ts";
 import razorModSdk from "../../razor-wings";
 import type AbstractModule from "../AbstractModule.ts";
 
 const defaultApiUrl = 'https://aurora-wings.bgp.ink/translate';
+const defaultAiPrompt = 'You are a translator for Bondage Club, an online BDSM role-playing game. Messages may contain roleplay actions, BDSM terminology, and domain-specific abbreviations. Preserve the original tone and style. Translate from {sourceLang} to {targetLang}. Output only the translated text, nothing else.';
+
+export type ProviderType = 'deeplx' | 'ai';
 
 class TranslationModule implements AbstractModule {
+  providerType: ProviderType = 'deeplx';
   apiUrl: string = defaultApiUrl;
+  aiApiUrl: string = '';
+  aiApiKey: string = '';
+  aiModel: string = '';
+  aiPrompt: string = defaultAiPrompt;
   sendSourceLanguage: sourceLanguageCode = 'ZH';
   sendTargetLanguage: targetLanguageCode = 'EN';
 
@@ -33,15 +42,14 @@ class TranslationModule implements AbstractModule {
     }
     this.initialized = true;
 
-    const injectStyleElement = document.createElement('style')
-    injectStyleElement.innerHTML = style_css;
-    document.head.appendChild(injectStyleElement);
-
     this.initReceiveTranslation();
     this.initSendTranslation();
   }
 
-  private translate(source: sourceLanguageCode | null, target: targetLanguageCode, text: string) {
+  translate(source: sourceLanguageCode | null, target: targetLanguageCode, text: string) {
+    if (this.providerType === 'ai') {
+      return new AiTranslationProvider(this.aiApiUrl, this.aiApiKey, this.aiModel, this.aiPrompt).translate(source ?? 'auto', target, text);
+    }
     return new DeeplxTranslationProvider(this.apiUrl).translate(source, target, text);
   }
 
@@ -157,7 +165,12 @@ class TranslationModule implements AbstractModule {
     const localStorageElement = localStorage['razorwings.translation'];
     if (localStorageElement) {
       const config = JSON.parse(localStorageElement);
+      this.providerType = config.providerType || this.providerType;
       this.apiUrl = config.apiUrl || this.apiUrl;
+      this.aiApiUrl = config.aiApiUrl || this.aiApiUrl;
+      this.aiApiKey = config.aiApiKey || this.aiApiKey;
+      this.aiModel = config.aiModel || this.aiModel;
+      this.aiPrompt = config.aiPrompt || this.aiPrompt;
       this.sendSourceLanguage = config.sendSourceLanguage || this.sendSourceLanguage;
       this.sendTargetLanguage = config.sendTargetLanguage || this.sendTargetLanguage;
       this.receiveSourceLanguage = config.receiveSourceLanguage || this.receiveSourceLanguage;
@@ -171,7 +184,12 @@ class TranslationModule implements AbstractModule {
 
   saveConfig() {
     localStorage['razorwings.translation'] = JSON.stringify({
+      providerType: this.providerType,
       apiUrl: this.apiUrl,
+      aiApiUrl: this.aiApiUrl,
+      aiApiKey: this.aiApiKey,
+      aiModel: this.aiModel,
+      aiPrompt: this.aiPrompt,
       sendSourceLanguage: this.sendSourceLanguage,
       sendTargetLanguage: this.sendTargetLanguage,
       receiveSourceLanguage: this.receiveSourceLanguage,

@@ -1,4 +1,5 @@
 import React from "react";
+import './style.css'
 import PlayerAppearanceEditor from "./PlayerAppearanceEditor.tsx";
 import PlayerSelector from "../../components/PlayerSelector.tsx";
 import UpdatePropertyApplier from "../../util/applier/UpdatePropertyApplier.ts";
