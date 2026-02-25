@@ -1,6 +1,11 @@
 import type AbstractModule from "../AbstractModule.ts";
 import razorModSdk from "../../razor-wings";
 
+/** Beep request with mod-extended Message field (BCX, LSCG, etc. send objects instead of strings) */
+interface ModBeepRequest extends Omit<ServerAccountBeepRequest, 'Message'> {
+  Message?: string | { [key: string]: unknown };
+}
+
 class PrivacyModule implements AbstractModule {
   // wce
   disableWceBeepMetadata: boolean = false;
@@ -22,14 +27,14 @@ class PrivacyModule implements AbstractModule {
   init() {
     razorModSdk.hookFunction("ServerSend", -1, ([msg, ...args], next) => {
       if (msg == 'AccountBeep') {
-        const filtered: ServerAccountBeepRequest[] = [];
+        const filtered: ModBeepRequest[] = [];
 
-        const filterWhitelistOnly = (entry: ServerAccountBeepRequest) => {
+        const filterWhitelistOnly = (entry: ModBeepRequest) => {
           if (this.whitelist.includes(entry.MemberNumber)) {
             filtered.push(entry);
           }
         };
-        for (const entry of (args as ServerAccountBeepRequest[])) {
+        for (const entry of (args as ModBeepRequest[])) {
           // disable wce beep metadata
           if (this.disableWceBeepMetadata && typeof entry.Message === 'string' && entry.Message.includes("\uf124")) {
             const newMessage = entry.Message.substring(0, entry.Message.indexOf("\uf124"));
@@ -42,19 +47,19 @@ class PrivacyModule implements AbstractModule {
             continue
           }
           // disable bcx beep finger print
-          if (this.disableBcxBeepFingerPrint && (entry.BeepType == 'BCX' || (entry.BeepType == 'Leash' && CommonIsObject(entry.Message) && CommonIsObject(entry.Message.BCX)))) {
+          if (this.disableBcxBeepFingerPrint && (entry.BeepType == 'BCX' || (entry.BeepType == 'Leash' && typeof entry.Message === 'object' && entry.Message !== null && 'BCX' in entry.Message && CommonIsObject(entry.Message.BCX)))) {
             filterWhitelistOnly(entry);
             continue
           }
           // disable lscg beep
-          if (this.disableLscgMessage && entry.BeepType == 'Leash' && CommonIsObject(entry.Message) && entry.Message.IsLSCG) {
+          if (this.disableLscgMessage && entry.BeepType == 'Leash' && typeof entry.Message === 'object' && entry.Message !== null && entry.Message.IsLSCG) {
             filterWhitelistOnly(entry);
             continue
           }
           filtered.push(entry);
         }
 
-        filtered.forEach(entry => next(['AccountBeep', entry]))
+        filtered.forEach(entry => next(['AccountBeep', entry as ServerAccountBeepRequest]))
         return
       }
 
