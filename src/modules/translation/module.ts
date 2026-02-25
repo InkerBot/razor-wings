@@ -37,83 +37,119 @@ class TranslationModule implements AbstractModule {
     injectStyleElement.innerHTML = style_css;
     document.head.appendChild(injectStyleElement);
 
+    this.initReceiveTranslation();
+    this.initSendTranslation();
+  }
+
+  private translate(source: sourceLanguageCode | null, target: targetLanguageCode, text: string) {
+    return new DeeplxTranslationProvider(this.apiUrl).translate(source, target, text);
+  }
+
+  private initReceiveTranslation() {
     razorModSdk.hookFunction("ChatRoomMessageDisplay", 10, ([data, ...msg], next) => {
-      if (this.receiveEnable && ['Chat', 'Whisper', 'Emote'].indexOf(data.Type) !== -1 && data.Sender !== Player.MemberNumber) {
-        // Capture scroll state BEFORE next() runs, since ChatRoomAppendChat
-        // inside next() will append and scroll, making a post-check unreliable
-        const wasAtEnd = ElementIsScrolledToEnd("TextAreaChatLog");
-        const element = next([data, ...msg]);
+      if (!this.receiveEnable || ['Chat', 'Whisper', 'Emote'].indexOf(data.Type) === -1 || data.Sender === Player.MemberNumber) {
+        return next([data, ...msg]);
+      }
 
-        const translationElement = document.createElement('span');
-        translationElement.innerText = '翻译中...';
-        translationElement.className = 'razorwings-translation-text razorwings-translation-pending';
-        element.insertAdjacentElement('beforeend', document.createElement('br'));
-        element.insertAdjacentElement('beforeend', translationElement);
+      // Capture scroll state BEFORE next() runs, since ChatRoomAppendChat
+      // inside next() will append and scroll, making a post-check unreliable
+      const wasAtEnd = ElementIsScrolledToEnd("TextAreaChatLog");
+      const element = next([data, ...msg]);
 
-        if (wasAtEnd) {
-          ElementScrollToEnd("TextAreaChatLog");
-        }
+      const translationElement = document.createElement('span');
+      translationElement.innerText = '翻译中...';
+      translationElement.className = 'razorwings-translation-text razorwings-translation-pending';
+      element.insertAdjacentElement('beforeend', document.createElement('br'));
+      element.insertAdjacentElement('beforeend', translationElement);
 
-        (async () => {
-          const translated = await new DeeplxTranslationProvider(this.apiUrl)
-            .translate(this.receiveSourceLanguage, this.receiveTargetLanguage, data.Content);
-          // Capture scroll state before changing content height
+      if (wasAtEnd) {
+        ElementScrollToEnd("TextAreaChatLog");
+      }
+
+      this.translate(this.receiveSourceLanguage, this.receiveTargetLanguage, data.Content)
+        .then(translated => {
           const wasAtEnd = ElementIsScrolledToEnd("TextAreaChatLog");
           translationElement.className = 'razorwings-translation-text razorwings-translation-success';
           translationElement.innerText = translated.text;
           if (wasAtEnd) ElementScrollToEnd("TextAreaChatLog");
-        })().catch(error => {
+        })
+        .catch(error => {
           const wasAtEnd = ElementIsScrolledToEnd("TextAreaChatLog");
           translationElement.className = 'razorwings-translation-text razorwings-translation-error';
           translationElement.innerText = `翻译失败: ${error.message}`;
           if (wasAtEnd) ElementScrollToEnd("TextAreaChatLog");
         });
 
-        return element;
-      }
+      return element;
+    });
+  }
 
-      return next([data, ...msg]);
+  private initSendTranslation() {
+    // Flag to suppress BC's local whisper display while translation is pending.
+    // Set synchronously in ServerSend hook, consumed in ChatRoomMessage hook.
+    let suppressNextWhisperDisplay = false;
+
+    razorModSdk.hookFunction('ChatRoomMessage', 10, ([data, ...rest], next) => {
+      if (suppressNextWhisperDisplay && data.Type === 'Whisper') {
+        suppressNextWhisperDisplay = false;
+        return;
+      }
+      return next([data, ...rest]);
     });
 
     razorModSdk.hookFunction('ServerSend', 10, ([messageType, ...args], next) => {
-      if (this.sendEnable && messageType == "ChatRoomChat") {
-        const message = args[0] as ServerChatRoomMessage;
-        if (['Chat', 'Whisper', 'Emote'].indexOf(message.Type) !== -1) {
-
-          // Show pending message with translating indicator
-          const pendingId = `rw-pending-${Date.now()}`;
-          const escapedContent = message.Content
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/\n/g, '<br>');
-          ChatRoomSendLocal(
-            `<span id="${pendingId}" class="razorwings-send-pending">` +
-            `<span class="razorwings-translation-text razorwings-translation-pending">正在翻译...</span><br>` +
-            `${escapedContent}` +
-            `</span>`
-          );
-
-          const removePending = () => {
-            document.getElementById(pendingId)?.closest('.ChatMessage')?.remove();
-          };
-
-          (async () => {
-            const translated = await new DeeplxTranslationProvider(this.apiUrl)
-              .translate(this.sendSourceLanguage, this.sendTargetLanguage, message.Content);
-            removePending();
-            message.Content += '\n[i] ' + translated.text;
-            next([messageType, ...args]);
-          })().catch(error => {
-            removePending();
-            ChatRoomSendLocal(`翻译失败: ${error.message}`);
-            next([messageType, ...args]);
-          });
-
-          return;
-        }
+      if (!this.sendEnable || messageType !== "ChatRoomChat") {
+        return next([messageType, ...args]);
       }
-      return next([messageType, ...args]);
+
+      const message = args[0] as ServerChatRoomMessage;
+      if (['Chat', 'Whisper', 'Emote'].indexOf(message.Type) === -1) {
+        return next([messageType, ...args]);
+      }
+
+      const isNonSelfWhisper = message.Type === 'Whisper' && message.Target !== Player.MemberNumber;
+
+      // For non-self whispers, suppress BC's immediate local display
+      // (ChatRoomSendWhisper calls ChatRoomMessage right after ServerSend)
+      if (isNonSelfWhisper) {
+        suppressNextWhisperDisplay = true;
+      }
+
+      // Show pending message with translating indicator
+      const pendingId = `rw-pending-${Date.now()}`;
+      const escapedContent = message.Content
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/\n/g, '<br>');
+      ChatRoomSendLocal(
+        `<span id="${pendingId}" class="razorwings-send-pending">` +
+        `<span class="razorwings-translation-text razorwings-translation-pending">正在翻译...</span><br>` +
+        `${escapedContent}` +
+        `</span>`
+      );
+
+      const removePending = () => {
+        document.getElementById(pendingId)?.closest('.ChatMessage')?.remove();
+      };
+
+      this.translate(this.sendSourceLanguage, this.sendTargetLanguage, message.Content)
+        .then(translated => {
+          removePending();
+          message.Content += '\n[i] ' + translated.text;
+          next([messageType, ...args]);
+          if (isNonSelfWhisper) {
+            ChatRoomMessage(message);
+          }
+        })
+        .catch(error => {
+          removePending();
+          ChatRoomSendLocal(`翻译失败: ${error.message}`);
+          next([messageType, ...args]);
+          if (isNonSelfWhisper) {
+            ChatRoomMessage(message);
+          }
+        });
     });
   }
 
