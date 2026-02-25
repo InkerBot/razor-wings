@@ -39,6 +39,9 @@ class TranslationModule implements AbstractModule {
 
     razorModSdk.hookFunction("ChatRoomMessageDisplay", 10, ([data, ...msg], next) => {
       if (this.receiveEnable && ['Chat', 'Whisper', 'Emote'].indexOf(data.Type) !== -1 && data.Sender !== Player.MemberNumber) {
+        // Capture scroll state BEFORE next() runs, since ChatRoomAppendChat
+        // inside next() will append and scroll, making a post-check unreliable
+        const wasAtEnd = ElementIsScrolledToEnd("TextAreaChatLog");
         const element = next([data, ...msg]);
 
         const translationElement = document.createElement('span');
@@ -47,9 +50,7 @@ class TranslationModule implements AbstractModule {
         element.insertAdjacentElement('beforeend', document.createElement('br'));
         element.insertAdjacentElement('beforeend', translationElement);
 
-        // Scroll to end after appending translation placeholder, since the original
-        // ChatRoomAppendChat already ran its scroll logic before we added these elements
-        if (ElementIsScrolledToEnd("TextAreaChatLog")) {
+        if (wasAtEnd) {
           ElementScrollToEnd("TextAreaChatLog");
         }
 
@@ -79,12 +80,32 @@ class TranslationModule implements AbstractModule {
         const message = args[0] as ServerChatRoomMessage;
         if (['Chat', 'Whisper', 'Emote'].indexOf(message.Type) !== -1) {
 
+          // Show pending message with translating indicator
+          const pendingId = `rw-pending-${Date.now()}`;
+          const escapedContent = message.Content
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/\n/g, '<br>');
+          ChatRoomSendLocal(
+            `<span id="${pendingId}" class="razorwings-send-pending">` +
+            `${escapedContent}` +
+            `<br><span class="razorwings-translation-text razorwings-translation-pending">正在翻译...</span>` +
+            `</span>`
+          );
+
+          const removePending = () => {
+            document.getElementById(pendingId)?.closest('.ChatMessage')?.remove();
+          };
+
           (async () => {
             const translated = await new DeeplxTranslationProvider(this.apiUrl)
               .translate(this.sendSourceLanguage, this.sendTargetLanguage, message.Content);
+            removePending();
             message.Content += '\n[i] ' + translated.text;
             next([messageType, ...args]);
           })().catch(error => {
+            removePending();
             ChatRoomSendLocal(`翻译失败: ${error.message}`);
             next([messageType, ...args]);
           });
