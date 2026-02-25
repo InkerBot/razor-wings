@@ -89,8 +89,8 @@ class TranslationModule implements AbstractModule {
             .replace(/\n/g, '<br>');
           ChatRoomSendLocal(
             `<span id="${pendingId}" class="razorwings-send-pending">` +
+            `<span class="razorwings-translation-text razorwings-translation-pending">正在翻译...</span><br>` +
             `${escapedContent}` +
-            `<br><span class="razorwings-translation-text razorwings-translation-pending">正在翻译...</span>` +
             `</span>`
           );
 
