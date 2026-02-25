@@ -39,7 +39,7 @@ export default function LanguageSelector(
         onChange={handleLanguageChange}
         disabled={disabled}
       >
-        <option value="" disabled>
+        <option value="">
           {placeholder}
         </option>
         {Object.values(availableLanguages).map((lang) => (
