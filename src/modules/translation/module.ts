@@ -47,15 +47,25 @@ class TranslationModule implements AbstractModule {
         element.insertAdjacentElement('beforeend', document.createElement('br'));
         element.insertAdjacentElement('beforeend', translationElement);
 
+        // Scroll to end after appending translation placeholder, since the original
+        // ChatRoomAppendChat already ran its scroll logic before we added these elements
+        if (ElementIsScrolledToEnd("TextAreaChatLog")) {
+          ElementScrollToEnd("TextAreaChatLog");
+        }
+
         (async () => {
           const translated = await new DeeplxTranslationProvider(this.apiUrl)
             .translate(this.receiveSourceLanguage, this.receiveTargetLanguage, data.Content);
-          const translationText = translated.text;
+          // Capture scroll state before changing content height
+          const wasAtEnd = ElementIsScrolledToEnd("TextAreaChatLog");
           translationElement.className = 'razorwings-translation-text razorwings-translation-success';
-          translationElement.innerText = translationText;
+          translationElement.innerText = translated.text;
+          if (wasAtEnd) ElementScrollToEnd("TextAreaChatLog");
         })().catch(error => {
+          const wasAtEnd = ElementIsScrolledToEnd("TextAreaChatLog");
           translationElement.className = 'razorwings-translation-text razorwings-translation-error';
           translationElement.innerText = `翻译失败: ${error.message}`;
+          if (wasAtEnd) ElementScrollToEnd("TextAreaChatLog");
         });
 
         return element;
