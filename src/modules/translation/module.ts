@@ -25,6 +25,10 @@ class TranslationModule implements AbstractModule {
 
   sendEnable: boolean = false;
   receiveEnable: boolean = false;
+  bioEnable: boolean = false;
+  syncInputStatus: boolean = false;
+
+  private statusTimer: ReturnType<typeof setTimeout> | null = null;
 
   switchSend(enable: boolean) {
     this.sendEnable = enable;
@@ -44,6 +48,57 @@ class TranslationModule implements AbstractModule {
 
     this.initReceiveTranslation();
     this.initSendTranslation();
+    this.initBioTranslation();
+  }
+
+  private initBioTranslation() {
+    import('./bio-translate.ts').then(m => m.initBioTranslationHooks(this));
+  }
+
+  updateTypingStatus(text: string) {
+    if (!this.syncInputStatus) return;
+    // Dispatch synthetic input event on BC's #InputChat so BCX's
+    // input listener (SetInputElement) picks it up. BC uses keyup,
+    // so this only triggers BCX's handler.
+    this.dispatchInputChatEvent(text);
+    // BC native fallback for non-BCX viewers
+    if (text.length >= 3) {
+      this.sendBCStatus('Talk');
+      if (this.statusTimer) clearTimeout(this.statusTimer);
+      this.statusTimer = setTimeout(() => this.sendBCStatus(null), 5000);
+    } else {
+      if (this.statusTimer) {
+        clearTimeout(this.statusTimer);
+        this.statusTimer = null;
+      }
+      this.sendBCStatus(null);
+    }
+  }
+
+  clearTypingStatus() {
+    if (!this.syncInputStatus) return;
+    this.dispatchInputChatEvent('');
+    if (this.statusTimer) {
+      clearTimeout(this.statusTimer);
+      this.statusTimer = null;
+    }
+    this.sendBCStatus(null);
+  }
+
+  private dispatchInputChatEvent(text: string) {
+    const inputChat = document.getElementById('InputChat') as HTMLTextAreaElement | null;
+    if (!inputChat) return;
+    const orig = inputChat.value;
+    inputChat.value = text;
+    inputChat.dispatchEvent(new Event('input'));
+    inputChat.value = orig;
+  }
+
+  private sendBCStatus(status: string | null) {
+    if (status === (Player.Status ?? null)) return;
+    Player.Status = status;
+    Player.StatusTimer = status === 'Talk' ? CommonTime() + 5000 : null;
+    ServerSend('ChatRoomChat', {Content: status ?? 'null', Type: 'Status'} as never);
   }
 
   translate(source: sourceLanguageCode | null, target: targetLanguageCode, text: string) {
@@ -177,6 +232,8 @@ class TranslationModule implements AbstractModule {
       this.receiveTargetLanguage = config.receiveTargetLanguage || this.receiveTargetLanguage;
       this.sendEnable = config.sendEnable ?? this.sendEnable;
       this.receiveEnable = config.receiveEnable ?? this.receiveEnable;
+      this.bioEnable = config.bioEnable ?? this.bioEnable;
+      this.syncInputStatus = config.syncInputStatus ?? this.syncInputStatus;
     } else {
       this.saveConfig();
     }
@@ -196,6 +253,8 @@ class TranslationModule implements AbstractModule {
       receiveTargetLanguage: this.receiveTargetLanguage,
       sendEnable: this.sendEnable,
       receiveEnable: this.receiveEnable,
+      bioEnable: this.bioEnable,
+      syncInputStatus: this.syncInputStatus,
     });
   }
 }
