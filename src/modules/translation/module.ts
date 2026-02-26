@@ -67,6 +67,10 @@ class TranslationModule implements AbstractModule {
       if (this.statusTimer) clearTimeout(this.statusTimer);
       this.statusTimer = setTimeout(() => this.sendBCStatus(null), 5000);
     } else {
+      if (this.statusTimer) {
+        clearTimeout(this.statusTimer);
+        this.statusTimer = null;
+      }
       this.sendBCStatus(null);
     }
   }
