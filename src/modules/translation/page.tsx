@@ -1,11 +1,10 @@
 import {useEffect, useState} from "react";
-import {type sourceLanguageCode, type targetLanguageCode} from "./languages.ts";
+import {sourceLanguages, type sourceLanguageCode, type targetLanguageCode} from "./languages.ts";
 import LanguageSelector from "./LanguageSelector.tsx";
 import module from "./module.ts";
 import type {ProviderType} from "./module.ts";
-import './tabs.css';
-
-type Tab = 'test' | 'config' | 'provider';
+import Tabs from "../../components/Tabs.tsx";
+import './page.css';
 
 function TestTab() {
   const [text, setText] = useState('');
@@ -27,32 +26,27 @@ function TestTab() {
   return (
     <div>
       <LanguageSelector value={sourceLang} onChange={it => setSourceLang(it as sourceLanguageCode)} label="源语言" type="source"/>
+      <button onClick={() => {
+        if (!(targetLang in sourceLanguages)) return;
+        setSourceLang(targetLang as sourceLanguageCode);
+        setTargetLang(sourceLang as targetLanguageCode);
+      }}>⇄ 交换语言</button>
       <LanguageSelector value={targetLang} onChange={it => setTargetLang(it as targetLanguageCode)} label="目标语言" type="target"/>
-      <textarea
-        value={text}
-        onChange={e => setText(e.target.value)}
-        placeholder="输入要翻译的文本..."
-        rows={3}
-        style={{width: '100%', marginTop: 8, boxSizing: 'border-box'}}
-      />
-      <button onClick={handleTranslate} disabled={loading} style={{marginTop: 4}}>
+      <br/>
+      <textarea className="rw-full-width" value={text} onChange={e => {
+        setText(e.target.value);
+        module.updateTypingStatus(e.target.value);
+      }} placeholder="输入要翻译的文本..." rows={3}/>
+      <button onClick={handleTranslate} disabled={loading}>
         {loading ? '翻译中...' : '翻译'}
       </button>
-      {result && (
-        <div style={{marginTop: 8}}>
-          <textarea
-            value={result}
-            onChange={e => setResult(e.target.value)}
-            rows={3}
-            style={{width: '100%', boxSizing: 'border-box'}}
-          />
-          <div style={{marginTop: 4, display: 'flex', gap: 4}}>
-            <button onClick={() => navigator.clipboard.writeText(result)}>复制</button>
-            <button onClick={() => { ServerSend('ChatRoomChat', {Content: result, Type: 'Chat'}); }}>作为Chat发送</button>
-            <button onClick={() => { ServerSend('ChatRoomChat', {Content: result, Type: 'Emote'}); }}>作为Activity发送</button>
-          </div>
-        </div>
-      )}
+      <br/>
+      <textarea className="rw-full-width" value={result} onChange={e => setResult(e.target.value)} rows={3}/>
+      <div className="rw-btn-row">
+        <button onClick={() => navigator.clipboard.writeText(result)}>复制</button>
+        <button onClick={() => { module.clearTypingStatus(); ServerSend('ChatRoomChat', {Content: result, Type: 'Chat'}); }}>作为Chat发送</button>
+        <button onClick={() => { module.clearTypingStatus(); ServerSend('ChatRoomChat', {Content: result, Type: 'Emote'}); }}>作为Activity发送</button>
+      </div>
     </div>
   );
 }
@@ -64,6 +58,7 @@ function ConfigTab() {
   const [receiveEnable, setReceiveEnable] = useState(module.receiveEnable);
   const [receiveSourceLanguage, setReceiveSourceLanguage] = useState<sourceLanguageCode | null>(module.receiveSourceLanguage);
   const [receiveTargetLanguage, setReceiveTargetLanguage] = useState<targetLanguageCode>(module.receiveTargetLanguage);
+  const [syncInputStatus, setSyncInputStatus] = useState(module.syncInputStatus);
 
   useEffect(() => { module.sendEnable = sendEnable; module.saveConfig(); }, [sendEnable]);
   useEffect(() => { module.sendSourceLanguage = sendSourceLanguage; module.saveConfig(); }, [sendSourceLanguage]);
@@ -71,11 +66,11 @@ function ConfigTab() {
   useEffect(() => { module.receiveEnable = receiveEnable; module.saveConfig(); }, [receiveEnable]);
   useEffect(() => { module.receiveSourceLanguage = receiveSourceLanguage; module.saveConfig(); }, [receiveSourceLanguage]);
   useEffect(() => { module.receiveTargetLanguage = receiveTargetLanguage; module.saveConfig(); }, [receiveTargetLanguage]);
+  useEffect(() => { module.syncInputStatus = syncInputStatus; module.saveConfig(); }, [syncInputStatus]);
 
   return (
     <div>
       <p>警告：翻译服务使用第三方API，可能会保存您的消息内容，请谨慎使用。</p>
-
       <label>
         <input type="checkbox" checked={sendEnable} onChange={e => setSendEnable(e.target.checked)}/>
         发送翻译
@@ -84,12 +79,14 @@ function ConfigTab() {
         <input type="checkbox" checked={receiveEnable} onChange={e => setReceiveEnable(e.target.checked)}/>
         接收翻译
       </label>
-
+      <label>
+        <input type="checkbox" checked={syncInputStatus} onChange={e => setSyncInputStatus(e.target.checked)}/>
+        同步输入状态
+      </label>
       <LanguageSelector value={sendSourceLanguage} onChange={it => setSendSourceLanguage(it as sourceLanguageCode)}
                         label="send source language"/>
       <LanguageSelector value={sendTargetLanguage} onChange={it => setSendTargetLanguage(it as targetLanguageCode)}
                         label="send target language" type="target"/>
-
       <LanguageSelector value={receiveSourceLanguage ?? ''}
                         onChange={it => setReceiveSourceLanguage(it as sourceLanguageCode)}
                         label="receive source language" type="source"/>
@@ -115,42 +112,41 @@ function ProviderTab() {
   useEffect(() => { module.aiModel = aiModel; module.saveConfig(); }, [aiModel]);
   useEffect(() => { module.aiPrompt = aiPrompt; module.saveConfig(); }, [aiPrompt]);
 
-  const inputStyle = {width: '100%', marginTop: 4, boxSizing: 'border-box' as const};
-
   return (
     <div>
       <label>
         翻译提供者
-        <select value={providerType} onChange={e => setProviderType(e.target.value as ProviderType)} style={{...inputStyle, marginBottom: 8}}>
+        <select className="rw-full-width" value={providerType} onChange={e => setProviderType(e.target.value as ProviderType)}>
           <option value="deeplx">DeepLX</option>
           <option value="ai">AI (ChatCompletions)</option>
         </select>
       </label>
-
       {providerType === 'deeplx' && (
         <label>
           API URL
-          <input type="text" value={apiUrl} onChange={e => setApiUrl(e.target.value)} style={inputStyle}/>
+          <input className="rw-full-width" type="text" value={apiUrl} onChange={e => setApiUrl(e.target.value)}/>
         </label>
       )}
-
       {providerType === 'ai' && (
         <>
           <label>
             API URL
-            <input type="text" value={aiApiUrl} onChange={e => setAiApiUrl(e.target.value)} style={inputStyle} placeholder="https://api.openai.com/v1/chat/completions"/>
+            <input className="rw-full-width" type="text" value={aiApiUrl} onChange={e => setAiApiUrl(e.target.value)} placeholder="https://api.openai.com/v1/chat/completions"/>
           </label>
-          <label style={{marginTop: 8, display: 'block'}}>
+          <br/>
+          <label>
             API Key
-            <input type="password" value={aiApiKey} onChange={e => setAiApiKey(e.target.value)} style={inputStyle} placeholder="sk-..."/>
+            <input className="rw-full-width" type="password" value={aiApiKey} onChange={e => setAiApiKey(e.target.value)} placeholder="sk-..."/>
           </label>
-          <label style={{marginTop: 8, display: 'block'}}>
+          <br/>
+          <label>
             模型名称
-            <input type="text" value={aiModel} onChange={e => setAiModel(e.target.value)} style={inputStyle} placeholder="gpt-4o-mini"/>
+            <input className="rw-full-width" type="text" value={aiModel} onChange={e => setAiModel(e.target.value)} placeholder="gpt-4o-mini"/>
           </label>
-          <label style={{marginTop: 8, display: 'block'}}>
+          <br/>
+          <label>
             系统提示词
-            <textarea value={aiPrompt} onChange={e => setAiPrompt(e.target.value)} rows={4} style={inputStyle} placeholder="使用 {sourceLang} 和 {targetLang} 作为语言占位符"/>
+            <textarea className="rw-full-width" value={aiPrompt} onChange={e => setAiPrompt(e.target.value)} rows={4} placeholder="使用 {sourceLang} 和 {targetLang} 作为语言占位符"/>
           </label>
         </>
       )}
@@ -158,34 +154,15 @@ function ProviderTab() {
   );
 }
 
-const tabs: {key: Tab; label: string}[] = [
-  {key: 'test', label: '翻译测试'},
-  {key: 'config', label: '翻译配置'},
-  {key: 'provider', label: '提供者配置'},
-];
-
 export default function TranslationPage() {
-  const [activeTab, setActiveTab] = useState<Tab>('test');
-
   return (
     <div>
       <p>翻译</p>
-      <div className="rw-tabs">
-        {tabs.map(t => (
-          <button
-            key={t.key}
-            className={`rw-tab ${activeTab === t.key ? 'rw-tab-active' : ''}`}
-            onClick={() => setActiveTab(t.key)}
-          >
-            {t.label}
-          </button>
-        ))}
-      </div>
-      <div className="rw-tab-content">
-        {activeTab === 'test' && <TestTab/>}
-        {activeTab === 'config' && <ConfigTab/>}
-        {activeTab === 'provider' && <ProviderTab/>}
-      </div>
+      <Tabs>
+        <Tabs.Tab label="翻译测试"><TestTab/></Tabs.Tab>
+        <Tabs.Tab label="翻译配置"><ConfigTab/></Tabs.Tab>
+        <Tabs.Tab label="提供者配置"><ProviderTab/></Tabs.Tab>
+      </Tabs>
     </div>
   );
 }

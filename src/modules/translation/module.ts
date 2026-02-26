@@ -25,6 +25,9 @@ class TranslationModule implements AbstractModule {
 
   sendEnable: boolean = false;
   receiveEnable: boolean = false;
+  syncInputStatus: boolean = false;
+
+  private statusTimer: ReturnType<typeof setTimeout> | null = null;
 
   switchSend(enable: boolean) {
     this.sendEnable = enable;
@@ -44,6 +47,36 @@ class TranslationModule implements AbstractModule {
 
     this.initReceiveTranslation();
     this.initSendTranslation();
+  }
+
+  updateTypingStatus(text: string) {
+    if (!this.syncInputStatus) return;
+    if (text.length >= 3) {
+      this.sendStatus('Talk');
+      // Reset the 5-second auto-clear timer
+      if (this.statusTimer) clearTimeout(this.statusTimer);
+      this.statusTimer = setTimeout(() => this.sendStatus(null), 5000);
+    } else {
+      this.sendStatus(null);
+    }
+  }
+
+  clearTypingStatus() {
+    if (!this.syncInputStatus) return;
+    if (this.statusTimer) {
+      clearTimeout(this.statusTimer);
+      this.statusTimer = null;
+    }
+    this.sendStatus(null);
+  }
+
+  private sendStatus(status: string | null) {
+    if (status === (Player.Status ?? null)) return;
+    // @ts-ignore - Player.Status exists at runtime
+    Player.Status = status;
+    // @ts-ignore - Player.StatusTimer exists at runtime
+    Player.StatusTimer = status === 'Talk' ? CommonTime() + 5000 : null;
+    ServerSend('ChatRoomChat', {Content: status ?? 'null', Type: 'Status'} as never);
   }
 
   translate(source: sourceLanguageCode | null, target: targetLanguageCode, text: string) {
@@ -177,6 +210,7 @@ class TranslationModule implements AbstractModule {
       this.receiveTargetLanguage = config.receiveTargetLanguage || this.receiveTargetLanguage;
       this.sendEnable = config.sendEnable ?? this.sendEnable;
       this.receiveEnable = config.receiveEnable ?? this.receiveEnable;
+      this.syncInputStatus = config.syncInputStatus ?? this.syncInputStatus;
     } else {
       this.saveConfig();
     }
@@ -196,6 +230,7 @@ class TranslationModule implements AbstractModule {
       receiveTargetLanguage: this.receiveTargetLanguage,
       sendEnable: this.sendEnable,
       receiveEnable: this.receiveEnable,
+      syncInputStatus: this.syncInputStatus,
     });
   }
 }

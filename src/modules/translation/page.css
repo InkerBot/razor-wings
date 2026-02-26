@@ -1,0 +1,9 @@
+.rw-full-width {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.rw-btn-row {
+    display: flex;
+    gap: 4px;
+}
