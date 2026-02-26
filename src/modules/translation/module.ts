@@ -25,6 +25,7 @@ class TranslationModule implements AbstractModule {
 
   sendEnable: boolean = false;
   receiveEnable: boolean = false;
+  bioEnable: boolean = false;
   syncInputStatus: boolean = false;
 
   private statusTimer: ReturnType<typeof setTimeout> | null = null;
@@ -47,6 +48,11 @@ class TranslationModule implements AbstractModule {
 
     this.initReceiveTranslation();
     this.initSendTranslation();
+    this.initBioTranslation();
+  }
+
+  private initBioTranslation() {
+    import('./bio-translate.ts').then(m => m.initBioTranslationHooks(this));
   }
 
   updateTypingStatus(text: string) {
@@ -222,6 +228,7 @@ class TranslationModule implements AbstractModule {
       this.receiveTargetLanguage = config.receiveTargetLanguage || this.receiveTargetLanguage;
       this.sendEnable = config.sendEnable ?? this.sendEnable;
       this.receiveEnable = config.receiveEnable ?? this.receiveEnable;
+      this.bioEnable = config.bioEnable ?? this.bioEnable;
       this.syncInputStatus = config.syncInputStatus ?? this.syncInputStatus;
     } else {
       this.saveConfig();
@@ -242,6 +249,7 @@ class TranslationModule implements AbstractModule {
       receiveTargetLanguage: this.receiveTargetLanguage,
       sendEnable: this.sendEnable,
       receiveEnable: this.receiveEnable,
+      bioEnable: this.bioEnable,
       syncInputStatus: this.syncInputStatus,
     });
   }

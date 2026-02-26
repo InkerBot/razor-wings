@@ -59,6 +59,7 @@ function ConfigTab() {
   const [sendSourceLanguage, setSendSourceLanguage] = useState<sourceLanguageCode>(module.sendSourceLanguage);
   const [sendTargetLanguage, setSendTargetLanguage] = useState<targetLanguageCode>(module.sendTargetLanguage);
   const [receiveEnable, setReceiveEnable] = useState(module.receiveEnable);
+  const [bioEnable, setBioEnable] = useState(module.bioEnable);
   const [receiveSourceLanguage, setReceiveSourceLanguage] = useState<sourceLanguageCode | null>(module.receiveSourceLanguage);
   const [receiveTargetLanguage, setReceiveTargetLanguage] = useState<targetLanguageCode>(module.receiveTargetLanguage);
   const [syncInputStatus, setSyncInputStatus] = useState(module.syncInputStatus);
@@ -67,6 +68,7 @@ function ConfigTab() {
   useEffect(() => { module.sendSourceLanguage = sendSourceLanguage; module.saveConfig(); }, [sendSourceLanguage]);
   useEffect(() => { module.sendTargetLanguage = sendTargetLanguage; module.saveConfig(); }, [sendTargetLanguage]);
   useEffect(() => { module.receiveEnable = receiveEnable; module.saveConfig(); }, [receiveEnable]);
+  useEffect(() => { module.bioEnable = bioEnable; module.saveConfig(); }, [bioEnable]);
   useEffect(() => { module.receiveSourceLanguage = receiveSourceLanguage; module.saveConfig(); }, [receiveSourceLanguage]);
   useEffect(() => { module.receiveTargetLanguage = receiveTargetLanguage; module.saveConfig(); }, [receiveTargetLanguage]);
   useEffect(() => { module.syncInputStatus = syncInputStatus; module.saveConfig(); }, [syncInputStatus]);
@@ -81,6 +83,10 @@ function ConfigTab() {
       <label>
         <input type="checkbox" checked={receiveEnable} onChange={e => setReceiveEnable(e.target.checked)}/>
         接收翻译
+      </label>
+      <label>
+        <input type="checkbox" checked={bioEnable} onChange={e => setBioEnable(e.target.checked)}/>
+        简介翻译
       </label>
       <label>
         <input type="checkbox" checked={syncInputStatus} onChange={e => setSyncInputStatus(e.target.checked)}/>

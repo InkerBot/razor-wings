@@ -1,0 +1,55 @@
+.rw-bio-container {
+    box-sizing: border-box;
+    overflow-y: auto;
+    background: rgb(244, 236, 216);
+}
+
+.rw-bio-table {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    min-height: 100%;
+}
+
+.rw-bio-row {
+    display: flex;
+    flex-direction: row;
+    border-bottom: 1px solid rgb(200, 190, 170);
+}
+
+.rw-bio-row:last-child {
+    border-bottom: none;
+}
+
+.rw-bio-cell {
+    flex: 1;
+    min-width: 0;
+    padding: 2px;
+    white-space: pre-wrap;
+    word-break: break-word;
+    overflow: hidden;
+    font-size: 0.5em;
+    color: rgb(45, 35, 27);
+}
+
+.rw-bio-original {
+    border-right: 1px solid rgb(200, 190, 170);
+}
+
+.rw-bio-pending {
+    color: #888;
+    animation: rw-bio-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes rw-bio-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+}
+
+.rw-bio-success {
+    color: #49bbcf;
+}
+
+.rw-bio-error {
+    color: #d9534f;
+}
