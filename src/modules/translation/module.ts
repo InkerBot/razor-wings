@@ -51,30 +51,42 @@ class TranslationModule implements AbstractModule {
 
   updateTypingStatus(text: string) {
     if (!this.syncInputStatus) return;
+    // Dispatch synthetic input event on BC's #InputChat so BCX's
+    // input listener (SetInputElement) picks it up. BC uses keyup,
+    // so this only triggers BCX's handler.
+    this.dispatchInputChatEvent(text);
+    // BC native fallback for non-BCX viewers
     if (text.length >= 3) {
-      this.sendStatus('Talk');
-      // Reset the 5-second auto-clear timer
+      this.sendBCStatus('Talk');
       if (this.statusTimer) clearTimeout(this.statusTimer);
-      this.statusTimer = setTimeout(() => this.sendStatus(null), 5000);
+      this.statusTimer = setTimeout(() => this.sendBCStatus(null), 5000);
     } else {
-      this.sendStatus(null);
+      this.sendBCStatus(null);
     }
   }
 
   clearTypingStatus() {
     if (!this.syncInputStatus) return;
+    this.dispatchInputChatEvent('');
     if (this.statusTimer) {
       clearTimeout(this.statusTimer);
       this.statusTimer = null;
     }
-    this.sendStatus(null);
+    this.sendBCStatus(null);
   }
 
-  private sendStatus(status: string | null) {
+  private dispatchInputChatEvent(text: string) {
+    const inputChat = document.getElementById('InputChat') as HTMLTextAreaElement | null;
+    if (!inputChat) return;
+    const orig = inputChat.value;
+    inputChat.value = text;
+    inputChat.dispatchEvent(new Event('input'));
+    inputChat.value = orig;
+  }
+
+  private sendBCStatus(status: string | null) {
     if (status === (Player.Status ?? null)) return;
-    // @ts-ignore - Player.Status exists at runtime
     Player.Status = status;
-    // @ts-ignore - Player.StatusTimer exists at runtime
     Player.StatusTimer = status === 'Talk' ? CommonTime() + 5000 : null;
     ServerSend('ChatRoomChat', {Content: status ?? 'null', Type: 'Status'} as never);
   }

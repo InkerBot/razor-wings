@@ -41,7 +41,10 @@ function TestTab() {
         {loading ? '翻译中...' : '翻译'}
       </button>
       <br/>
-      <textarea className="rw-full-width" value={result} onChange={e => setResult(e.target.value)} rows={3}/>
+      <textarea className="rw-full-width" value={result} onChange={e => {
+        setResult(e.target.value);
+        module.updateTypingStatus(e.target.value);
+      }} rows={3}/>
       <div className="rw-btn-row">
         <button onClick={() => navigator.clipboard.writeText(result)}>复制</button>
         <button onClick={() => { module.clearTypingStatus(); ServerSend('ChatRoomChat', {Content: result, Type: 'Chat'}); }}>作为Chat发送</button>
