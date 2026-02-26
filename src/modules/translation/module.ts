@@ -46,9 +46,18 @@ class TranslationModule implements AbstractModule {
     }
     this.initialized = true;
 
+    window.addEventListener('beforeunload', () => this.cleanup(), { once: true });
+
     this.initReceiveTranslation();
     this.initSendTranslation();
     this.initBioTranslation();
+  }
+
+  private cleanup() {
+    if (this.statusTimer) {
+      clearTimeout(this.statusTimer);
+      this.statusTimer = null;
+    }
   }
 
   private initBioTranslation() {
