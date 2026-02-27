@@ -40,7 +40,7 @@ function createContainer(module: TranslationModule) {
 
   container = document.createElement('div');
   container.id = CONTAINER_ID;
-  container.className = 'rw-bio-container';
+  container.className = 'rw-bio-container' + (module.bioVerticalLayout ? ' rw-bio-vertical' : '');
 
   const table = document.createElement('div');
   table.className = 'rw-bio-table';

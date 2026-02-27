@@ -26,6 +26,7 @@ class TranslationModule implements AbstractModule {
   sendEnable: boolean = false;
   receiveEnable: boolean = false;
   bioEnable: boolean = false;
+  bioVerticalLayout: boolean = false;
   syncInputStatus: boolean = false;
 
   private statusTimer: ReturnType<typeof setTimeout> | null = null;
@@ -233,6 +234,7 @@ class TranslationModule implements AbstractModule {
       this.sendEnable = config.sendEnable ?? this.sendEnable;
       this.receiveEnable = config.receiveEnable ?? this.receiveEnable;
       this.bioEnable = config.bioEnable ?? this.bioEnable;
+      this.bioVerticalLayout = config.bioVerticalLayout ?? this.bioVerticalLayout;
       this.syncInputStatus = config.syncInputStatus ?? this.syncInputStatus;
     } else {
       this.saveConfig();
@@ -254,6 +256,7 @@ class TranslationModule implements AbstractModule {
       sendEnable: this.sendEnable,
       receiveEnable: this.receiveEnable,
       bioEnable: this.bioEnable,
+      bioVerticalLayout: this.bioVerticalLayout,
       syncInputStatus: this.syncInputStatus,
     });
   }
