@@ -36,6 +36,19 @@
     border-right: 1px solid rgb(200, 190, 170);
 }
 
+.rw-bio-vertical .rw-bio-row {
+    flex-direction: column;
+}
+
+.rw-bio-vertical .rw-bio-cell {
+    font-size: inherit;
+}
+
+.rw-bio-vertical .rw-bio-original {
+    border-right: none;
+    border-bottom: 1px dashed rgb(200, 190, 170);
+}
+
 .rw-bio-pending {
     color: #888;
     animation: rw-bio-pulse 1.5s ease-in-out infinite;
