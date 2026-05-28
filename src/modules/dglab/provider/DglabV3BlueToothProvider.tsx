@@ -316,9 +316,6 @@ export default class DglabV3BlueToothProvider implements DglabProvider {
     }
   }
 
-  /**
-   * 发送BF指令设置软上限和平衡参数
-   */
   private async sendBFCommand() {
     if (!this.writeCharacteristic) return;
 
@@ -342,9 +339,6 @@ export default class DglabV3BlueToothProvider implements DglabProvider {
     }
   }
 
-  /**
-   * 强度数据处理函数 - 根据V3协议示例实现
-   */
   private strengthDataProcessing(): {
     sequenceNo: number,
     strengthParsingMethod: number,
@@ -388,9 +382,6 @@ export default class DglabV3BlueToothProvider implements DglabProvider {
     return {sequenceNo, strengthParsingMethod, strengthValueA, strengthValueB};
   }
 
-  /**
-   * 频率转换算法 - 根据V3协议文档实现
-   */
   private convertFrequency(inputFreq: number): number {
     if (inputFreq >= 10 && inputFreq <= 100) {
       return inputFreq;
@@ -403,9 +394,6 @@ export default class DglabV3BlueToothProvider implements DglabProvider {
     }
   }
 
-  /**
-   * 发送B0指令
-   */
   private async sendB0Command() {
     if (!this.writeCharacteristic) return;
 
@@ -466,9 +454,6 @@ export default class DglabV3BlueToothProvider implements DglabProvider {
     }
   }
 
-  /**
-   * 处理B1回应消息
-   */
   private onNotifyReceived = (event: Event) => {
     const target = event.target as BluetoothRemoteGATTCharacteristic;
     const value = target.value;

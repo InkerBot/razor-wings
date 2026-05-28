@@ -297,9 +297,6 @@ export default class DglabV2Provider implements DglabProvider {
     }
   };
 
-  /**
-   * Initialize device protocol
-   */
   private async initializeDevice() {
     if (!this.gattServer) return;
 
@@ -362,9 +359,6 @@ export default class DglabV2Provider implements DglabProvider {
     }
   }
 
-  /**
-   * Initialize battery monitoring
-   */
   private async initializeBatteryMonitoring() {
     if (!this.gattServer) return;
 
@@ -388,9 +382,6 @@ export default class DglabV2Provider implements DglabProvider {
     }
   }
 
-  /**
-   * Parse config data
-   */
   private parseConfig(dataView: DataView): { maxPower: number; powerStep: number } {
     // 翻转第一和第三字节
     this.flipFirstAndThirdByte(dataView.buffer);
@@ -399,9 +390,6 @@ export default class DglabV2Provider implements DglabProvider {
     return {maxPower, powerStep};
   }
 
-  /**
-   * Encode power data
-   */
   private encodePower(powerA: number, powerB: number): ArrayBuffer {
     const buffer = new ArrayBuffer(3);
     const view = new DataView(buffer);
@@ -413,9 +401,6 @@ export default class DglabV2Provider implements DglabProvider {
     return buffer;
   }
 
-  /**
-   * Parse power data
-   */
   private parsePower(dataView: DataView): [number, number] {
     this.flipFirstAndThirdByte(dataView.buffer);
     const powerA = dataView.getUint16(0) >> 3;
@@ -423,9 +408,6 @@ export default class DglabV2Provider implements DglabProvider {
     return [powerA, powerB];
   }
 
-  /**
-   * Encode pattern data
-   */
   private encodePattern(ax: number, ay: number, az: number): ArrayBuffer {
     const buffer = new ArrayBuffer(3);
     const view = new DataView(buffer);
@@ -436,9 +418,6 @@ export default class DglabV2Provider implements DglabProvider {
     return buffer;
   }
 
-  /**
-   * Parse pattern data
-   */
   private parsePattern(dataView: DataView): [number, number, number] {
     this.flipFirstAndThirdByte(dataView.buffer);
     const az = (dataView.getUint16(0) & 0b00001111_10000000) >>> 7;
@@ -447,9 +426,6 @@ export default class DglabV2Provider implements DglabProvider {
     return [ax, ay, az];
   }
 
-  /**
-   * Flip the first and third byte of the buffer
-   */
   private flipFirstAndThirdByte(buffer: ArrayBuffer): void {
     const bufferBytes = new Uint8Array(buffer);
     const b = bufferBytes[0];
@@ -457,7 +433,6 @@ export default class DglabV2Provider implements DglabProvider {
     bufferBytes[2] = b;
   }
 
-  // Event handlers
   private onPowerChanged = (event: Event) => {
     const target = event.target as BluetoothRemoteGATTCharacteristic;
     const [powerA, powerB] = this.parsePower(target.value!);
@@ -474,19 +449,12 @@ export default class DglabV2Provider implements DglabProvider {
     module.debugLog(`Battery level: ${batteryLevel}%`);
   };
 
-  // UI event handlers
-
   private handleWaveChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedWave = event.target.value as 'a' | 'b' | 'c';
     this.setState({selectedWave});
     module.infoLog('Switched waveform to: ' + selectedWave);
   };
 
-  // Device control functions
-
-  /**
-   * Update power settings
-   */
   private async updatePower(powerA: number, powerB: number) {
     if (!this.powerCharacteristic) return;
 
