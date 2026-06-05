@@ -14,16 +14,59 @@ interface HistoryEntryListState {
 export default class HistoryEntryList extends React.Component<HistoryEntryListProps, HistoryEntryListState> {
   state: HistoryEntryListState = {}
 
-  private historyUpdateListener = () => {
-    this.forceUpdate()
-  }
-
   componentDidMount() {
     module.addHistoryChangeListener(this.historyUpdateListener)
   }
 
   componentWillUnmount() {
     module.removeHistoryChangeListener(this.historyUpdateListener)
+  }
+
+  render() {
+    return (<div>
+      <h2>history</h2>
+      <div style={{display: "flex"}}>
+        <ul style={{flex: 1}}>
+          {module.history.map((entry, index) => (
+            <li key={index}
+                onMouseEnter={() => this.setState({previewEntry: entry})}
+                onMouseLeave={() => this.state.previewEntry === entry && this.setState({previewEntry: undefined})}
+            >
+              <strong>{entry.reason.length > 0 ? entry.reason[0].text : 'unknown reason'} {new Date(entry.timestamp).toLocaleString()}</strong>
+              <br/>
+              {Object.entries(entry.added).length > 0 &&
+                  <span style={{color: "green"}}>{Object.entries(entry.added).length}+</span>}
+              {Object.entries(entry.removed).length > 0 &&
+                  <span style={{color: "red"}}>{Object.entries(entry.removed).length}-</span>}
+              {Object.entries(entry.changed).length > 0 &&
+                  <span style={{color: "orange"}}>{Object.entries(entry.changed).length}±</span>}
+              <br/>
+              <button onClick={() => this.reverntToHere(entry)}>revert</button>
+              <button onClick={() => this.undo(entry)}>undo</button>
+              <button onClick={() => this.redo(entry)}>redo</button>
+            </li>
+          ))}
+        </ul>
+        <div style={{width: 100, height: 200}}>
+          <ServerAppearanceBundlePreview bundle={this.state.previewEntry?.fully}></ServerAppearanceBundlePreview>
+          {this.state.previewEntry && <>
+            {Object.entries(this.state.previewEntry.added).length > 0 &&
+                <p>Added: {Object.entries(this.state.previewEntry.added).map(([, v]) => v.Name).join(", ")}</p>}
+            {Object.entries(this.state.previewEntry.removed).length > 0 &&
+                <p>Removed: {Object.entries(this.state.previewEntry.removed).map(([, v]) => v.Name).join(", ")}</p>}
+            {Object.entries(this.state.previewEntry.changed).length > 0 &&
+                <p>Changed: {Object.entries(this.state.previewEntry.changed).map(([, {
+                  old,
+                  new: _new
+                }]) => `${old.Name} => ${_new.Name}`).join(", ")}</p>}
+          </>}
+        </div>
+      </div>
+    </div>)
+  }
+
+  private historyUpdateListener = () => {
+    this.forceUpdate()
   }
 
   private reverntToHere(entry: HistoryEntry) {
@@ -105,39 +148,5 @@ export default class HistoryEntryList extends React.Component<HistoryEntryListPr
         ToastManager.error("[RazorWings] Failed to redo appearance: \n" + e.message);
       }
     })
-  }
-
-  render() {
-    return (<div>
-      <h2>history</h2>
-      <div style={{ display: "flex" }}>
-        <ul style={{ flex: 1 }}>
-          {module.history.map((entry, index) => (
-            <li key={index}
-                onMouseEnter={() => this.setState({previewEntry: entry})}
-                onMouseLeave={() => this.state.previewEntry === entry && this.setState({previewEntry: undefined})}
-            >
-              <strong>{entry.reason.length > 0 ? entry.reason[0].text : 'unknown reason'} {new Date(entry.timestamp).toLocaleString()}</strong>
-              <br />
-              {Object.entries(entry.added).length > 0 && <span style={{color: "green"}}>{Object.entries(entry.added).length}+</span>}
-              {Object.entries(entry.removed).length > 0 && <span style={{color: "red"}}>{Object.entries(entry.removed).length}-</span>}
-              {Object.entries(entry.changed).length > 0 && <span style={{color: "orange"}}>{Object.entries(entry.changed).length}±</span>}
-              <br />
-              <button onClick={() => this.reverntToHere(entry)}>revert</button>
-              <button onClick={() => this.undo(entry)}>undo</button>
-              <button onClick={() => this.redo(entry)}>redo</button>
-            </li>
-          ))}
-        </ul>
-        <div style={{ width: 100, height: 200 }}>
-          <ServerAppearanceBundlePreview bundle={this.state.previewEntry?.fully}></ServerAppearanceBundlePreview>
-          {this.state.previewEntry && <>
-            {Object.entries(this.state.previewEntry.added).length > 0 && <p>Added: {Object.entries(this.state.previewEntry.added).map(([, v]) => v.Name).join(", ")}</p>}
-            {Object.entries(this.state.previewEntry.removed).length > 0 && <p>Removed: {Object.entries(this.state.previewEntry.removed).map(([, v]) => v.Name).join(", ")}</p>}
-            {Object.entries(this.state.previewEntry.changed).length > 0 && <p>Changed: {Object.entries(this.state.previewEntry.changed).map(([, {old, new: _new}]) => `${old.Name} => ${_new.Name}`).join(", ")}</p>}
-          </>}
-        </div>
-      </div>
-    </div>)
   }
 }

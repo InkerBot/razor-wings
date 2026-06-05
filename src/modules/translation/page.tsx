@@ -1,8 +1,8 @@
 import {useEffect, useState} from "react";
-import {sourceLanguages, type sourceLanguageCode, type targetLanguageCode} from "./languages.ts";
+import {type sourceLanguageCode, sourceLanguages, type targetLanguageCode} from "./languages.ts";
 import LanguageSelector from "./LanguageSelector.tsx";
-import module from "./module.ts";
 import type {ProviderType} from "./module.ts";
+import module from "./module.ts";
 import Tabs from "../../components/Tabs.tsx";
 import './page.css';
 
@@ -19,36 +19,55 @@ function TestTab() {
     setResult('');
     module.translate(sourceLang, targetLang, text)
       .then(r => setResult(r.text))
-      .catch(e => setResult(`翻译失败: ${e.message}`))
+      .catch(e => setResult(`Error: ${e.message}`))
       .finally(() => setLoading(false));
   };
 
   return (
-    <div>
-      <LanguageSelector value={sourceLang} onChange={it => setSourceLang(it as sourceLanguageCode)} label="源语言" type="source"/>
-      <button onClick={() => {
-        if (!(targetLang in sourceLanguages)) return;
-        setSourceLang(targetLang as sourceLanguageCode);
-        setTargetLang(sourceLang as targetLanguageCode);
-      }}>⇄ 交换语言</button>
-      <LanguageSelector value={targetLang} onChange={it => setTargetLang(it as targetLanguageCode)} label="目标语言" type="target"/>
-      <br/>
+    <div className="translation-form">
+      <div className="translation-row">
+        <label>源语言</label>
+        <div className="translation-control">
+          <LanguageSelector value={sourceLang} onChange={it => setSourceLang(it as sourceLanguageCode)} type="source"/>
+        </div>
+      </div>
+      <div className="translation-row" style={{justifyContent: 'center'}}>
+        <button onClick={() => {
+          if (!(targetLang in sourceLanguages)) return;
+          setSourceLang(targetLang as sourceLanguageCode);
+          setTargetLang(sourceLang as targetLanguageCode);
+        }}>⇄ 交换
+        </button>
+      </div>
+      <div className="translation-row">
+        <label>目标语言</label>
+        <div className="translation-control">
+          <LanguageSelector value={targetLang} onChange={it => setTargetLang(it as targetLanguageCode)} type="target"/>
+        </div>
+      </div>
       <textarea className="rw-full-width" value={text} onChange={e => {
         setText(e.target.value);
         module.updateTypingStatus(e.target.value);
       }} placeholder="输入要翻译的文本..." rows={3}/>
       <button onClick={handleTranslate} disabled={loading}>
-        {loading ? '翻译中...' : '翻译'}
+        {loading ? '... 翻译中 ...' : '▶ 翻译'}
       </button>
-      <br/>
       <textarea className="rw-full-width" value={result} onChange={e => {
         setResult(e.target.value);
         module.updateTypingStatus(e.target.value);
-      }} rows={3}/>
+      }} rows={3} placeholder="翻译结果..."/>
       <div className="rw-btn-row">
         <button onClick={() => navigator.clipboard.writeText(result)}>复制</button>
-        <button onClick={() => { module.clearTypingStatus(); ServerSend('ChatRoomChat', {Content: result, Type: 'Chat'}); }}>作为Chat发送</button>
-        <button onClick={() => { module.clearTypingStatus(); ServerSend('ChatRoomChat', {Content: result, Type: 'Emote'}); }}>作为Activity发送</button>
+        <button onClick={() => {
+          module.clearTypingStatus();
+          ServerSend('ChatRoomChat', {Content: result, Type: 'Chat'});
+        }}>Chat 发送
+        </button>
+        <button onClick={() => {
+          module.clearTypingStatus();
+          ServerSend('ChatRoomChat', {Content: result, Type: 'Emote'});
+        }}>Activity 发送
+        </button>
       </div>
     </div>
   );
@@ -77,37 +96,61 @@ function ConfigTab() {
 
   return (
     <div>
-      <p>警告：翻译服务使用第三方API，可能会保存您的消息内容，请谨慎使用。</p>
-      <label>
-        <input type="checkbox" checked={sendEnable} onChange={e => setSendEnable(e.target.checked)}/>
-        发送翻译
-      </label>
-      <label>
-        <input type="checkbox" checked={receiveEnable} onChange={e => setReceiveEnable(e.target.checked)}/>
-        接收翻译
-      </label>
-      <label>
-        <input type="checkbox" checked={bioEnable} onChange={e => setBioEnable(e.target.checked)}/>
-        简介翻译
-      </label>
-      <label>
-        <input type="checkbox" checked={bioVerticalLayout} onChange={e => setBioVerticalLayout(e.target.checked)}/>
-        简介翻译上下分栏
-      </label>
-      <label>
-        <input type="checkbox" checked={syncInputStatus} onChange={e => setSyncInputStatus(e.target.checked)}/>
-        同步输入状态
-      </label>
-      <LanguageSelector value={sendSourceLanguage} onChange={it => setSendSourceLanguage(it as sourceLanguageCode)}
-                        label="send source language"/>
-      <LanguageSelector value={sendTargetLanguage} onChange={it => setSendTargetLanguage(it as targetLanguageCode)}
-                        label="send target language" type="target"/>
-      <LanguageSelector value={receiveSourceLanguage ?? ''}
-                        onChange={it => setReceiveSourceLanguage(it as sourceLanguageCode)}
-                        label="receive source language" type="source"/>
-      <LanguageSelector value={receiveTargetLanguage}
-                        onChange={it => setReceiveTargetLanguage(it as targetLanguageCode)}
-                        label="receive target language" type="target"/>
+      <div className="translation-warning">
+        ⚠ 翻译服务使用第三方 API，可能会保存您的消息内容，请谨慎使用。
+      </div>
+
+      <div className="form-section-title">翻译开关</div>
+      <div className="toggle-row-group">
+        <label className="toggle-row"><span>发送翻译</span><span className="toggle-switch"><input type="checkbox"
+                                                                                                  checked={sendEnable}
+                                                                                                  onChange={e => setSendEnable(e.target.checked)}/><span
+          className="toggle-slider"/></span></label>
+        <label className="toggle-row"><span>接收翻译</span><span className="toggle-switch"><input type="checkbox"
+                                                                                                  checked={receiveEnable}
+                                                                                                  onChange={e => setReceiveEnable(e.target.checked)}/><span
+          className="toggle-slider"/></span></label>
+        <label className="toggle-row"><span>简介翻译</span><span className="toggle-switch"><input type="checkbox"
+                                                                                                  checked={bioEnable}
+                                                                                                  onChange={e => setBioEnable(e.target.checked)}/><span
+          className="toggle-slider"/></span></label>
+        <label className="toggle-row"><span>简介上下分栏</span><span className="toggle-switch"><input type="checkbox"
+                                                                                                      checked={bioVerticalLayout}
+                                                                                                      onChange={e => setBioVerticalLayout(e.target.checked)}/><span
+          className="toggle-slider"/></span></label>
+        <label className="toggle-row"><span>同步输入状态</span><span className="toggle-switch"><input type="checkbox"
+                                                                                                      checked={syncInputStatus}
+                                                                                                      onChange={e => setSyncInputStatus(e.target.checked)}/><span
+          className="toggle-slider"/></span></label>
+      </div>
+
+      <div className="form-section-title">发送语言设置</div>
+      <div className="translation-row rw-mb-2">
+        <label>源语言</label>
+        <div className="translation-control"><LanguageSelector value={sendSourceLanguage}
+                                                               onChange={it => setSendSourceLanguage(it as sourceLanguageCode)}
+                                                               type="source"/></div>
+      </div>
+      <div className="translation-row rw-mb-2">
+        <label>目标语言</label>
+        <div className="translation-control"><LanguageSelector value={sendTargetLanguage}
+                                                               onChange={it => setSendTargetLanguage(it as targetLanguageCode)}
+                                                               type="target"/></div>
+      </div>
+
+      <div className="form-section-title">接收语言设置</div>
+      <div className="translation-row rw-mb-2">
+        <label>源语言</label>
+        <div className="translation-control"><LanguageSelector value={receiveSourceLanguage ?? ''}
+                                                               onChange={it => setReceiveSourceLanguage(it as sourceLanguageCode)}
+                                                               type="source"/></div>
+      </div>
+      <div className="translation-row rw-mb-2">
+        <label>目标语言</label>
+        <div className="translation-control"><LanguageSelector value={receiveTargetLanguage}
+                                                               onChange={it => setReceiveTargetLanguage(it as targetLanguageCode)}
+                                                               type="target"/></div>
+      </div>
     </div>
   );
 }
@@ -129,40 +172,37 @@ function ProviderTab() {
 
   return (
     <div>
-      <label>
-        翻译提供者
+      <div className="config-field">
+        <label className="config-label">翻译提供者</label>
         <select className="rw-full-width" value={providerType} onChange={e => setProviderType(e.target.value as ProviderType)}>
           <option value="deeplx">DeepLX</option>
           <option value="ai">AI (ChatCompletions)</option>
         </select>
-      </label>
+      </div>
       {providerType === 'deeplx' && (
-        <label>
-          API URL
+        <div className="config-field">
+          <label className="config-label">API URL</label>
           <input className="rw-full-width" type="text" value={apiUrl} onChange={e => setApiUrl(e.target.value)}/>
-        </label>
+        </div>
       )}
       {providerType === 'ai' && (
         <>
-          <label>
-            API URL
+          <div className="config-field">
+            <label className="config-label">API URL</label>
             <input className="rw-full-width" type="text" value={aiApiUrl} onChange={e => setAiApiUrl(e.target.value)} placeholder="https://api.openai.com/v1/chat/completions"/>
-          </label>
-          <br/>
-          <label>
-            API Key
+          </div>
+          <div className="config-field">
+            <label className="config-label">API Key</label>
             <input className="rw-full-width" type="password" value={aiApiKey} onChange={e => setAiApiKey(e.target.value)} placeholder="sk-..."/>
-          </label>
-          <br/>
-          <label>
-            模型名称
+          </div>
+          <div className="config-field">
+            <label className="config-label">模型名称</label>
             <input className="rw-full-width" type="text" value={aiModel} onChange={e => setAiModel(e.target.value)} placeholder="gpt-4o-mini"/>
-          </label>
-          <br/>
-          <label>
-            系统提示词
+          </div>
+          <div className="config-field">
+            <label className="config-label">系统提示词</label>
             <textarea className="rw-full-width" value={aiPrompt} onChange={e => setAiPrompt(e.target.value)} rows={4} placeholder="使用 {sourceLang} 和 {targetLang} 作为语言占位符"/>
-          </label>
+          </div>
         </>
       )}
     </div>
@@ -172,7 +212,7 @@ function ProviderTab() {
 export default function TranslationPage() {
   return (
     <div>
-      <p>翻译</p>
+      <p>翻译设置</p>
       <Tabs>
         <Tabs.Tab label="翻译测试"><TestTab/></Tabs.Tab>
         <Tabs.Tab label="翻译配置"><ConfigTab/></Tabs.Tab>

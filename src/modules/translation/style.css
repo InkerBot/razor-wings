@@ -1,16 +1,21 @@
 .razorwings-translation-text {
     margin-bottom: 0;
-    font-size: 0.85em;
+    font-size: 0.9em;
+    line-height: 1.4;
 }
 
 .razorwings-translation-pending {
-    color: #888;
+    color: var(--rw-text-muted);
     animation: razorwings-pulse 1.5s ease-in-out infinite;
 }
 
 @keyframes razorwings-pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.4; }
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.4;
+    }
 }
 
 .razorwings-send-pending {
@@ -18,11 +23,11 @@
 }
 
 .razorwings-translation-success {
-    color: #49bbcf;
+    color: var(--rw-color-success);
 }
 
 .razorwings-translation-error {
-    color: #d9534f;
+    color: var(--rw-color-error);
 }
 
 .razorwings-language-selector-select {
