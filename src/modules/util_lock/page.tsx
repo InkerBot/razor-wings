@@ -43,9 +43,11 @@ export default function UtilLockPage() {
       <button onClick={onClick} disabled={!character}>上锁</button>
     </div>
     <div>
-      <label>
-        <input type="checkbox" checked={tiggerTextEnable} onChange={e => setTiggerTextEnable(e.target.checked)}/>
-        启用触发文本
+      <label className="toggle-row">
+        <span>启用触发文本</span>
+        <span className="toggle-switch">
+          <input type="checkbox" checked={tiggerTextEnable} onChange={e => setTiggerTextEnable(e.target.checked)}/>
+          <span className="toggle-slider"/></span>
       </label>
     </div>
     <div>

@@ -49,7 +49,7 @@ export default function PrivacyPage() {
       setHiddenMods(newHiddenMods);
       module.hiddenMods = newHiddenMods;
       module.saveConfig();
-      setNewModName(""); // 清空输入框
+      setNewModName("");
     }
   };
 
@@ -61,106 +61,96 @@ export default function PrivacyPage() {
   };
 
   return (<>
-    WCE
-    <div>
-      <label>
-        <input
-          type="checkbox"
-          checked={settings.disableWceBeepMetadata}
-          onChange={(e) => handleSettingChange("disableWceBeepMetadata", e.target.checked)}
-        />
-        禁用 WCE Beep 元数据（防止 WCE 在 Beep 消息中添加额外信息）
+    <div className="form-section-title">WCE</div>
+    <div className="toggle-row-group">
+      <label className="toggle-row">
+        <span>禁用 WCE Beep 元数据（防止 WCE 在 Beep 消息中添加额外信息）</span>
+        <span className="toggle-switch">
+          <input type="checkbox" checked={settings.disableWceBeepMetadata}
+                 onChange={(e) => handleSettingChange("disableWceBeepMetadata", e.target.checked)}/>
+          <span className="toggle-slider"/>
+        </span>
+      </label>
+      <label className="toggle-row">
+        <span>禁用 WCE 报告（阻止 WCE 隐藏消息的发送）</span>
+        <span className="toggle-switch">
+          <input type="checkbox" checked={settings.disableWceReport}
+                 onChange={(e) => handleSettingChange("disableWceReport", e.target.checked)}/>
+          <span className="toggle-slider"/>
+        </span>
+      </label>
+    </div>
+
+    <div className="form-section-title">BCX</div>
+    <div className="toggle-row-group">
+      <label className="toggle-row">
+        <span>禁用 BCX Beep 指纹（阻止 BCX Leash 和 BCX 类型的 Beep）</span>
+        <span className="toggle-switch">
+          <input type="checkbox" checked={settings.disableBcxBeepFingerPrint}
+                 onChange={(e) => handleSettingChange("disableBcxBeepFingerPrint", e.target.checked)}/>
+          <span className="toggle-slider"/>
+        </span>
+      </label>
+      <label className="toggle-row">
+        <span>限制 BCX 消息（仅向白名单中的玩家发送 BCX 消息）</span>
+        <span className="toggle-switch">
+          <input type="checkbox" checked={settings.disableBcxMessage}
+                 onChange={(e) => handleSettingChange("disableBcxMessage", e.target.checked)}/>
+          <span className="toggle-slider"/>
+        </span>
+      </label>
+    </div>
+
+    <div className="form-section-title">Echo Extension</div>
+    <div className="toggle-row-group">
+      <label className="toggle-row">
+        <span>禁用 Echo 扩展消息（阻止 Echo 扩展消息的发送）</span>
+        <span className="toggle-switch">
+          <input type="checkbox" checked={settings.disableEchoMessage}
+                 onChange={(e) => handleSettingChange("disableEchoMessage", e.target.checked)}/>
+          <span className="toggle-slider"/>
+        </span>
+      </label>
+    </div>
+
+    <div className="form-section-title">LSCG</div>
+    <div className="toggle-row-group">
+      <label className="toggle-row">
+        <span>禁用 LSCG 消息（阻止 LSCG 消息的发送）</span>
+        <span className="toggle-switch">
+          <input type="checkbox" checked={settings.disableLscgMessage}
+                 onChange={(e) => handleSettingChange("disableLscgMessage", e.target.checked)}/>
+          <span className="toggle-slider"/>
+        </span>
+      </label>
+    </div>
+
+    <div className="form-section-title">MPA</div>
+    <div className="toggle-row-group">
+      <label className="toggle-row">
+        <span>禁用 MPA 消息（阻止 MPA 消息的发送）</span>
+        <span className="toggle-switch">
+          <input type="checkbox" checked={module.disableMpaMessage}
+                 onChange={(e) => handleSettingChange("disableMpaMessage", e.target.checked)}/>
+          <span className="toggle-slider"/>
+        </span>
+      </label>
+    </div>
+
+    <div className="form-section-title">全局</div>
+    <div className="toggle-row-group">
+      <label className="toggle-row">
+        <span>禁用所有动作（阻止所有动作的发送）</span>
+        <span className="toggle-switch">
+          <input type="checkbox" checked={settings.disableAllActions}
+                 onChange={(e) => handleSettingChange("disableAllActions", e.target.checked)}/>
+          <span className="toggle-slider"/>
+        </span>
       </label>
     </div>
 
     <div>
-      <label>
-        <input
-          type="checkbox"
-          checked={settings.disableWceReport}
-          onChange={(e) => handleSettingChange("disableWceReport", e.target.checked)}
-        />
-        禁用 WCE 报告（阻止 WCE 隐藏消息的发送）
-      </label>
-    </div>
-
-    <hr/>
-    BCX
-    <div>
-      <label>
-        <input
-          type="checkbox"
-          checked={settings.disableBcxBeepFingerPrint}
-          onChange={(e) => handleSettingChange("disableBcxBeepFingerPrint", e.target.checked)}
-        />
-        禁用 BCX Beep 指纹（阻止 BCX Leash 和 BCX 类型的 Beep）
-      </label>
-    </div>
-
-    <div>
-      <label>
-        <input
-          type="checkbox"
-          checked={settings.disableBcxMessage}
-          onChange={(e) => handleSettingChange("disableBcxMessage", e.target.checked)}
-        />
-        限制 BCX 消息（仅向白名单中的玩家发送 BCX 消息）
-      </label>
-    </div>
-
-    <hr/>
-    Echo Extension
-    <div>
-      <label>
-        <input
-          type="checkbox"
-          checked={settings.disableEchoMessage}
-          onChange={(e) => handleSettingChange("disableEchoMessage", e.target.checked)}
-        />
-        禁用 Echo 扩展消息（阻止 Echo 扩展消息的发送）
-      </label>
-    </div>
-
-    <hr/>
-    LSCG
-    <div>
-      <label>
-        <input
-          type="checkbox"
-          checked={settings.disableLscgMessage}
-          onChange={(e) => handleSettingChange("disableLscgMessage", e.target.checked)}
-        />
-        禁用 LSCG 消息（阻止 LSCG 消息的发送）
-      </label>
-    </div>
-
-    <hr/>
-    MPA
-    <div>
-      <label>
-        <input
-          type="checkbox"
-          checked={module.disableMpaMessage}
-          onChange={(e) => handleSettingChange("disableMpaMessage", e.target.checked)}
-        />
-        禁用 MPA 消息（阻止 MPA 消息的发送）
-      </label>
-    </div>
-    <hr/>
-
-    <div>
-      <label>
-        <input
-          type="checkbox"
-          checked={settings.disableAllActions}
-          onChange={(e) => handleSettingChange("disableAllActions", e.target.checked)}
-        />
-        禁用所有动作（阻止所有动作的发送）
-      </label>
-    </div>
-
-    <div>
-      隐藏的Mod列表（在WCE报告中隐藏）
+      <p>隐藏的Mod列表（在WCE报告中隐藏）</p>
       <div>
         <input
           type="text"
@@ -188,7 +178,7 @@ export default function PrivacyPage() {
     <hr/>
 
     <div>
-      消息白名单
+      <p>消息白名单</p>
       <div>
         <PlayerSelector characterId={selectedPlayer?.CharacterID} onChange={setSelectedPlayer}/>
         <button onClick={addSelectedPlayerToWhitelist} disabled={!selectedPlayer}>

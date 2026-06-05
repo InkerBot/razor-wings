@@ -1,6 +1,6 @@
 import React from "react";
 import module from "./module.ts";
-import type { TrapScript } from "./TrapConfig.ts";
+import type {TrapScript} from "./TrapConfig.ts";
 import ScriptEditor from "../map_script/component/ScriptEditor.tsx";
 import PlayerSelector from "../../components/PlayerSelector.tsx";
 
@@ -116,41 +116,15 @@ export default class TrapMain extends React.Component<object, TrapMainState> {
         <div style={{
           padding: '10px 15px',
           borderBottom: '2px solid #444',
-          flexShrink: 0,
-          display: 'flex',
-          alignItems: 'center',
-          gap: '10px',
-          backgroundColor: this.state.trapRoomEnabled ? '#2a4a2a' : 'transparent'
+          flexShrink: 0
         }}>
-          <input
-            type="checkbox"
-            checked={this.state.trapRoomEnabled}
-            onChange={this.handleToggleTrapRoom}
-            id="trap-room-toggle"
-            style={{
-              width: '18px',
-              height: '18px',
-              cursor: 'pointer'
-            }}
-          />
-          <label
-            htmlFor="trap-room-toggle"
-            style={{
-              fontSize: '16px',
-              fontWeight: 'bold',
-              cursor: 'pointer',
-              userSelect: 'none'
-            }}
-          >
-            陷阱屋模式
+          <label className="toggle-row" style={{padding: 0}}>
+            <span style={{fontSize: '16px', fontWeight: 'bold'}}>陷阱屋模式</span>
+            <span className="toggle-switch">
+              <input type="checkbox" checked={this.state.trapRoomEnabled} onChange={this.handleToggleTrapRoom}/>
+              <span className="toggle-slider"/>
+            </span>
           </label>
-          <span style={{
-            marginLeft: 'auto',
-            fontSize: '14px',
-            color: this.state.trapRoomEnabled ? '#5f5' : '#888'
-          }}>
-            {this.state.trapRoomEnabled ? '已启用' : '已禁用'}
-          </span>
         </div>
 
         {/* 主内容区域 */}
@@ -192,6 +166,7 @@ export default class TrapMain extends React.Component<object, TrapMainState> {
                     this.handleToggleEnabled(script.id);
                   }}
                   title={script.enabled ? '禁用' : '启用'}
+                  style={{position: 'absolute', opacity: 0, width: 0, height: 0}}
                 />
                 <span style={{flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', opacity: script.enabled ? 1 : 0.5}}>
                   {script.name}

@@ -64,49 +64,41 @@ export default function UtilEditorPage() {
       </div>
       <div className="editor-page-buttons" style={{
         display: 'flex',
-        flexShrink: 0
+        flexShrink: 0,
+        gap: '4px',
+        flexWrap: 'wrap'
       }}>
         {razorIsPro() && <PlayerSelector characterId={character?.CharacterID} onChange={setCharacter}/>}
-        <div>
-          <label>
-            <input type="checkbox" checked={applyConfig.disableItem} onChange={(e) => updateApplierConfig({
-              disableItem: e.target.checked
-            })}/>
-            禁用物品
-          </label>
-        </div>
-        <div>
-          <label>
-            <input type="checkbox" checked={applyConfig.disableCloth} onChange={(e) => updateApplierConfig({
-              disableCloth: e.target.checked
-            })}/>
-            禁用衣服
-          </label>
-        </div>
-        <div>
-          <label>
-            <input type="checkbox" checked={applyConfig.disableUnderwear} onChange={(e) => updateApplierConfig({
-              disableUnderwear: e.target.checked
-            })}/>
-            禁用内衣
-          </label>
-        </div>
-        <div>
-          <label>
-            <input type="checkbox" checked={applyConfig.disableCosplay} onChange={(e) => updateApplierConfig({
-              disableCosplay: e.target.checked
-            })}/>
-            禁用角色
-          </label>
-        </div>
-        <div>
-          <label>
-            <input type="checkbox" checked={applyConfig.disableRemove} onChange={(e) => updateApplierConfig({
-              disableRemove: e.target.checked
-            })}/>
-            不移除现有装扮
-          </label>
-        </div>
+        <label className="toggle-row" style={{flex: 'none', minWidth: 120}}>
+          <span>禁用物品</span>
+          <span className="toggle-switch"><input type="checkbox" checked={applyConfig.disableItem}
+                                                 onChange={(e) => updateApplierConfig({disableItem: e.target.checked})}/><span
+            className="toggle-slider"/></span>
+        </label>
+        <label className="toggle-row" style={{flex: 'none', minWidth: 120}}>
+          <span>禁用衣服</span>
+          <span className="toggle-switch"><input type="checkbox" checked={applyConfig.disableCloth}
+                                                 onChange={(e) => updateApplierConfig({disableCloth: e.target.checked})}/><span
+            className="toggle-slider"/></span>
+        </label>
+        <label className="toggle-row" style={{flex: 'none', minWidth: 120}}>
+          <span>禁用内衣</span>
+          <span className="toggle-switch"><input type="checkbox" checked={applyConfig.disableUnderwear}
+                                                 onChange={(e) => updateApplierConfig({disableUnderwear: e.target.checked})}/><span
+            className="toggle-slider"/></span>
+        </label>
+        <label className="toggle-row" style={{flex: 'none', minWidth: 120}}>
+          <span>禁用角色</span>
+          <span className="toggle-switch"><input type="checkbox" checked={applyConfig.disableCosplay}
+                                                 onChange={(e) => updateApplierConfig({disableCosplay: e.target.checked})}/><span
+            className="toggle-slider"/></span>
+        </label>
+        <label className="toggle-row" style={{flex: 'none', minWidth: 130}}>
+          <span>不移除现有装扮</span>
+          <span className="toggle-switch"><input type="checkbox" checked={applyConfig.disableRemove}
+                                                 onChange={(e) => updateApplierConfig({disableRemove: e.target.checked})}/><span
+            className="toggle-slider"/></span>
+        </label>
         <button onClick={() => setValue(serializeAppearance(character))} disabled={!character}>Load</button>
         <button onClick={() => setValue(JSON.stringify(JSON.parse(value), null, 2))}>Format</button>
         <button disabled={!character || applying} onClick={applyCharacter}>{applying ? 'applying' : 'Apply'}</button>

@@ -15,10 +15,12 @@ const ModuleHeader: React.FC<ModuleHeaderProps> = ({
 }) => {
   return (
     <div className="module-header">
-      Current location: {currentModule ?? 'unknown'} - {currentScreen ?? 'unknown'}
+      <span className="location-info">
+        Current location: {currentModule ?? 'unknown'} - {currentScreen ?? 'unknown'}
+      </span>
       {showBackButton && (
-        <button onClick={onBack}>
-          Back
+        <button className="back-btn" onClick={onBack}>
+          ← Back
         </button>
       )}
     </div>
