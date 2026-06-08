@@ -1,8 +1,6 @@
 import React, {StrictMode} from 'react'
 import {createRoot} from 'react-dom/client'
-import './theme.css' // Design tokens — MUST load before all other styles
-import './index.css'
-import './Layer.css'
+import './tailwind.css'
 import {setShadowRoot} from './shadow-style.ts'
 import Layer from './Layer.tsx'
 

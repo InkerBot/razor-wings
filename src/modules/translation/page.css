@@ -1,75 +1,47 @@
-.rw-full-width {
-    width: 100%;
-    box-sizing: border-box;
-}
+@layer components {
+  .rw-full-width {
+    @apply box-border w-full;
+  }
 
-.rw-btn-row {
-    display: flex;
-    gap: var(--rw-space-2);
-    flex-wrap: wrap;
-    margin-top: var(--rw-space-2);
-}
+  .rw-btn-row {
+    @apply mt-[var(--rw-space-2)] flex flex-wrap gap-[var(--rw-space-2)];
+  }
 
-.translation-form {
-    display: flex;
-    flex-direction: column;
-    gap: var(--rw-space-2);
-}
+  .translation-form {
+    @apply flex flex-col gap-[var(--rw-space-2)];
+  }
 
-.translation-row {
-    display: flex;
-    align-items: center;
-    gap: var(--rw-space-2);
-}
+  .translation-row {
+    @apply flex items-center gap-[var(--rw-space-2)];
+  }
 
-.translation-row > label {
-    flex: 0 0 70px;
-    font-size: var(--rw-font-size-xs);
-    color: var(--rw-text-secondary);
-    text-align: right;
-    font-weight: var(--rw-font-weight-medium);
-}
+  .translation-row > label {
+    @apply basis-[70px] text-right text-[length:var(--rw-font-size-xs)] font-[var(--rw-font-weight-medium)] text-[color:var(--rw-text-secondary)];
+    flex-grow: 0;
+    flex-shrink: 0;
+  }
 
-.translation-row > .translation-control {
-    flex: 1;
-    min-width: 0;
-}
+  .translation-row > .translation-control {
+    @apply min-w-[0] flex-1;
+  }
 
-.config-label {
-    display: block;
-    font-size: var(--rw-font-size-xs);
-    color: var(--rw-text-secondary);
-    font-weight: var(--rw-font-weight-medium);
-    margin-bottom: 4px;
-    letter-spacing: 0.3px;
-}
+  .config-label {
+    @apply mb-[4px] block text-[length:var(--rw-font-size-xs)] font-[var(--rw-font-weight-medium)] tracking-[0.3px] text-[color:var(--rw-text-secondary)];
+  }
 
-.config-field {
-    margin-bottom: var(--rw-space-2);
-}
+  .config-field {
+    @apply mb-[var(--rw-space-2)];
+  }
 
-.checkbox-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: var(--rw-space-1) var(--rw-space-3);
-    margin-bottom: var(--rw-space-3);
-}
+  .checkbox-grid {
+    @apply mb-[var(--rw-space-3)] grid grid-cols-[1fr_1fr] gap-x-[var(--rw-space-3)] gap-y-[var(--rw-space-1)];
+  }
 
-.checkbox-grid label {
-    display: flex;
-    align-items: center;
-    gap: var(--rw-space-2);
-    font-size: var(--rw-font-size-sm);
-    padding: 2px 0;
-}
+  .checkbox-grid label {
+    @apply flex items-center gap-[var(--rw-space-2)] px-[0] py-[2px] text-[length:var(--rw-font-size-sm)];
+  }
 
-.translation-warning {
-    font-size: var(--rw-font-size-xs);
-    color: var(--rw-color-warning);
-    padding: var(--rw-space-2);
-    border: 1px solid rgba(255, 171, 0, 0.25);
-    border-radius: var(--rw-radius-sm);
-    background: rgba(255, 171, 0, 0.06);
-    margin-bottom: var(--rw-space-3);
-    line-height: 1.4;
+  .translation-warning {
+    @apply mb-[var(--rw-space-3)] rounded-[var(--rw-radius-sm)] border border-[color:rgba(255,171,0,0.25)] bg-[rgba(255,171,0,0.06)] p-[var(--rw-space-2)] text-[length:var(--rw-font-size-xs)] leading-[1.4] text-[color:var(--rw-color-warning)];
+  }
 }

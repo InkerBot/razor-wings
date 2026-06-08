@@ -1,8 +1,8 @@
 import type {Plugin, ResolvedConfig} from 'vite';
-import {readFile} from 'node:fs/promises';
 import {join} from 'node:path';
 
 const PAGE_SUFFIX = '?page';
+const INLINE_SUFFIX = '?inline';
 
 type CssTarget = 'page' | 'shadow';
 
@@ -19,6 +19,8 @@ export default function pageCssPlugin(): Plugin {
     },
 
     async resolveId(source, importer) {
+      if (source.includes(INLINE_SUFFIX)) return;
+
       let target: CssTarget;
 
       if (source.endsWith(PAGE_SUFFIX)) {
@@ -44,13 +46,12 @@ export default function pageCssPlugin(): Plugin {
 
       const {target, filePath} = entry;
       this.addWatchFile(filePath);
-      const css = JSON.stringify(await readFile(filePath, 'utf-8'));
 
       if (target === 'shadow') {
-        return `import { injectShadowCss } from '${shadowStylePath}';injectShadowCss(${css});export default ${css};`;
+        return `import css from ${JSON.stringify(`${filePath}${INLINE_SUFFIX}`)};import { injectShadowCss } from '${shadowStylePath}';injectShadowCss(css);export default css;`;
       }
 
-      return `const s = document.createElement('style');s.textContent = ${css};document.head.appendChild(s);export default ${css};`;
+      return `import css from ${JSON.stringify(`${filePath}${INLINE_SUFFIX}`)};const s = document.createElement('style');s.textContent = css;document.head.appendChild(s);export default css;`;
     },
   };
 }

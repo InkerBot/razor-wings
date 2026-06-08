@@ -1,12 +1,28 @@
-.razorwings-translation-text {
-    margin-bottom: 0;
-    font-size: 0.9em;
-    line-height: 1.4;
-}
+@layer components {
+  .razorwings-translation-text {
+    @apply mb-[0] text-[0.9em] leading-[1.4];
+  }
 
-.razorwings-translation-pending {
-    color: var(--rw-text-muted);
+  .razorwings-translation-pending {
     animation: razorwings-pulse 1.5s ease-in-out infinite;
+    @apply text-[color:var(--rw-text-muted)];
+  }
+
+  .razorwings-send-pending {
+    @apply opacity-60;
+  }
+
+  .razorwings-translation-success {
+    @apply text-[color:var(--rw-color-success)];
+  }
+
+  .razorwings-translation-error {
+    @apply text-[color:var(--rw-color-error)];
+  }
+
+  .razorwings-language-selector-select {
+    @apply block;
+  }
 }
 
 @keyframes razorwings-pulse {
@@ -16,20 +32,4 @@
     50% {
         opacity: 0.4;
     }
-}
-
-.razorwings-send-pending {
-    opacity: 0.6;
-}
-
-.razorwings-translation-success {
-    color: var(--rw-color-success);
-}
-
-.razorwings-translation-error {
-    color: var(--rw-color-error);
-}
-
-.razorwings-language-selector-select {
-    display: block;
 }

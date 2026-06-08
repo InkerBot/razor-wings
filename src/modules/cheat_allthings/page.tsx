@@ -9,9 +9,6 @@ export default function CheatAllThings() {
 
   const onClick = () => {
     appendMessage("RW: 获取所有外观...")
-    AssetFemale3DCG.forEach((group) => group.Asset.forEach((asset: AssetDefinitionBase) => {
-      InventoryAdd(Player, asset.Name, group.Group, false)
-    }))
 
     appendMessage("RW: all skills...")
     SkillProgress(Player, 'Bondage', 114514)
