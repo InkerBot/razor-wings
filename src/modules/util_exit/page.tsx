@@ -11,15 +11,8 @@ export default function CheatAllThings() {
     appendMessage("RW: exiting...")
 
     if (CurrentScreen === 'ChatRoom') {
-      ChatRoomSetLastChatRoom(null)
-      DialogLentLockpicks = false
-      ChatRoomClearAllElements()
-      ServerSend('ChatRoomLeave', '')
-      ChatRoomSetLastChatRoom(null)
-      ChatRoomLeashPlayer = null
-      CommonSetScreen('Online', 'ChatSearch')
-      CharacterDeleteAllOnline()
-      ChatSearchExit()
+      ChatRoomLeave();
+      CommonSetScreen("Online", "ChatSearch");
     } else {
       MainHallWalk('MainHall')
     }
