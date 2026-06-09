@@ -1,5 +1,5 @@
-import type AbstractApplier from "./AbstractApplier.ts";
-import {type ApplyConfig, configDisabledGroup} from "./config.ts";
+import type AbstractApplier from "@/util/applier/AbstractApplier.ts";
+import {type ApplyConfig, configDisabledGroup} from "@/util/applier/config.ts";
 
 export default {
   async apply(target: Character, appearance: AppearanceBundle, config?: ApplyConfig) {

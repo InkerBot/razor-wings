@@ -1,7 +1,7 @@
 import {useEffect, useState} from "react";
-import module, {switchEntries} from "./module.ts";
-import {razorIsPro} from "../../util/pro.ts";
-import ToggleRow from "../../components/ToggleRow";
+import module, {switchEntries} from "@/modules/util_remove_limit/module.ts";
+import {razorIsPro} from "@/util/pro.ts";
+import ToggleRow from "@/components/ToggleRow";
 
 export default function UtilRemoveLimitPage() {
   const [switchStates, setSwitchStates] = useState<{ [key: string]: boolean }>({});

@@ -1,9 +1,9 @@
-import type DglabProvider from "./DglabProvider.ts";
-import {BrowserSupportStatus, ConnectionStatus} from "./DglabProvider.ts";
+import type DglabProvider from "@/modules/dglab/provider/DglabProvider.ts";
+import {BrowserSupportStatus, ConnectionStatus} from "@/modules/dglab/provider/DglabProvider.ts";
 import {type JSX} from "react";
-import module from "../module.ts";
-import Button from "../../../components/Button";
-import {InlineLabel, RangeInput, Select} from "../../../components/FieldControls";
+import module from "@/modules/dglab/module.ts";
+import Button from "@/components/Button";
+import {InlineLabel, RangeInput, Select} from "@/components/FieldControls";
 
 const DG2_PREFIX = 'D-LAB'; // Scan prefix
 const DG2_SERVICE_ID = '955a180b-0fe2-f5aa-a094-84b8d4f3e8ad'; // Service ID

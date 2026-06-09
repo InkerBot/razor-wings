@@ -1,14 +1,14 @@
 import React from "react";
-import PlayerAppearanceEditor from "./PlayerAppearanceEditor.tsx";
-import PlayerSelector from "../../components/PlayerSelector.tsx";
-import Button from "../../components/Button";
-import ToggleRow from "../../components/ToggleRow";
-import UpdatePropertyApplier from "../../util/applier/UpdatePropertyApplier.ts";
-import {deserializeAppearance, serializeAppearance} from "../../util/appearanceCodec.ts";
-import ForceSyncSelfApplier from "../../util/applier/ForceSyncSelfApplier.ts";
-import {razorIsPro} from "../../util/pro.ts";
-import {sendActivityText} from "../../util/message.ts";
-import type {ApplyConfig} from "../../util/applier/config.ts";
+import PlayerAppearanceEditor from "@/modules/util_editor/PlayerAppearanceEditor.tsx";
+import PlayerSelector from "@/components/PlayerSelector.tsx";
+import Button from "@/components/Button";
+import ToggleRow from "@/components/ToggleRow";
+import UpdatePropertyApplier from "@/util/applier/UpdatePropertyApplier.ts";
+import {deserializeAppearance, serializeAppearance} from "@/util/appearanceCodec.ts";
+import ForceSyncSelfApplier from "@/util/applier/ForceSyncSelfApplier.ts";
+import {razorIsPro} from "@/util/pro.ts";
+import {sendActivityText} from "@/util/message.ts";
+import type {ApplyConfig} from "@/util/applier/config.ts";
 
 export default function UtilEditorPage() {
   const [applyConfig, setApplyConfig] = React.useState<ApplyConfig>({

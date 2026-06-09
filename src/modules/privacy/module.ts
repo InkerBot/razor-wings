@@ -1,5 +1,5 @@
-import type AbstractModule from "../AbstractModule.ts";
-import razorModSdk from "../../razor-wings";
+import type AbstractModule from "@/modules/AbstractModule.ts";
+import razorModSdk from "@/razor-wings";
 
 /** Beep request with mod-extended Message field (BCX, LSCG, etc. send objects instead of strings) */
 interface ModBeepRequest extends Omit<ServerAccountBeepRequest, 'Message'> {

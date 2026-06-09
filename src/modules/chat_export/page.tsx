@@ -1,7 +1,7 @@
 import {useState} from "react";
-import {extract} from "./extractor.ts";
-import Button from "../../components/Button";
-import ToggleRow from "../../components/ToggleRow";
+import {extract} from "@/modules/chat_export/extractor.ts";
+import Button from "@/components/Button";
+import ToggleRow from "@/components/ToggleRow";
 
 export default function ChatExportPage() {
   const [includePrivate, setIncludePrivate] = useState<boolean>(false);

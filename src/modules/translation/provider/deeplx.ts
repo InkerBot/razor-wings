@@ -1,4 +1,4 @@
-import type {TranslationProvider} from "./provider.ts";
+import type {TranslationProvider} from "@/modules/translation/provider/provider.ts";
 
 export class DeeplxTranslationProvider implements TranslationProvider {
   private readonly apiUrl: string;

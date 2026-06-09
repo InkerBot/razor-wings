@@ -1,6 +1,6 @@
-import {sendActivityText} from "../../../util/message.ts";
-import type {ApplyConfig} from "../../../util/applier/config.ts";
-import UpdatePropertyApplier from "../../../util/applier/UpdatePropertyApplier.ts";
+import {sendActivityText} from "@/util/message.ts";
+import type {ApplyConfig} from "@/util/applier/config.ts";
+import UpdatePropertyApplier from "@/util/applier/UpdatePropertyApplier.ts";
 
 function ensureCharacter(input: Character | number): Character {
   if (typeof input === "number") {

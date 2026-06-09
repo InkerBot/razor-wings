@@ -1,8 +1,8 @@
 import React from "react";
-import module, {type HistoryEntry} from "./module.ts";
-import ForceSyncSelfApplier from "../../util/applier/ForceSyncSelfApplier.ts";
-import ServerAppearanceBundlePreview from "../../components/ServerAppearanceBundlePreview.tsx";
-import Button from "../../components/Button";
+import module, {type HistoryEntry} from "@/modules/history/module.ts";
+import ForceSyncSelfApplier from "@/util/applier/ForceSyncSelfApplier.ts";
+import ServerAppearanceBundlePreview from "@/components/ServerAppearanceBundlePreview.tsx";
+import Button from "@/components/Button";
 
 interface HistoryEntryListProps {
 

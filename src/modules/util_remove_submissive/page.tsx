@@ -1,7 +1,7 @@
 import {useState} from "react";
-import Button from "../../components/Button";
-import {InlineLabel, TextInput} from "../../components/FieldControls";
-import ToggleRow from "../../components/ToggleRow";
+import Button from "@/components/Button";
+import {InlineLabel, TextInput} from "@/components/FieldControls";
+import ToggleRow from "@/components/ToggleRow";
 
 export default function UtilRemoveSubmissivePage() {
   const [memberNumber, setMemberNumber] = useState<string>('');

@@ -457,7 +457,7 @@
     }
 
     .rw-scanlines {
-        @apply pointer-events-none absolute inset-0 [background:repeating-linear-gradient(0deg, transparent, transparent_2px,var(--rw-scanline-color)_2px,var(--rw-scanline-color)_4px)] [display:var(--rw-scanline-display, block)];
+        @apply pointer-events-none absolute inset-0 [background:repeating-linear-gradient(0deg,_transparent,_transparent_2px,var(--rw-scanline-color)_2px,var(--rw-scanline-color)_4px)] [display:var(--rw-scanline-display,_block)];
         z-index: 9999;
     }
 
@@ -529,7 +529,7 @@
     }
 
     .rw-settings-header {
-        @apply flex items-center justify-between border-b border-b-[color:var(--rw-border-color)] p-[var(--rw-space-3)] [background:linear-gradient(180deg,rgba(0,229,255,0.06)_0%, transparent_100%)];
+        @apply flex items-center justify-between border-b border-b-[color:var(--rw-border-color)] p-[var(--rw-space-3)] [background:linear-gradient(180deg,rgba(0,229,255,0.06)_0%,_transparent_100%)];
     }
 
     .rw-settings-title {
@@ -619,7 +619,7 @@
     }
 
     .rw-loading-grid {
-        @apply absolute inset-0 animate-[gridShift_3s_linear_infinite] bg-[linear-gradient(rgba(0,229,255,0.06)_1px, transparent_1px),linear-gradient(90deg,rgba(0,229,255,0.06)_1px, transparent_1px)] bg-size-[24px_24px];
+        @apply absolute inset-0 animate-[gridShift_3s_linear_infinite] bg-[linear-gradient(rgba(0,229,255,0.06)_1px,_transparent_1px),linear-gradient(90deg,rgba(0,229,255,0.06)_1px,_transparent_1px)] bg-size-[24px_24px];
     }
 
     .rw-loading-logo {

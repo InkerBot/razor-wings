@@ -1,8 +1,8 @@
 import React, {StrictMode} from 'react'
 import {createRoot} from 'react-dom/client'
-import './tailwind.css'
-import {setShadowRoot} from './shadow-style.ts'
-import Layer from './Layer.tsx'
+import '@/tailwind.css'
+import {setShadowRoot} from '@/shadow-style.ts'
+import Layer from '@/Layer.tsx'
 
 const main: {
   shadowRoot?: ShadowRoot,

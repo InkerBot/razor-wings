@@ -1,12 +1,12 @@
-import type AbstractModule from '../AbstractModule.ts';
-import type DglabProvider from './provider/DglabProvider.ts';
-import TestProvider from './provider/TestProvider.tsx';
-import DglabV2Provider from './provider/DglabV2Provider.tsx';
-import DglabV3WebsocketProvider from './provider/DglabV3WebsocketProvider.tsx';
-import DglabV3BlueToothProvider from './provider/DglabV3BlueToothProvider.tsx';
-import {ConfigRegistry} from "./controller/ConfigRegistry.ts";
-import {ToyIntensitySystem} from "./controller/ToyIntensitySystem.ts";
-import razorModSdk from "../../razor-wings";
+import type AbstractModule from '@/modules/AbstractModule.ts';
+import type DglabProvider from '@/modules/dglab/provider/DglabProvider.ts';
+import TestProvider from '@/modules/dglab/provider/TestProvider.tsx';
+import DglabV2Provider from '@/modules/dglab/provider/DglabV2Provider.tsx';
+import DglabV3WebsocketProvider from '@/modules/dglab/provider/DglabV3WebsocketProvider.tsx';
+import DglabV3BlueToothProvider from '@/modules/dglab/provider/DglabV3BlueToothProvider.tsx';
+import {ConfigRegistry} from "@/modules/dglab/controller/ConfigRegistry.ts";
+import {ToyIntensitySystem} from "@/modules/dglab/controller/ToyIntensitySystem.ts";
+import razorModSdk from "@/razor-wings";
 
 interface DglabProviderEntry {
   name: string;
@@ -65,7 +65,7 @@ class DglabModule implements AbstractModule {
   private powerListeners: Array<(a: number, b: number) => void> = [];
 
   async init(): Promise<void> {
-    (await import('./controller/config/0_base.js')).default(this.configRegistry);
+    (await import('@/modules/dglab/controller/config/0_base.js')).default(this.configRegistry);
   }
 
   initAfterLogin(): void {

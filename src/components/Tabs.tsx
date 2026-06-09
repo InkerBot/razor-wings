@@ -1,5 +1,5 @@
 import {Children, type ReactElement, type ReactNode, useState} from "react";
-import {cn} from "../util/cn";
+import {cn} from "@/util/cn";
 
 type TabProps = { label: string; children: ReactNode };
 

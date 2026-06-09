@@ -1,4 +1,4 @@
-import waitFor from "../util/waitFor.ts";
+import waitFor from "@/util/waitFor.ts";
 
 export type GameStateListener = (state: GameState) => void;
 

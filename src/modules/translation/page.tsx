@@ -1,13 +1,13 @@
 import {useEffect, useState} from "react";
-import {type sourceLanguageCode, sourceLanguages, type targetLanguageCode} from "./languages.ts";
-import LanguageSelector from "./LanguageSelector.tsx";
-import type {ProviderType} from "./module.ts";
-import module from "./module.ts";
-import Tabs from "../../components/Tabs.tsx";
-import Button from "../../components/Button";
-import {Select, Textarea, TextInput} from "../../components/FieldControls";
-import {FormField, FormSectionTitle} from "../../components/Form";
-import ToggleRow, {ToggleRowGroup} from "../../components/ToggleRow";
+import {type sourceLanguageCode, sourceLanguages, type targetLanguageCode} from "@/modules/translation/languages.ts";
+import LanguageSelector from "@/modules/translation/LanguageSelector.tsx";
+import type {ProviderType} from "@/modules/translation/module.ts";
+import module from "@/modules/translation/module.ts";
+import Tabs from "@/components/Tabs.tsx";
+import Button from "@/components/Button";
+import {Select, Textarea, TextInput} from "@/components/FieldControls";
+import {FormField, FormSectionTitle} from "@/components/Form";
+import ToggleRow, {ToggleRowGroup} from "@/components/ToggleRow";
 
 function TestTab() {
   const [text, setText] = useState('');

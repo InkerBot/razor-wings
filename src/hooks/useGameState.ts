@@ -5,7 +5,7 @@
  */
 
 import {useEffect, useState} from 'react';
-import gameStateService, {type GameState} from '../services/GameStateService.ts';
+import gameStateService, {type GameState} from '@/services/GameStateService.ts';
 
 export function useGameState() {
   const [gameState, setGameState] = useState<GameState>(

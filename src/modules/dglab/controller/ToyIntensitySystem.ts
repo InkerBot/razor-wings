@@ -1,4 +1,4 @@
-import type {Modifier} from './ConfigRegistry';
+import type {Modifier} from '@/modules/dglab/controller/ConfigRegistry';
 
 export class ToyIntensitySystem {
   private registry: Map<string, Modifier[]>;

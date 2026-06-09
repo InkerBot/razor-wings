@@ -8,9 +8,9 @@
  */
 
 import {useCallback, useEffect, useMemo, useState} from 'react';
-import moduleService, {type ModuleLoadingState} from '../services/ModuleService.ts';
-import type {ModuleConfig} from '../modules.ts';
-import type {GameState} from '../services/GameStateService.ts';
+import moduleService, {type ModuleLoadingState} from '@/services/ModuleService.ts';
+import type {ModuleConfig} from '@/modules.ts';
+import type {GameState} from '@/services/GameStateService.ts';
 
 export interface UseModuleManagerResult {
   // Available modules

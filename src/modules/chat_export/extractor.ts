@@ -1,4 +1,4 @@
-import render from "./render.ts";
+import render from "@/modules/chat_export/render.ts";
 
 type MessageEntry = MessageEntryChat | MessageEntryPrivate | MessageEntryAction;
 

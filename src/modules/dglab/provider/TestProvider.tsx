@@ -1,4 +1,4 @@
-import type DglabProvider from "./DglabProvider.ts";
+import type DglabProvider from "@/modules/dglab/provider/DglabProvider.ts";
 import React, {type JSX} from "react";
 
 interface TestProviderState {

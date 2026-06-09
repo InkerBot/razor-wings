@@ -1,5 +1,5 @@
 import {useCallback, useEffect, useMemo, useRef, useState} from "react";
-import {InlineLabel, Select} from "./FieldControls";
+import {InlineLabel, Select} from "@/components/FieldControls";
 
 interface PlayerSelectorProps {
   characterId?: string;

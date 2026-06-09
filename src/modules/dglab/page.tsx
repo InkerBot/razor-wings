@@ -1,8 +1,8 @@
-import DglabProviderContainer from "./provider/DglabProviderContainer.ts";
-import module from "./module.ts";
+import DglabProviderContainer from "@/modules/dglab/provider/DglabProviderContainer.ts";
+import module from "@/modules/dglab/module.ts";
 import {useEffect, useState} from "react";
-import type DglabProvider from "./provider/DglabProvider.ts";
-import {InlineLabel, RangeInput, Select} from "../../components/FieldControls";
+import type DglabProvider from "@/modules/dglab/provider/DglabProvider.ts";
+import {InlineLabel, RangeInput, Select} from "@/components/FieldControls";
 
 export default function DglabPage() {
   const [providerName, setProviderName] = useState<string>(module.providerName);

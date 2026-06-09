@@ -1,9 +1,9 @@
 import {useEffect, useState} from "react";
-import PlayerSelector from "../../components/PlayerSelector.tsx";
-import module from "./module.ts";
-import Button from "../../components/Button";
-import {InlineLabel, TextInput} from "../../components/FieldControls";
-import ToggleRow from "../../components/ToggleRow";
+import PlayerSelector from "@/components/PlayerSelector.tsx";
+import module from "@/modules/util_unlock/module.ts";
+import Button from "@/components/Button";
+import {InlineLabel, TextInput} from "@/components/FieldControls";
+import ToggleRow from "@/components/ToggleRow";
 
 export default function UtilUnlockPage() {
   const [tiggerTextEnable, setTiggerTextEnable] = useState(module.tiggerTextEnable);

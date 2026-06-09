@@ -1,7 +1,7 @@
-import type AbstractModule from "../AbstractModule.ts";
-import MapScriptEngine from "./MapScriptEngine.ts";
-import razorModSdk from "../../razor-wings";
-import type MapScriptConfig from "./MapScriptConfig.ts";
+import type AbstractModule from "@/modules/AbstractModule.ts";
+import MapScriptEngine from "@/modules/map_script/MapScriptEngine.ts";
+import razorModSdk from "@/razor-wings";
+import type MapScriptConfig from "@/modules/map_script/MapScriptConfig.ts";
 
 class MapScriptModule implements AbstractModule {
   playerPos = {X: 0, Y: 0};

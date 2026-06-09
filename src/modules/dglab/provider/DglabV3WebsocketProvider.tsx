@@ -1,11 +1,11 @@
-import type DglabProvider from "./DglabProvider.ts";
-import {ConnectionStatus} from "./DglabProvider.ts";
+import type DglabProvider from "@/modules/dglab/provider/DglabProvider.ts";
+import {ConnectionStatus} from "@/modules/dglab/provider/DglabProvider.ts";
 import type {JSX} from "react";
 import React from "react";
-import module from "../module.ts";
+import module from "@/modules/dglab/module.ts";
 import {QRCodeSVG} from 'qrcode.react';
-import Button from "../../../components/Button";
-import {InlineLabel, Select, TextInput} from "../../../components/FieldControls";
+import Button from "@/components/Button";
+import {InlineLabel, Select, TextInput} from "@/components/FieldControls";
 
 const waveData = {
   'a': `["0A0A0A0A00000000","0A0A0A0A0A0A0A0A","0A0A0A0A14141414","0A0A0A0A1E1E1E1E","0A0A0A0A28282828","0A0A0A0A32323232","0A0A0A0A3C3C3C3C","0A0A0A0A46464646","0A0A0A0A50505050","0A0A0A0A5A5A5A5A","0A0A0A0A64646464"]`,

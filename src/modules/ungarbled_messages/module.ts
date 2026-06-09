@@ -1,5 +1,5 @@
-import type AbstractModule from "../AbstractModule.ts";
-import razorModSdk from "../../razor-wings";
+import type AbstractModule from "@/modules/AbstractModule.ts";
+import razorModSdk from "@/razor-wings";
 
 class UngarbledMessagesModule implements AbstractModule {
   enabled: boolean = false;

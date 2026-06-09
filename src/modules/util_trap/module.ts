@@ -1,9 +1,10 @@
-import type AbstractModule from "../AbstractModule.ts";
-import type TrapConfig, {TrapScript} from "./TrapConfig.ts";
-import razorModSdk from "../../razor-wings";
+import type AbstractModule from "@/modules/AbstractModule.ts";
+import type TrapConfig from "@/modules/util_trap/TrapConfig.ts";
+import type {TrapScript} from "@/modules/util_trap/TrapConfig.ts";
+import razorModSdk from "@/razor-wings";
 import type {IExecContext, IScope} from "@nyariv/sandboxjs/dist/node/utils";
 import Sandbox from "@nyariv/sandboxjs";
-import common_functions from "../map_script/functions/functions.ts";
+import common_functions from "@/modules/map_script/functions/functions.ts";
 
 const STORAGE_KEY = 'razorwings.util_trap_config';
 

@@ -1,10 +1,10 @@
 import React, {useCallback, useEffect, useState} from 'react';
-import {applySettings, loadSettings, saveSettings, type UserSettings} from '../settings';
-import Button from './Button';
-import {RangeInput} from './FieldControls';
-import {FormField, FormSectionTitle} from './Form';
-import ToggleRow from './ToggleRow';
-import {cn} from "../util/cn";
+import {applySettings, loadSettings, saveSettings, type UserSettings} from '@/settings';
+import Button from '@/components/Button';
+import {RangeInput} from '@/components/FieldControls';
+import {FormField, FormSectionTitle} from '@/components/Form';
+import ToggleRow from '@/components/ToggleRow';
+import {cn} from "@/util/cn";
 
 interface Props {
   onClose: () => void;

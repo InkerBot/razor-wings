@@ -1,6 +1,6 @@
 import {useEffect, useState} from "react";
-import module from "./module.ts";
-import ToggleRow from "../../components/ToggleRow";
+import module from "@/modules/ungarbled_messages/module.ts";
+import ToggleRow from "@/components/ToggleRow";
 
 export default function UngarbledMessagesPage() {
   const [enabled, setEnabled] = useState(module.enabled);

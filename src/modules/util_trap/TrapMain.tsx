@@ -1,12 +1,12 @@
 import React from "react";
-import module from "./module.ts";
-import type {TrapScript} from "./TrapConfig.ts";
-import ScriptEditor from "../map_script/component/ScriptEditor.tsx";
-import PlayerSelector from "../../components/PlayerSelector.tsx";
-import Button from "../../components/Button";
-import {TextInput} from "../../components/FieldControls";
-import ToggleRow from "../../components/ToggleRow";
-import {cn} from "../../util/cn";
+import module from "@/modules/util_trap/module.ts";
+import type {TrapScript} from "@/modules/util_trap/TrapConfig.ts";
+import ScriptEditor from "@/modules/map_script/component/ScriptEditor.tsx";
+import PlayerSelector from "@/components/PlayerSelector.tsx";
+import Button from "@/components/Button";
+import {TextInput} from "@/components/FieldControls";
+import ToggleRow from "@/components/ToggleRow";
+import {cn} from "@/util/cn";
 
 interface TrapMainState {
   scripts: TrapScript[];

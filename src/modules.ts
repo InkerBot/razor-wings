@@ -1,5 +1,5 @@
 import type {JSX} from "react";
-import type AbstractModule from "./modules/AbstractModule.ts";
+import type AbstractModule from "@/modules/AbstractModule.ts";
 
 export type ModuleConfig = {
   displayName: string;
@@ -15,75 +15,75 @@ const modules: { [key: string]: ModuleConfig } = {
     'displayName': '翻译',
     'module': ['Online'],
     'screen': ['ChatRoom'],
-    'moduleProvider': async () => (await import('./modules/translation/module.ts')).default,
-    'pageProvider': async () => (await import('./modules/translation/page.tsx')).default,
+    'moduleProvider': async () => (await import('@/modules/translation/module.ts')).default,
+    'pageProvider': async () => (await import('@/modules/translation/page.tsx')).default,
   },
   'privacy': {
     'displayName': '隐私设置',
     'module': ['*'],
     'screen': ['*'],
-    'moduleProvider': async () => (await import('./modules/privacy/module.ts')).default,
-    'pageProvider': async () => (await import('./modules/privacy/page.tsx')).default,
+    'moduleProvider': async () => (await import('@/modules/privacy/module.ts')).default,
+    'pageProvider': async () => (await import('@/modules/privacy/page.tsx')).default,
     'precondition': () => true,
   },
   'util_exit': {
     'displayName': '辅助_退出房间',
     'module': ['*'],
     'screen': ['*'],
-    'pageProvider': async () => (await import('./modules/util_exit/page.tsx')).default,
+    'pageProvider': async () => (await import('@/modules/util_exit/page.tsx')).default,
   },
   'util_unlock': {
     'displayName': '辅助_解锁',
     'module': ['Online'],
     'screen': ['ChatRoom'],
-    'moduleProvider': async () => (await import('./modules/util_unlock/module.ts')).default,
-    'pageProvider': async () => (await import('./modules/util_unlock/page.tsx')).default,
+    'moduleProvider': async () => (await import('@/modules/util_unlock/module.ts')).default,
+    'pageProvider': async () => (await import('@/modules/util_unlock/page.tsx')).default,
   },
   'util_lock': {
     'displayName': '辅助_上锁',
     'module': ['Online'],
     'screen': ['ChatRoom'],
-    'moduleProvider': async () => (await import('./modules/util_lock/module.ts')).default,
-    'pageProvider': async () => (await import('./modules/util_lock/page.tsx')).default,
+    'moduleProvider': async () => (await import('@/modules/util_lock/module.ts')).default,
+    'pageProvider': async () => (await import('@/modules/util_lock/page.tsx')).default,
   },
   'util_editor': {
     'displayName': '辅助_外观编辑器',
     'module': ['Online'],
     'screen': ['ChatRoom'],
-    'pageProvider': async () => (await import('./modules/util_editor/page.tsx')).default
+    'pageProvider': async () => (await import('@/modules/util_editor/page.tsx')).default
   },
   'util_remove_limit': {
     'displayName': '辅助_解除限制',
     'module': ['*'],
     'screen': ['*'],
-    'moduleProvider': async () => (await import('./modules/util_remove_limit/module.ts')).default,
-    'pageProvider': async () => (await import('./modules/util_remove_limit/page.tsx')).default,
+    'moduleProvider': async () => (await import('@/modules/util_remove_limit/module.ts')).default,
+    'pageProvider': async () => (await import('@/modules/util_remove_limit/page.tsx')).default,
   },
   'util_remove_submissive': {
     'displayName': '辅助_移除奴隶',
     'module': ['*'],
     'screen': ['*'],
-    'pageProvider': async () => (await import('./modules/util_remove_submissive/page.tsx')).default,
+    'pageProvider': async () => (await import('@/modules/util_remove_submissive/page.tsx')).default,
   },
   'util_trap': {
     'displayName': '工具_陷阱',
     'module': ['*'],
     'screen': ['*'],
-    'moduleProvider': async () => (await import('./modules/util_trap/module.ts')).default,
-    'pageProvider': async () => (await import('./modules/util_trap/page.tsx')).default,
+    'moduleProvider': async () => (await import('@/modules/util_trap/module.ts')).default,
+    'pageProvider': async () => (await import('@/modules/util_trap/page.tsx')).default,
   },
   'chat_export': {
     'displayName': '聊天导出',
     'module': ['Online'],
     'screen': ['ChatRoom'],
-    'pageProvider': async () => (await import('./modules/chat_export/page.tsx')).default,
+    'pageProvider': async () => (await import('@/modules/chat_export/page.tsx')).default,
   },
   'map_script': {
     'displayName': '地图脚本',
     'module': ['*'],
     'screen': ['*'],
-    'moduleProvider': async () => (await import('./modules/map_script/module.ts')).default,
-    'pageProvider': async () => (await import('./modules/map_script/page.tsx')).default,
+    'moduleProvider': async () => (await import('@/modules/map_script/module.ts')).default,
+    'pageProvider': async () => (await import('@/modules/map_script/page.tsx')).default,
   },
   /*
   'util_packet': {
@@ -98,29 +98,29 @@ const modules: { [key: string]: ModuleConfig } = {
     'displayName': '外观记录',
     'module': ['*'],
     'screen': ['*'],
-    'moduleProvider': async () => (await import('./modules/history/module.ts')).default,
-    'pageProvider': async () => (await import('./modules/history/page.tsx')).default,
+    'moduleProvider': async () => (await import('@/modules/history/module.ts')).default,
+    'pageProvider': async () => (await import('@/modules/history/page.tsx')).default,
   },
   'dglab': {
     'displayName': '郊狼',
     'module': ['*'],
     'screen': ['*'],
-    'pageProvider': async () => (await import('./modules/dglab/page.tsx')).default,
-    'moduleProvider': async () => (await import('./modules/dglab/module.ts')).default,
+    'pageProvider': async () => (await import('@/modules/dglab/page.tsx')).default,
+    'moduleProvider': async () => (await import('@/modules/dglab/module.ts')).default,
     'precondition': () => true,
   },
   'cheat_allthings': {
     'displayName': '作弊_获得所有物品',
     'module': ['*'],
     'screen': ['*'],
-    'pageProvider': async () => (await import('./modules/cheat_allthings/page.tsx')).default,
+    'pageProvider': async () => (await import('@/modules/cheat_allthings/page.tsx')).default,
   },
   'ungarbled_messages': {
     'displayName': '强制开启绒语翻译器',
     'module': ['Online'],
     'screen': ['ChatRoom'],
-    'moduleProvider': async () => (await import('./modules/ungarbled_messages/module.ts')).default,
-    'pageProvider': async () => (await import('./modules/ungarbled_messages/page.tsx')).default,
+    'moduleProvider': async () => (await import('@/modules/ungarbled_messages/module.ts')).default,
+    'pageProvider': async () => (await import('@/modules/ungarbled_messages/page.tsx')).default,
   }
 }
 

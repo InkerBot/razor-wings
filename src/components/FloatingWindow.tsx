@@ -1,6 +1,6 @@
 import React, {Component, type ReactNode} from 'react';
-import type {Position, Size} from "../types";
-import {cn} from "../util/cn";
+import type {Position, Size} from "@/types";
+import {cn} from "@/util/cn";
 
 export interface HeaderConfig {
   /** Header title */

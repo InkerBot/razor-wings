@@ -1,10 +1,10 @@
 import {useState} from "react";
-import module from "./module.ts";
-import PlayerSelector from "../../components/PlayerSelector";
-import Button from "../../components/Button";
-import {FormSectionTitle} from "../../components/Form";
-import {TextInput} from "../../components/FieldControls";
-import ToggleRow, {ToggleRowGroup} from "../../components/ToggleRow";
+import module from "@/modules/privacy/module.ts";
+import PlayerSelector from "@/components/PlayerSelector";
+import Button from "@/components/Button";
+import {FormSectionTitle} from "@/components/Form";
+import {TextInput} from "@/components/FieldControls";
+import ToggleRow, {ToggleRowGroup} from "@/components/ToggleRow";
 
 export default function PrivacyPage() {
   const [settings, setSettings] = useState({

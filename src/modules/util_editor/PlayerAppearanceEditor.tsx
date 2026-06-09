@@ -1,6 +1,6 @@
 import React, {useEffect} from "react";
 import {Editor, loader} from "@monaco-editor/react";
-import main from "../../main.tsx";
+import main from "@/main.tsx";
 
 let isStyleInjected = false;
 

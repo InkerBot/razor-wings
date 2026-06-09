@@ -1,7 +1,7 @@
 import React from "react";
-import module from "./module.ts";
-import ScriptEditor from "./component/ScriptEditor.tsx";
-import Button from "../../components/Button";
+import module from "@/modules/map_script/module.ts";
+import ScriptEditor from "@/modules/map_script/component/ScriptEditor.tsx";
+import Button from "@/components/Button";
 
 interface MapScriptMainState {
   playerPos: ChatRoomMapPos

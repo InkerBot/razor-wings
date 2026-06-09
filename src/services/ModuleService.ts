@@ -1,5 +1,5 @@
-import modules, {type ModuleConfig} from "../modules.ts";
-import type {GameState} from "./GameStateService.ts";
+import modules, {type ModuleConfig} from "@/modules.ts";
+import type {GameState} from "@/services/GameStateService.ts";
 
 export interface ModuleLoadingState {
   isLoading: boolean;

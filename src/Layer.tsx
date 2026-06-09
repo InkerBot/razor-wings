@@ -1,19 +1,19 @@
 import React, {useEffect, useState} from 'react';
-import FloatingWindow from './components/FloatingWindow';
-import LoadingProgress from './components/LoadingProgress';
-import LoadingScreen from './components/LoadingScreen';
-import ModuleHeader from './components/ModuleHeader';
-import ModuleList from './components/ModuleList';
-import ModuleContent from './components/ModuleContent';
-import SettingsPanel from './components/SettingsPanel';
-import {ViewPanel, ViewTransition} from './components/ViewTransition';
-import {applySettings, loadSettings} from './settings';
-import {razorIsPro} from "./util/pro.ts";
-import type {ModuleConfig} from "./modules.ts";
-import razorModSdk from "./razor-wings";
-import main from "./main.tsx";
-import {useGameState} from './hooks/useGameState';
-import {useModuleManager} from './hooks/useModuleManager';
+import FloatingWindow from '@/components/FloatingWindow';
+import LoadingProgress from '@/components/LoadingProgress';
+import LoadingScreen from '@/components/LoadingScreen';
+import ModuleHeader from '@/components/ModuleHeader';
+import ModuleList from '@/components/ModuleList';
+import ModuleContent from '@/components/ModuleContent';
+import SettingsPanel from '@/components/SettingsPanel';
+import {ViewPanel, ViewTransition} from '@/components/ViewTransition';
+import {applySettings, loadSettings} from '@/settings';
+import {razorIsPro} from "@/util/pro.ts";
+import type {ModuleConfig} from "@/modules.ts";
+import razorModSdk from "@/razor-wings";
+import main from "@/main.tsx";
+import {useGameState} from '@/hooks/useGameState';
+import {useModuleManager} from '@/hooks/useModuleManager';
 
 const Layer: React.FC = () => {
   const [isExpanded, setIsExpanded] = useState(false);

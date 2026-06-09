@@ -1,5 +1,5 @@
 import type {ReactNode} from "react";
-import {cn} from "../util/cn";
+import {cn} from "@/util/cn";
 
 export function FormSectionTitle({
                                    children,

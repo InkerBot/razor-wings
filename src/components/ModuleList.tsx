@@ -1,6 +1,6 @@
 import React from 'react';
-import type {ModuleConfig} from '../modules.ts';
-import {cn} from "../util/cn";
+import type {ModuleConfig} from '@/modules.ts';
+import {cn} from "@/util/cn";
 
 interface ModuleListProps {
   modules: ModuleConfig[];

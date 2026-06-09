@@ -1,7 +1,7 @@
 import React from 'react';
-import {type languageCode, sourceLanguages, targetLanguages} from "./languages.ts";
-import {Select} from "../../components/FieldControls";
-import {cn} from "../../util/cn";
+import {type languageCode, sourceLanguages, targetLanguages} from "@/modules/translation/languages.ts";
+import {Select} from "@/components/FieldControls";
+import {cn} from "@/util/cn";
 
 interface LanguageSelectorProps {
   value?: string;

@@ -1,6 +1,6 @@
-import './bio-style.css?page'
-import razorModSdk from "../../razor-wings";
-import type module from "./module.ts";
+import '@/modules/translation/bio-style.css?page'
+import razorModSdk from "@/razor-wings";
+import type module from "@/modules/translation/module.ts";
 
 type TranslationModule = typeof module;
 

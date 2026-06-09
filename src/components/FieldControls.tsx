@@ -5,7 +5,7 @@ import type {
   SelectHTMLAttributes,
   TextareaHTMLAttributes,
 } from "react";
-import {cn} from "../util/cn";
+import {cn} from "@/util/cn";
 
 export function TextInput({
                             className = "",

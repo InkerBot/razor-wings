@@ -1,7 +1,7 @@
 import Sandbox from "@nyariv/sandboxjs";
 import type {IExecContext, IScope} from "@nyariv/sandboxjs/dist/node/utils";
-import type MapScriptConfig from "./MapScriptConfig.ts";
-import common_functions from "./functions/functions.ts"
+import type MapScriptConfig from "@/modules/map_script/MapScriptConfig.ts";
+import common_functions from "@/modules/map_script/functions/functions.ts"
 
 type CompiledScript = (...scopes: IScope[]) => {
   context: IExecContext;

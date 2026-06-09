@@ -1,5 +1,5 @@
 import type {ButtonHTMLAttributes, ReactNode} from "react";
-import {cn} from "../util/cn";
+import {cn} from "@/util/cn";
 
 type ButtonVariant = "default" | "primary" | "secondary" | "danger";
 type ButtonSize = "default" | "small";

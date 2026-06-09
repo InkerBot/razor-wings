@@ -1,9 +1,9 @@
-import type AbstractModule from "../AbstractModule.ts";
-import razorModSdk from "../../razor-wings";
-import {selectTarget} from "../../util/selectTarget.ts";
-import historyModule from "../history/module.ts";
-import {razorIsPro} from "../../util/pro.ts";
-import {sendActivityText} from "../../util/message.ts";
+import type AbstractModule from "@/modules/AbstractModule.ts";
+import razorModSdk from "@/razor-wings";
+import {selectTarget} from "@/util/selectTarget.ts";
+import historyModule from "@/modules/history/module.ts";
+import {razorIsPro} from "@/util/pro.ts";
+import {sendActivityText} from "@/util/message.ts";
 
 class UtilLockModule implements AbstractModule {
   tiggerTextEnable: boolean = false;

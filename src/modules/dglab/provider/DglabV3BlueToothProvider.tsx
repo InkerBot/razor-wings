@@ -1,9 +1,9 @@
-import type DglabProvider from "./DglabProvider.ts";
-import {BrowserSupportStatus, ConnectionStatus} from "./DglabProvider.ts";
+import type DglabProvider from "@/modules/dglab/provider/DglabProvider.ts";
+import {BrowserSupportStatus, ConnectionStatus} from "@/modules/dglab/provider/DglabProvider.ts";
 import {type JSX} from "react";
-import module from "../module.ts";
-import Button from "../../../components/Button";
-import {InlineLabel, Select} from "../../../components/FieldControls";
+import module from "@/modules/dglab/module.ts";
+import Button from "@/components/Button";
+import {InlineLabel, Select} from "@/components/FieldControls";
 
 // V3协议常量定义
 const DG3_PREFIX = '47L121000'; // V3设备蓝牙名称前缀

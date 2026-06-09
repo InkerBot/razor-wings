@@ -1,4 +1,4 @@
-import type {TranslationProvider, TranslationResult} from "./provider.ts";
+import type {TranslationProvider, TranslationResult} from "@/modules/translation/provider/provider.ts";
 
 export class AiTranslationProvider implements TranslationProvider {
   private readonly apiUrl: string;

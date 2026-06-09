@@ -1,5 +1,5 @@
 import type {InputHTMLAttributes, ReactNode} from "react";
-import {cn} from "../util/cn";
+import {cn} from "@/util/cn";
 
 interface ToggleRowProps extends Omit<InputHTMLAttributes<HTMLInputElement>, "type" | "children" | "onChange"> {
   children: ReactNode;

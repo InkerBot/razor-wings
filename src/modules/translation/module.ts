@@ -1,9 +1,9 @@
-import './style.css?page'
-import {DeeplxTranslationProvider} from "./provider/deeplx.ts";
-import {AiTranslationProvider} from "./provider/ai.ts";
-import type {sourceLanguageCode, targetLanguageCode} from "./languages.ts";
-import razorModSdk from "../../razor-wings";
-import type AbstractModule from "../AbstractModule.ts";
+import '@/modules/translation/style.css?page'
+import {DeeplxTranslationProvider} from "@/modules/translation/provider/deeplx.ts";
+import {AiTranslationProvider} from "@/modules/translation/provider/ai.ts";
+import type {sourceLanguageCode, targetLanguageCode} from "@/modules/translation/languages.ts";
+import razorModSdk from "@/razor-wings";
+import type AbstractModule from "@/modules/AbstractModule.ts";
 
 const defaultApiUrl = 'https://aurora-wings.bgp.ink/translate';
 const defaultAiPrompt = 'You are a translator for Bondage Club, an online BDSM role-playing game. Messages may contain roleplay actions, BDSM terminology, and domain-specific abbreviations. Preserve the original tone and style. Translate from {sourceLang} to {targetLang}. Output only the translated text, nothing else.';
@@ -132,7 +132,7 @@ class TranslationModule implements AbstractModule {
   }
 
   private initBioTranslation() {
-    import('./bio-translate.ts').then(m => m.initBioTranslationHooks(this));
+    import('@/modules/translation/bio-translate.ts').then(m => m.initBioTranslationHooks(this));
   }
 
   private dispatchInputChatEvent(text: string) {

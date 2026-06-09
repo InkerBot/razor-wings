@@ -1,5 +1,5 @@
 import React from 'react';
-import type {ModuleLoadingState} from '../services/ModuleService.ts';
+import type {ModuleLoadingState} from '@/services/ModuleService.ts';
 
 interface LoadingProgressProps {
   loadingState: ModuleLoadingState;
