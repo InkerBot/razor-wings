@@ -1,5 +1,6 @@
 import React from 'react';
 import type {ModuleConfig} from '../modules.ts';
+import {cn} from "../util/cn";
 
 interface ModuleListProps {
   modules: ModuleConfig[];
@@ -8,7 +9,8 @@ interface ModuleListProps {
 
 /* ── Sci-fi linear SVG icons (16x16 viewBox, stroke-based) ── */
 const SVGIcon: React.FC<{ d: string }> = ({d}) => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"
+  <svg className="h-[16px] w-[16px] fill-none stroke-[color:currentColor] [stroke-width:1.5]" viewBox="0 0 24 24"
+       fill="none" stroke="currentColor" strokeWidth="1.5"
        strokeLinecap="round" strokeLinejoin="round">
     <path d={d}/>
   </svg>
@@ -83,28 +85,33 @@ function groupModules(modules: ModuleConfig[]): GroupedModules[] {
   return groups;
 }
 
-const ModuleList: React.FC<ModuleListProps> = ({ modules, onModuleClick }) => {
+const ModuleList: React.FC<ModuleListProps> = ({modules, onModuleClick}) => {
   if (modules.length === 0) {
-    return <div className="module-list-empty">NO MODULES AVAILABLE IN CURRENT CONTEXT</div>;
+    return <div className="rw-module-empty">NO
+      MODULES AVAILABLE IN CURRENT CONTEXT</div>;
   }
 
   const groups = groupModules(modules);
   const hasMultipleGroups = groups.length > 1;
 
   return (
-    <ul className="module-list">
+    <ul className="rw-module-list">
       {groups.map((group, groupIndex) => (
         <React.Fragment key={groupIndex}>
           {hasMultipleGroups && group.category && (
-            <li className="module-category">
+            <li className={cn("rw-module-group-label", groupIndex > 0 && "mt-[var(--rw-space-2)]")}>
               [{group.category}]
             </li>
           )}
           {group.items.map((module, index) => {
             const iconId = getIconId(module.displayName);
             return (
-              <li key={`${groupIndex}-${index}`} onClick={() => onModuleClick(module)}>
-                <span className="module-icon">
+              <li
+                key={`${groupIndex}-${index}`}
+                className="rw-module-item"
+                onClick={() => onModuleClick(module)}
+              >
+                <span className="rw-module-icon">
                   {iconId && <SVGIcon d={ICONS[iconId]}/>}
                 </span>
                 <span>{getCleanName(module.displayName)}</span>

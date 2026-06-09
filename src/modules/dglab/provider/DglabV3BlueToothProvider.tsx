@@ -2,6 +2,8 @@ import type DglabProvider from "./DglabProvider.ts";
 import {BrowserSupportStatus, ConnectionStatus} from "./DglabProvider.ts";
 import {type JSX} from "react";
 import module from "../module.ts";
+import Button from "../../../components/Button";
+import {InlineLabel, Select} from "../../../components/FieldControls";
 
 // V3协议常量定义
 const DG3_PREFIX = '47L121000'; // V3设备蓝牙名称前缀
@@ -147,36 +149,39 @@ export default class DglabV3BlueToothProvider implements DglabProvider {
         ) : (
           <>
             {this.state.connectionStatus === ConnectionStatus.DISCONNECTED && (
-              <button onClick={this.scanAndConnect}>Scan Coyote V3 Device</button>
+              <Button onClick={this.scanAndConnect}>Scan Coyote V3 Device</Button>
             )}
 
             {this.state.connectionStatus === ConnectionStatus.CONNECTING && (
-              <button disabled>Connecting...</button>
+              <Button disabled>Connecting...</Button>
             )}
 
             {this.state.connectionStatus === ConnectionStatus.CONNECTED && (
-              <button onClick={this.disconnect}>Disconnect Device</button>
+              <Button variant="danger" onClick={this.disconnect}>Disconnect Device</Button>
             )}
 
             {this.state.connectionStatus === ConnectionStatus.CONNECTED && (
               <>
                 <p>Battery: {this.state.batteryLevel}% | Power Limits: A({this.state.maxPowerA})
                   B({this.state.maxPowerB})</p>
-                <p>Strength: A <span style={{
-                  color: (this.state.powerLevelA == this.state.realPowerLevelA) ? 'green' : 'red'
-                }}>{this.state.powerLevelA}-{this.state.realPowerLevelA}</span> | B <span style={{
-                  color: (this.state.powerLevelB == this.state.realPowerLevelB) ? 'green' : 'red'
-                }}>{this.state.powerLevelB}-{this.state.realPowerLevelB}</span></p>
-                <p>Transmit: <span style={{color: 'green'}}>{this.state.transmitCount}</span> | Errors: <span
-                  style={{color: 'red'}}>{this.state.errorCount}</span></p>
+                <p>Strength: A <span
+                  className={(this.state.powerLevelA == this.state.realPowerLevelA) ? "rw-status-success" : "rw-status-error"}>{this.state.powerLevelA}-{this.state.realPowerLevelA}</span> |
+                  B <span
+                    className={(this.state.powerLevelB == this.state.realPowerLevelB) ? "rw-status-success" : "rw-status-error"}>{this.state.powerLevelB}-{this.state.realPowerLevelB}</span>
+                </p>
+                <p>Transmit: <span className="rw-status-success">{this.state.transmitCount}</span> |
+                  Errors: <span
+                    className="rw-status-error">{this.state.errorCount}</span></p>
 
                 <div>
-                  <label>Select waveform:</label>
-                  <select value={this.state.selectedWave} onChange={this.handleWaveChange}>
-                    <option value="a">Waveform A</option>
-                    <option value="b">Waveform B</option>
-                    <option value="c">Waveform C</option>
-                  </select>
+                  <InlineLabel>
+                    <span>Select waveform:</span>
+                    <Select value={this.state.selectedWave} onChange={this.handleWaveChange}>
+                      <option value="a">Waveform A</option>
+                      <option value="b">Waveform B</option>
+                      <option value="c">Waveform C</option>
+                    </Select>
+                  </InlineLabel>
                 </div>
               </>
             )}

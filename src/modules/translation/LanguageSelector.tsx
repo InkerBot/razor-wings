@@ -1,5 +1,7 @@
 import React from 'react';
 import {type languageCode, sourceLanguages, targetLanguages} from "./languages.ts";
+import {Select} from "../../components/FieldControls";
+import {cn} from "../../util/cn";
 
 interface LanguageSelectorProps {
   value?: string;
@@ -33,8 +35,8 @@ export default function LanguageSelector(
   return (
     <div className={className}>
       {label && <label>{label}</label>}
-      <select
-        className="language-selector-select"
+      <Select
+        className={cn("w-full", !className && "block")}
         value={value}
         onChange={handleLanguageChange}
         disabled={disabled}
@@ -47,7 +49,7 @@ export default function LanguageSelector(
             {lang.name}
           </option>
         ))}
-      </select>
+      </Select>
     </div>
   );
 };

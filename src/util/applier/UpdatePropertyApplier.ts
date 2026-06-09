@@ -10,7 +10,7 @@ export default {
       }
     }
 
-    appearance.forEach(it =>{
+    appearance.forEach(it => {
       if (configDisabledGroup(config, it.Group)) return;
       InventoryWear(target, it.Name, it.Group, it.Color, it.Difficulty, Player.ID, it.Craft, false)
     });

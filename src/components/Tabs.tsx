@@ -1,24 +1,31 @@
 import {Children, type ReactElement, type ReactNode, useState} from "react";
-import './tabs.css';
+import {cn} from "../util/cn";
 
-function Tab(_props: { label: string; children: ReactNode }) {
+type TabProps = { label: string; children: ReactNode };
+
+function Tab(props: TabProps) {
+  void props;
   return null;
 }
 
-function Tabs({children}: { children: ReactElement<{ label: string; children: ReactNode }>[] }) {
+function Tabs({children}: { children: ReactElement<TabProps>[] }) {
   const tabs = Children.map(children, c => ({label: c.props.label, content: c.props.children}));
   const [active, setActive] = useState(0);
 
   return (
     <>
-      <div className="rw-tabs">
+      <div className="rw-tabs-list">
         {tabs.map((t, i) => (
-          <button key={i} className={`rw-tab ${active === i ? 'rw-tab-active' : ''}`} onClick={() => setActive(i)}>
+          <button
+            key={i}
+            className={cn("rw-tab-button", active === i && "rw-tab-button--active")}
+            onClick={() => setActive(i)}
+          >
             {t.label}
           </button>
         ))}
       </div>
-      <div className="rw-tab-content">{tabs[active]?.content}</div>
+      <div className="rw-tabs-panel">{tabs[active]?.content}</div>
     </>
   );
 }

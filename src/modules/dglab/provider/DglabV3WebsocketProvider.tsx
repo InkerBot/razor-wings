@@ -4,6 +4,8 @@ import type {JSX} from "react";
 import React from "react";
 import module from "../module.ts";
 import {QRCodeSVG} from 'qrcode.react';
+import Button from "../../../components/Button";
+import {InlineLabel, Select, TextInput} from "../../../components/FieldControls";
 
 const waveData = {
   'a': `["0A0A0A0A00000000","0A0A0A0A0A0A0A0A","0A0A0A0A14141414","0A0A0A0A1E1E1E1E","0A0A0A0A28282828","0A0A0A0A32323232","0A0A0A0A3C3C3C3C","0A0A0A0A46464646","0A0A0A0A50505050","0A0A0A0A5A5A5A5A","0A0A0A0A64646464"]`,
@@ -102,26 +104,28 @@ export default class DglabV3WebsocketProvider implements DglabProvider {
   render(): JSX.Element {
     return (<>
       {/* Server address configuration */}
-      <label>WebSocket Server Address:</label>
-      <input
-        type="text"
-        value={this.state.serverUrl}
-        onChange={this.handleServerUrlChange}
-        disabled={this.state.connectionStatus !== ConnectionStatus.DISCONNECTED}
-        style={{marginLeft: '10px', width: '300px'}}
-      />
+      <InlineLabel className="mb-[var(--rw-space-2)] flex-wrap">
+        <span>WebSocket Server Address:</span>
+        <TextInput
+          type="text"
+          value={this.state.serverUrl}
+          onChange={this.handleServerUrlChange}
+          disabled={this.state.connectionStatus !== ConnectionStatus.DISCONNECTED}
+          className="w-[300px] max-w-full disabled:cursor-not-allowed disabled:opacity-60"
+        />
+      </InlineLabel>
 
       {/* Connection control buttons */}
       {this.state.connectionStatus === ConnectionStatus.DISCONNECTED && (
-        <button onClick={this.connect}>Connect to WebSocket Server</button>
+        <Button onClick={this.connect}>Connect to WebSocket Server</Button>
       )}
 
       {this.state.connectionStatus === ConnectionStatus.CONNECTING && (
-        <button disabled>Connecting...</button>
+        <Button disabled>Connecting...</Button>
       )}
 
       {this.state.connectionStatus === ConnectionStatus.CONNECTED && (
-        <button onClick={this.disconnect}>Disconnect</button>
+        <Button variant="danger" onClick={this.disconnect}>Disconnect</Button>
       )}
 
       {/* Connection status info */}
@@ -136,7 +140,7 @@ export default class DglabV3WebsocketProvider implements DglabProvider {
           {this.state.qrCodeData && !this.state.targetId && (
             <>
               <p>Please scan the QR code with DG-Lab APP to connect:</p>
-              <div style={{border: '5px solid #ccc', background: '#fff'}}>
+              <div className="rw-qr-frame">
                 <QRCodeSVG value={this.state.qrCodeData}/>,
               </div>
             </>
@@ -145,25 +149,25 @@ export default class DglabV3WebsocketProvider implements DglabProvider {
           {/* Device status info */}
           {this.state.connectionStatus === ConnectionStatus.CONNECTED && (
             <>
-              <p>Strength: <span style={{
-                color: (this.state.powerLevelA == this.state.realPowerLevelA) ? 'green' : 'red'
-              }}>{this.state.powerLevelA}-{this.state.realPowerLevelA}</span> {this.state.maxPowerA} | <span style={{
-                color: (this.state.powerLevelB == this.state.realPowerLevelB) ? 'green' : 'red'
-              }}>{this.state.powerLevelB}-{this.state.realPowerLevelB}</span> {this.state.maxPowerB} Transmit: <span
-                style={{color: 'green'}}>{this.state.transmitCount}</span> | <span
-                style={{color: 'red'}}>{this.state.errorCount}</span></p>
+              <p>Strength: <span
+                className={(this.state.powerLevelA == this.state.realPowerLevelA) ? "rw-status-success" : "rw-status-error"}>{this.state.powerLevelA}-{this.state.realPowerLevelA}</span> {this.state.maxPowerA} | <span
+                className={(this.state.powerLevelB == this.state.realPowerLevelB) ? "rw-status-success" : "rw-status-error"}>{this.state.powerLevelB}-{this.state.realPowerLevelB}</span> {this.state.maxPowerB} Transmit: <span
+                className="rw-status-success">{this.state.transmitCount}</span> | <span
+                className="rw-status-error">{this.state.errorCount}</span></p>
             </>
           )}
 
           {/* Waveform selection and transmit control */}
           {this.state.connectionStatus === ConnectionStatus.CONNECTED && (
-            <div>
-              <label>Select waveform to send to AB channel:</label>
-              <select value={this.state.selectedWave} onChange={this.handleWaveChange}>
-                <option value="a">Waveform A</option>
-                <option value="b">Waveform B</option>
-                <option value="c">Waveform C</option>
-              </select>
+            <div className="mt-[var(--rw-space-2)]">
+              <InlineLabel>
+                <span>Select waveform to send to AB channel:</span>
+                <Select value={this.state.selectedWave} onChange={this.handleWaveChange}>
+                  <option value="a">Waveform A</option>
+                  <option value="b">Waveform B</option>
+                  <option value="c">Waveform C</option>
+                </Select>
+              </InlineLabel>
             </div>
           )}
         </>

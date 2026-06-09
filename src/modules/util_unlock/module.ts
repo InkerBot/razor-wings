@@ -28,7 +28,7 @@ class UtilUnlockModule implements AbstractModule {
   }
 
   run(target: Character) {
-    historyModule.pushReason({ text: "razor-wings unlock" }, () => {
+    historyModule.pushReason({text: "razor-wings unlock"}, () => {
       if (!razorIsPro()) {
         sendActivityText(`${Player.Nickname || Player.Name} 解锁了 ${target.Nickname || target.Name} 的拘束。`);
       }

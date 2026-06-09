@@ -206,7 +206,7 @@ export const switchEntries: SwitchEntry[] = [
 class UtilRemoveLimitModule implements AbstractModule {
 
   initialized: boolean = false;
-  enabled: {[k:string]: boolean} = Object.fromEntries(switchEntries.map(entry => [entry.name, false]));
+  enabled: { [k: string]: boolean } = Object.fromEntries(switchEntries.map(entry => [entry.name, false]));
 
   init() {
   }

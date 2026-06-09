@@ -1,5 +1,5 @@
-import modules, { type ModuleConfig } from "../modules.ts";
-import type { GameState } from "./GameStateService.ts";
+import modules, {type ModuleConfig} from "../modules.ts";
+import type {GameState} from "./GameStateService.ts";
 
 export interface ModuleLoadingState {
   isLoading: boolean;
@@ -93,7 +93,7 @@ class ModuleService {
   }
 
   filterAvailableModules(gameState: GameState): ModuleConfig[] {
-    const { currentModule, currentScreen, isPlayerLogin } = gameState;
+    const {currentModule, currentScreen, isPlayerLogin} = gameState;
 
     return Object.entries(modules)
       .filter(([, config]) =>
@@ -127,11 +127,22 @@ class ModuleService {
   }
 
   getLoadingState(): ModuleLoadingState {
-    return { ...this.loadingState };
+    return {...this.loadingState};
   }
 
   isInitialized(): boolean {
     return this.initialized;
+  }
+
+  reset() {
+    this.loadingListeners.clear();
+    this.loadingState = {
+      isLoading: false,
+      loadedCount: 0,
+      totalCount: 0,
+      progress: 0
+    };
+    this.initialized = false;
   }
 
   private updateLoadingState(partialState: Partial<ModuleLoadingState>) {
@@ -151,17 +162,6 @@ class ModuleService {
         console.error('Error in module loading listener:', error);
       }
     });
-  }
-
-  reset() {
-    this.loadingListeners.clear();
-    this.loadingState = {
-      isLoading: false,
-      loadedCount: 0,
-      totalCount: 0,
-      progress: 0
-    };
-    this.initialized = false;
   }
 }
 

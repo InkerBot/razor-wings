@@ -25,15 +25,17 @@ const DEFAULTS: UserSettings = {
 export function loadSettings(): UserSettings {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return { ...DEFAULTS, ...JSON.parse(raw) };
-  } catch { /* empty */ }
-  return { ...DEFAULTS };
+    if (raw) return {...DEFAULTS, ...JSON.parse(raw)};
+  } catch { /* empty */
+  }
+  return {...DEFAULTS};
 }
 
 export function saveSettings(s: UserSettings): void {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
-  } catch { /* empty */ }
+  } catch { /* empty */
+  }
 }
 
 export function applySettings(s: UserSettings, root: HTMLElement): void {
@@ -47,12 +49,12 @@ export function applySettings(s: UserSettings, root: HTMLElement): void {
   style.setProperty('--rw-font-size-lg', (s.fontSize + 2) + 'px');
 
   const accentMap: Record<string, { primary: string; dim: string; glow: string; glowStrong: string }> = {
-    cyan:   { primary: '#00e5ff', dim: '#0097a7', glow: 'rgba(0,229,255,0.35)',    glowStrong: 'rgba(0,229,255,0.55)' },
-    blue:   { primary: '#448aff', dim: '#2962ff', glow: 'rgba(68,138,255,0.35)',   glowStrong: 'rgba(68,138,255,0.55)' },
-    purple: { primary: '#7c4dff', dim: '#651fff', glow: 'rgba(124,77,255,0.35)',   glowStrong: 'rgba(124,77,255,0.55)' },
-    green:  { primary: '#00e676', dim: '#00c853', glow: 'rgba(0,230,118,0.35)',    glowStrong: 'rgba(0,230,118,0.55)' },
-    red:    { primary: '#ff4444', dim: '#cc0000', glow: 'rgba(255,68,68,0.35)',    glowStrong: 'rgba(255,68,68,0.55)' },
-    pink:   { primary: '#ff80ab', dim: '#f50057', glow: 'rgba(255,128,171,0.35)',  glowStrong: 'rgba(255,128,171,0.55)' },
+    cyan: {primary: '#00e5ff', dim: '#0097a7', glow: 'rgba(0,229,255,0.35)', glowStrong: 'rgba(0,229,255,0.55)'},
+    blue: {primary: '#448aff', dim: '#2962ff', glow: 'rgba(68,138,255,0.35)', glowStrong: 'rgba(68,138,255,0.55)'},
+    purple: {primary: '#7c4dff', dim: '#651fff', glow: 'rgba(124,77,255,0.35)', glowStrong: 'rgba(124,77,255,0.55)'},
+    green: {primary: '#00e676', dim: '#00c853', glow: 'rgba(0,230,118,0.35)', glowStrong: 'rgba(0,230,118,0.55)'},
+    red: {primary: '#ff4444', dim: '#cc0000', glow: 'rgba(255,68,68,0.35)', glowStrong: 'rgba(255,68,68,0.55)'},
+    pink: {primary: '#ff80ab', dim: '#f50057', glow: 'rgba(255,128,171,0.35)', glowStrong: 'rgba(255,128,171,0.55)'},
   };
   const a = accentMap[s.accentColor] || accentMap.cyan;
   style.setProperty('--rw-neon-cyan', a.primary);
@@ -62,8 +64,8 @@ export function applySettings(s: UserSettings, root: HTMLElement): void {
 
   const gi = s.glowIntensity;
   const glowRgb = hexToRgb(a.primary);
-  style.setProperty('--rw-glow-cyan',       `0 0 ${8  * gi}px rgba(${glowRgb},${0.25 * gi}), 0 0 ${20 * gi}px rgba(${glowRgb},${0.1 * gi})`);
-  style.setProperty('--rw-glow-cyan-strong',`0 0 ${12 * gi}px rgba(${glowRgb},${0.4  * gi}), 0 0 ${30 * gi}px rgba(${glowRgb},${0.15 * gi})`);
+  style.setProperty('--rw-glow-cyan', `0 0 ${8 * gi}px rgba(${glowRgb},${0.25 * gi}), 0 0 ${20 * gi}px rgba(${glowRgb},${0.1 * gi})`);
+  style.setProperty('--rw-glow-cyan-strong', `0 0 ${12 * gi}px rgba(${glowRgb},${0.4 * gi}), 0 0 ${30 * gi}px rgba(${glowRgb},${0.15 * gi})`);
 
   if (isLight) {
     applyLightTheme(style, s, root);

@@ -1,6 +1,9 @@
 import {useEffect, useState} from "react";
 import PlayerSelector from "../../components/PlayerSelector.tsx";
 import module from "./module.ts";
+import Button from "../../components/Button";
+import {InlineLabel, TextInput} from "../../components/FieldControls";
+import ToggleRow from "../../components/ToggleRow";
 
 export default function UtilLockPage() {
   const [tiggerTextEnable, setTiggerTextEnable] = useState(module.tiggerTextEnable);
@@ -40,26 +43,21 @@ export default function UtilLockPage() {
         <p>当前选择的角色: {character.Nickname ?? character.Name} ({character.Name})</p>
       )}
       <PlayerSelector onChange={setCharacter} characterId={character?.CharacterID}/>
-      <button onClick={onClick} disabled={!character}>上锁</button>
+      <Button onClick={onClick} disabled={!character}>上锁</Button>
     </div>
     <div>
-      <label className="toggle-row">
-        <span>启用触发文本</span>
-        <span className="toggle-switch">
-          <input type="checkbox" checked={tiggerTextEnable} onChange={e => setTiggerTextEnable(e.target.checked)}/>
-          <span className="toggle-slider"/></span>
-      </label>
+      <ToggleRow checked={tiggerTextEnable} onChange={setTiggerTextEnable}>启用触发文本</ToggleRow>
     </div>
     <div>
-      <label>
+      <InlineLabel>
         触发文本:
-        <input
+        <TextInput
           type="text"
           value={tiggerText}
           onChange={e => setTiggerText(e.target.value)}
           placeholder="输入触发文本"
         />
-      </label>
+      </InlineLabel>
     </div>
   </>
 }

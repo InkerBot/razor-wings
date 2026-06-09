@@ -1,5 +1,6 @@
-import React, { Component, type ReactNode } from 'react';
+import React, {Component, type ReactNode} from 'react';
 import type {Position, Size} from "../types";
+import {cn} from "../util/cn";
 
 export interface HeaderConfig {
   /** Header title */
@@ -71,20 +72,19 @@ interface FloatingWindowState {
 }
 
 class FloatingWindow extends Component<FloatingWindowProps, FloatingWindowState> {
-  private floatingWindowRef = React.createRef<HTMLDivElement>();
-
   static defaultProps: Partial<FloatingWindowProps> = {
     resizable: true,
     draggable: true,
     showHeader: true,
     header: 'Window'
   };
+  private floatingWindowRef = React.createRef<HTMLDivElement>();
 
   constructor(props: FloatingWindowProps) {
     super(props);
 
     const dimensions = this.getResponsiveDimensions();
-    const defaultPosition = { x: 30, y: 30 };
+    const defaultPosition = {x: 30, y: 30};
     const defaultSize = {
       width: props.initialSize?.width || dimensions.defaultWidth,
       height: props.initialSize?.height || dimensions.defaultMinHeight
@@ -135,10 +135,9 @@ class FloatingWindow extends Component<FloatingWindowProps, FloatingWindowState>
       collapsed,
       footer,
       className = '',
-      resizable = true,
       showHeader = true
     } = this.props;
-    const { position, size } = this.state;
+    const {position, size} = this.state;
     const dimensions = this.getResponsiveDimensions();
 
     // Normalize header config
@@ -149,7 +148,11 @@ class FloatingWindow extends Component<FloatingWindowProps, FloatingWindowState>
     return (
       <div
         ref={this.floatingWindowRef}
-        className={`floating-window ${isExpanded ? 'expanded' : 'collapsed'} ${resizable ? 'resizable' : ''} ${className}`}
+        className={cn(
+          "rw-floating-window",
+          isExpanded ? "rw-floating-window--expanded" : "rw-floating-window--collapsed",
+          className,
+        )}
         style={{
           left: position.x,
           top: position.y,
@@ -162,22 +165,36 @@ class FloatingWindow extends Component<FloatingWindowProps, FloatingWindowState>
         onMouseMove={this.onMouseMoveForCursor}
         onTouchStart={this.onTouchStart}
       >
+        {isExpanded && (
+          <span
+            aria-hidden="true"
+            className="rw-window-corner-accent"
+          />
+        )}
         {/* Expanded Content */}
-        <div className="window-content" style={{ display: isExpanded ? 'flex' : 'none' }}>
+        <div
+          className={cn("rw-window-shell", isExpanded ? "flex" : "hidden")}
+        >
           {/* Header */}
           {showHeader && this.renderHeader(headerConfig)}
 
           {/* Body */}
-          <div className="window-body">
+          <div
+            className="rw-window-body">
             {children}
           </div>
 
           {/* Footer (optional) */}
           {footer && (
-            <div className="window-footer">
+            <div
+              className="rw-window-footer">
               {footer}
             </div>
           )}
+          <div
+            aria-hidden="true"
+            className="rw-scanlines"
+          />
         </div>
 
         {/* Collapsed Content */}
@@ -188,10 +205,10 @@ class FloatingWindow extends Component<FloatingWindowProps, FloatingWindowState>
 
   private normalizeHeaderConfig(header?: HeaderConfig | string): HeaderConfig {
     if (!header) {
-      return { title: 'Window', showToggleButton: true };
+      return {title: 'Window', showToggleButton: true};
     }
     if (typeof header === 'string') {
-      return { title: header, showToggleButton: true };
+      return {title: header, showToggleButton: true};
     }
     return {
       showToggleButton: true,
@@ -201,26 +218,34 @@ class FloatingWindow extends Component<FloatingWindowProps, FloatingWindowState>
 
   private normalizeCollapsedConfig(collapsed?: CollapsedConfig | ReactNode): CollapsedConfig {
     if (!collapsed) {
-      return { content: <span>+</span>, className: '' };
+      return {content: <span>+</span>, className: ''};
     }
     if (React.isValidElement(collapsed) || typeof collapsed === 'string') {
-      return { content: collapsed, className: '' };
+      return {content: collapsed, className: ''};
     }
     return collapsed as CollapsedConfig;
   }
 
   private renderHeader(headerConfig: HeaderConfig) {
-    const { customContent, title, showToggleButton, toggleButtonContent, actions } = headerConfig;
+    const {customContent, title, showToggleButton, toggleButtonContent, actions} = headerConfig;
 
     return (
-      <div className="window-header">
-        {customContent || <h3>{title}</h3>}
+      <div
+        data-window-header
+        className="rw-window-header"
+      >
+        {customContent || (
+          <h3 className="rw-window-title">
+            {title}
+          </h3>
+        )}
 
-        <div className="window-header-actions">
+        <div className="rw-window-actions">
           {actions}
           {showToggleButton && (
             <button
-              className="collapse-btn"
+              data-collapse-button
+              className="rw-window-collapse-button"
               onClick={this.handleToggleExpanded}
               aria-label="Toggle window"
             >
@@ -235,7 +260,10 @@ class FloatingWindow extends Component<FloatingWindowProps, FloatingWindowState>
   private renderCollapsed(collapsedConfig: CollapsedConfig) {
     return (
       <button
-        className={`floating-button ${collapsedConfig.className || ''}`}
+        className={cn(
+          "rw-collapsed-window-button",
+          collapsedConfig.className || "",
+        )}
         onClick={this.handleToggleExpanded}
         aria-label="Expand window"
       >
@@ -276,7 +304,7 @@ class FloatingWindow extends Component<FloatingWindowProps, FloatingWindowState>
   };
 
   private constrainSize = (size: Size): Size => {
-    const { minSize, maxSize } = this.props;
+    const {minSize, maxSize} = this.props;
     const dimensions = this.getResponsiveDimensions();
 
     const defaultMinSize = {
@@ -322,7 +350,7 @@ class FloatingWindow extends Component<FloatingWindowProps, FloatingWindowState>
   private checkAndConstrainPosition = () => {
     const constrainedPosition = this.constrainPosition(this.state.position);
     if (constrainedPosition.x !== this.state.position.x || constrainedPosition.y !== this.state.position.y) {
-      this.setState({ position: constrainedPosition });
+      this.setState({position: constrainedPosition});
     }
   };
 
@@ -388,8 +416,8 @@ class FloatingWindow extends Component<FloatingWindowProps, FloatingWindowState>
       isResizing: true,
       resizeDirection: direction,
       resizeStart: {
-        position: { x: e.clientX, y: e.clientY },
-        size: { ...this.state.size }
+        position: {x: e.clientX, y: e.clientY},
+        size: {...this.state.size}
       },
       hasMoved: false
     });
@@ -413,20 +441,20 @@ class FloatingWindow extends Component<FloatingWindowProps, FloatingWindowState>
       isResizing: true,
       resizeDirection: direction,
       resizeStart: {
-        position: { x: touch.clientX, y: touch.clientY },
-        size: { ...this.state.size }
+        position: {x: touch.clientX, y: touch.clientY},
+        size: {...this.state.size}
       },
       hasMoved: false
     });
 
-    document.addEventListener('touchmove', this.onResizeTouchMove, { passive: false });
+    document.addEventListener('touchmove', this.onResizeTouchMove, {passive: false});
     document.addEventListener('touchend', this.onResizeTouchEnd);
   };
 
   private onResizeMouseMove = (e: MouseEvent) => {
     if (!this.state.isResizing || !this.state.resizeStart || !this.state.resizeDirection) return;
 
-    const { resizeStart, resizeDirection } = this.state;
+    const {resizeStart, resizeDirection} = this.state;
     const deltaX = e.clientX - resizeStart.position.x;
     const deltaY = e.clientY - resizeStart.position.y;
 
@@ -443,7 +471,7 @@ class FloatingWindow extends Component<FloatingWindowProps, FloatingWindowState>
     if (!this.state.isResizing || !this.state.resizeStart || !this.state.resizeDirection) return;
 
     const touch = e.touches[0];
-    const { resizeStart, resizeDirection } = this.state;
+    const {resizeStart, resizeDirection} = this.state;
     const deltaX = touch.clientX - resizeStart.position.x;
     const deltaY = touch.clientY - resizeStart.position.y;
 
@@ -462,7 +490,7 @@ class FloatingWindow extends Component<FloatingWindowProps, FloatingWindowState>
     deltaY: number,
     direction: string
   ): Size => {
-    const newSize = { ...originalSize };
+    const newSize = {...originalSize};
 
     switch (direction) {
       case 's':
@@ -538,14 +566,14 @@ class FloatingWindow extends Component<FloatingWindowProps, FloatingWindowState>
 
     // Handle window dragging
     if (this.props.isExpanded) {
-      const header = (e.target as Element).closest('.window-header');
-      const collapseBtn = (e.target as Element).closest('.collapse-btn');
+      const header = (e.target as Element).closest('[data-window-header]');
+      const collapseBtn = (e.target as Element).closest('[data-collapse-button]');
       if (!header || collapseBtn) return;
     }
 
     this.setState({
       isDragging: true,
-      dragStart: { x: e.clientX - this.state.position.x, y: e.clientY - this.state.position.y },
+      dragStart: {x: e.clientX - this.state.position.x, y: e.clientY - this.state.position.y},
       hasMoved: false
     });
 
@@ -571,14 +599,14 @@ class FloatingWindow extends Component<FloatingWindowProps, FloatingWindowState>
 
   private onMouseUp = () => {
     const wasDragging = this.state.isDragging;
-    this.setState({ isDragging: false, dragStart: null });
+    this.setState({isDragging: false, dragStart: null});
 
     if (wasDragging && this.state.hasMoved) {
       setTimeout(() => {
-        this.setState({ hasMoved: false });
+        this.setState({hasMoved: false});
       }, 100);
     } else {
-      this.setState({ hasMoved: false });
+      this.setState({hasMoved: false});
     }
 
     this.removeEventListeners();
@@ -599,19 +627,19 @@ class FloatingWindow extends Component<FloatingWindowProps, FloatingWindowState>
 
     // Handle window dragging
     if (this.props.isExpanded) {
-      const header = (e.target as Element).closest('.window-header');
-      const collapseBtn = (e.target as Element).closest('.collapse-btn');
+      const header = (e.target as Element).closest('[data-window-header]');
+      const collapseBtn = (e.target as Element).closest('[data-collapse-button]');
       if (!header || collapseBtn) return;
     }
 
     const touch = e.touches[0];
     this.setState({
       isDragging: true,
-      dragStart: { x: touch.clientX - this.state.position.x, y: touch.clientY - this.state.position.y },
+      dragStart: {x: touch.clientX - this.state.position.x, y: touch.clientY - this.state.position.y},
       hasMoved: false
     });
 
-    document.addEventListener('touchmove', this.onTouchMove, { passive: false });
+    document.addEventListener('touchmove', this.onTouchMove, {passive: false});
     document.addEventListener('touchend', this.onTouchEnd);
   };
 
@@ -634,14 +662,14 @@ class FloatingWindow extends Component<FloatingWindowProps, FloatingWindowState>
 
   private onTouchEnd = () => {
     const wasDragging = this.state.isDragging;
-    this.setState({ isDragging: false, dragStart: null });
+    this.setState({isDragging: false, dragStart: null});
 
     if (wasDragging && this.state.hasMoved) {
       setTimeout(() => {
-        this.setState({ hasMoved: false });
+        this.setState({hasMoved: false});
       }, 150);
     } else {
-      this.setState({ hasMoved: false });
+      this.setState({hasMoved: false});
     }
 
     this.removeEventListeners();

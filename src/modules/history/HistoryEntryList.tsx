@@ -2,6 +2,7 @@ import React from "react";
 import module, {type HistoryEntry} from "./module.ts";
 import ForceSyncSelfApplier from "../../util/applier/ForceSyncSelfApplier.ts";
 import ServerAppearanceBundlePreview from "../../components/ServerAppearanceBundlePreview.tsx";
+import Button from "../../components/Button";
 
 interface HistoryEntryListProps {
 
@@ -25,8 +26,8 @@ export default class HistoryEntryList extends React.Component<HistoryEntryListPr
   render() {
     return (<div>
       <h2>history</h2>
-      <div style={{display: "flex"}}>
-        <ul style={{flex: 1}}>
+      <div className="flex">
+        <ul className="flex-1">
           {module.history.map((entry, index) => (
             <li key={index}
                 onMouseEnter={() => this.setState({previewEntry: entry})}
@@ -35,19 +36,19 @@ export default class HistoryEntryList extends React.Component<HistoryEntryListPr
               <strong>{entry.reason.length > 0 ? entry.reason[0].text : 'unknown reason'} {new Date(entry.timestamp).toLocaleString()}</strong>
               <br/>
               {Object.entries(entry.added).length > 0 &&
-                  <span style={{color: "green"}}>{Object.entries(entry.added).length}+</span>}
+                  <span className="rw-status-success">{Object.entries(entry.added).length}+</span>}
               {Object.entries(entry.removed).length > 0 &&
-                  <span style={{color: "red"}}>{Object.entries(entry.removed).length}-</span>}
+                  <span className="rw-status-error">{Object.entries(entry.removed).length}-</span>}
               {Object.entries(entry.changed).length > 0 &&
-                  <span style={{color: "orange"}}>{Object.entries(entry.changed).length}±</span>}
+                  <span className="rw-status-warning">{Object.entries(entry.changed).length}±</span>}
               <br/>
-              <button onClick={() => this.reverntToHere(entry)}>revert</button>
-              <button onClick={() => this.undo(entry)}>undo</button>
-              <button onClick={() => this.redo(entry)}>redo</button>
+              <Button size="small" onClick={() => this.reverntToHere(entry)}>revert</Button>
+              <Button size="small" onClick={() => this.undo(entry)}>undo</Button>
+              <Button size="small" onClick={() => this.redo(entry)}>redo</Button>
             </li>
           ))}
         </ul>
-        <div style={{width: 100, height: 200}}>
+        <div className="h-[200px] w-[100px]">
           <ServerAppearanceBundlePreview bundle={this.state.previewEntry?.fully}></ServerAppearanceBundlePreview>
           {this.state.previewEntry && <>
             {Object.entries(this.state.previewEntry.added).length > 0 &&

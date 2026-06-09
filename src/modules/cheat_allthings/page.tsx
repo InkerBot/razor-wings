@@ -1,4 +1,5 @@
 import {useState} from "react";
+import Button from "../../components/Button";
 
 export default function CheatAllThings() {
   const [message, setMessage] = useState<string[]>([]);
@@ -32,7 +33,7 @@ export default function CheatAllThings() {
   return <>
     <p>获取所有物品</p>
     {message.length == 0 ?
-      <button onClick={onClick}>run</button> :
+      <Button onClick={onClick}>run</Button> :
       message.map((msg, index) => (
         <p key={index}>{msg}</p>
       ))}

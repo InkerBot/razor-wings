@@ -8,7 +8,7 @@ export default {
       throw new Error("ForceSyncSelfApplier can only be applied to Player");
     }
 
-    historyModule.pushReason({ text: "razor-wings editor" }, () => {
+    historyModule.pushReason({text: "razor-wings editor"}, () => {
       Player.Appearance = [
         ...Player.Appearance.filter(it => {
           if (configDisabledGroup(config, it.Asset.Group)) {

@@ -4,14 +4,14 @@ interface ModuleContentProps {
   Component: React.ComponentType | null;
 }
 
-const ModuleContent: React.FC<ModuleContentProps> = ({ Component }) => {
+const ModuleContent: React.FC<ModuleContentProps> = ({Component}) => {
   if (!Component) {
     return null;
   }
 
   return (
-    <div className="module-content">
-      <Component />
+    <div className="rw-module-content">
+      <Component/>
     </div>
   );
 };

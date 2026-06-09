@@ -1,6 +1,7 @@
 import React from "react";
 import module from "./module.ts";
 import ScriptEditor from "./component/ScriptEditor.tsx";
+import Button from "../../components/Button";
 
 interface MapScriptMainState {
   playerPos: ChatRoomMapPos
@@ -42,26 +43,13 @@ export default class MapMainPage extends React.Component<object, MapScriptMainSt
 
   render() {
     return (<>
-      <div style={{
-        height: '100%',
-        width: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        minHeight: 0
-      }}>
-        <div className="editor-page-buttons" style={{
-          display: 'flex',
-          flexShrink: 0
-        }}>
+      <div className="flex h-full min-h-[0] w-full flex-col">
+        <div className="rw-inline-toolbar">
           Player Position: X: {this.state.playerPos.X}, Y: {this.state.playerPos.Y}
-          <button onClick={this.loadScript}>Load</button>
-          <button onClick={this.saveScript}>Save</button>
+          <Button onClick={this.loadScript}>Load</Button>
+          <Button onClick={this.saveScript}>Save</Button>
         </div>
-        <div className="editor-page-editor" style={{
-          flex: 1,
-          minHeight: 0,
-          overflow: 'hidden'
-        }}>
+        <div className="min-h-[0] flex-1 overflow-hidden">
           <ScriptEditor value={this.state.scriptContent} onChange={(scriptContent) => this.setState({scriptContent})}/>
         </div>
       </div>

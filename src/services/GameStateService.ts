@@ -28,7 +28,7 @@ class GameStateService {
         const newScreen = CurrentScreen;
 
         if (newModule !== this.currentState.currentModule ||
-            newScreen !== this.currentState.currentScreen) {
+          newScreen !== this.currentState.currentScreen) {
           this.updateState({
             currentModule: newModule,
             currentScreen: newScreen
@@ -48,7 +48,7 @@ class GameStateService {
   async waitForPlayerLogin(): Promise<void> {
     try {
       await waitFor(() => Player && Player.Name != '');
-      this.updateState({ isPlayerLogin: true });
+      this.updateState({isPlayerLogin: true});
     } catch (error) {
       console.error('Error waiting for player login:', error);
       throw error;
@@ -67,7 +67,17 @@ class GameStateService {
   }
 
   getState(): GameState {
-    return { ...this.currentState };
+    return {...this.currentState};
+  }
+
+  reset() {
+    this.stopDetection();
+    this.listeners.clear();
+    this.currentState = {
+      currentModule: null,
+      currentScreen: null,
+      isPlayerLogin: false
+    };
   }
 
   private updateState(partialState: Partial<GameState>) {
@@ -85,8 +95,8 @@ class GameStateService {
 
   private hasStateChanged(prev: GameState, current: GameState): boolean {
     return prev.currentModule !== current.currentModule ||
-           prev.currentScreen !== current.currentScreen ||
-           prev.isPlayerLogin !== current.isPlayerLogin;
+      prev.currentScreen !== current.currentScreen ||
+      prev.isPlayerLogin !== current.isPlayerLogin;
   }
 
   private notifyListeners() {
@@ -97,16 +107,6 @@ class GameStateService {
         console.error('Error in game state listener:', error);
       }
     });
-  }
-
-  reset() {
-    this.stopDetection();
-    this.listeners.clear();
-    this.currentState = {
-      currentModule: null,
-      currentScreen: null,
-      isPlayerLogin: false
-    };
   }
 }
 

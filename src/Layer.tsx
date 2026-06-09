@@ -6,6 +6,7 @@ import ModuleHeader from './components/ModuleHeader';
 import ModuleList from './components/ModuleList';
 import ModuleContent from './components/ModuleContent';
 import SettingsPanel from './components/SettingsPanel';
+import {ViewPanel, ViewTransition} from './components/ViewTransition';
 import {applySettings, loadSettings} from './settings';
 import {razorIsPro} from "./util/pro.ts";
 import type {ModuleConfig} from "./modules.ts";
@@ -86,15 +87,22 @@ const Layer: React.FC = () => {
   };
   const finishLoading = () => setShowLoading(false);
 
-  // Derive animation classes — only when animations are enabled
-  const animForward = enableAnimations && navDir === 'forward' ? 'view-enter-forward' : '';
-  const animBackward = enableAnimations && navDir === 'backward' ? 'view-enter-backward' : '';
-  const animFade = enableAnimations ? 'view-enter-fade' : '';
+  const listAnimation = enableAnimations && navDir === 'forward'
+    ? 'forward'
+    : enableAnimations && navDir === 'backward'
+      ? 'backward'
+      : false;
+  const contentAnimation = enableAnimations && navDir === 'forward' ? 'forward' : false;
+  const settingsAnimation = enableAnimations ? 'fade' : false;
 
   const headerConfig = {
     title: "Razor Wings" + (razorIsPro() ? ' Pro' : ''),
     actions: (
-      <button className="settings-btn" onClick={toggleSettings} title="Settings">
+      <button
+        className="rw-icon-button rw-icon-button--plain"
+        onClick={toggleSettings}
+        title="Settings"
+      >
         ⚙
       </button>
     ),
@@ -108,13 +116,13 @@ const Layer: React.FC = () => {
       collapsed="R"
       initialSize={{width: 520, height: 400}}
       minSize={{width: 320, height: 240}}
-      maxSize={{ width: 1152, height: 864 }}
+      maxSize={{width: 1152, height: 864}}
       resizable={true}
     >
       {/* Sci-fi boot animation */}
       {showLoading && <LoadingScreen onComplete={finishLoading}/>}
 
-      <LoadingProgress loadingState={loadingState} />
+      <LoadingProgress loadingState={loadingState}/>
 
       <ModuleHeader
         currentModule={gameState.currentModule}
@@ -124,30 +132,33 @@ const Layer: React.FC = () => {
       />
 
       {/* ── Animated content area ── */}
-      <div className="view-transition-wrap">
+      <ViewTransition>
         {currentOpenModule === null ? (
-          <div className={`view-panel ${animForward} ${animBackward}`} key="list">
+          <ViewPanel animation={listAnimation} key="list">
             <ModuleList
               modules={availableModules}
               onModuleClick={handleOpenModule}
             />
-          </div>
+          </ViewPanel>
         ) : (
-          <div className={`view-panel ${animForward}`} key="content">
+          <ViewPanel animation={contentAnimation} key="content">
             <ModuleContent Component={currentOpenModule}/>
-          </div>
+          </ViewPanel>
         )}
-      </div>
+      </ViewTransition>
 
       {/* Settings overlay with fade animation */}
       {showSettings && (
-        <div className={`view-panel ${animFade}`} key="settings"
-             style={{position: 'absolute', inset: 0, zIndex: 'var(--rw-z-settings)'}}>
+        <ViewPanel
+          animation={settingsAnimation}
+          className="absolute inset-0 z-[var(--rw-z-settings)]"
+          key="settings"
+        >
           <SettingsPanel
             onClose={closeSettings}
             styleRoot={main.overlay!}
           />
-        </div>
+        </ViewPanel>
       )}
     </FloatingWindow>
   );

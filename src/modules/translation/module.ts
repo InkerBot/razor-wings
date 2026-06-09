@@ -28,7 +28,7 @@ class TranslationModule implements AbstractModule {
   bioEnable: boolean = false;
   bioVerticalLayout: boolean = false;
   syncInputStatus: boolean = false;
-
+  initialized: boolean = false;
   private statusTimer: ReturnType<typeof setTimeout> | null = null;
 
   switchSend(enable: boolean) {
@@ -39,8 +39,6 @@ class TranslationModule implements AbstractModule {
     this.receiveEnable = enable;
   }
 
-  initialized: boolean = false;
-
   init() {
     if (this.initialized) {
       return;
@@ -50,10 +48,6 @@ class TranslationModule implements AbstractModule {
     this.initReceiveTranslation();
     this.initSendTranslation();
     this.initBioTranslation();
-  }
-
-  private initBioTranslation() {
-    import('./bio-translate.ts').then(m => m.initBioTranslationHooks(this));
   }
 
   updateTypingStatus(text: string) {
@@ -86,6 +80,61 @@ class TranslationModule implements AbstractModule {
     this.sendBCStatus(null);
   }
 
+  translate(source: sourceLanguageCode | null, target: targetLanguageCode, text: string) {
+    if (this.providerType === 'ai') {
+      return new AiTranslationProvider(this.aiApiUrl, this.aiApiKey, this.aiModel, this.aiPrompt).translate(source ?? 'auto', target, text);
+    }
+    return new DeeplxTranslationProvider(this.apiUrl).translate(source, target, text);
+  }
+
+  loadConfig() {
+    const localStorageElement = localStorage['razorwings.translation'];
+    if (localStorageElement) {
+      const config = JSON.parse(localStorageElement);
+      this.providerType = config.providerType || this.providerType;
+      this.apiUrl = config.apiUrl || this.apiUrl;
+      this.aiApiUrl = config.aiApiUrl || this.aiApiUrl;
+      this.aiApiKey = config.aiApiKey || this.aiApiKey;
+      this.aiModel = config.aiModel || this.aiModel;
+      this.aiPrompt = config.aiPrompt || this.aiPrompt;
+      this.sendSourceLanguage = config.sendSourceLanguage || this.sendSourceLanguage;
+      this.sendTargetLanguage = config.sendTargetLanguage || this.sendTargetLanguage;
+      this.receiveSourceLanguage = config.receiveSourceLanguage || this.receiveSourceLanguage;
+      this.receiveTargetLanguage = config.receiveTargetLanguage || this.receiveTargetLanguage;
+      this.sendEnable = config.sendEnable ?? this.sendEnable;
+      this.receiveEnable = config.receiveEnable ?? this.receiveEnable;
+      this.bioEnable = config.bioEnable ?? this.bioEnable;
+      this.bioVerticalLayout = config.bioVerticalLayout ?? this.bioVerticalLayout;
+      this.syncInputStatus = config.syncInputStatus ?? this.syncInputStatus;
+    } else {
+      this.saveConfig();
+    }
+  }
+
+  saveConfig() {
+    localStorage['razorwings.translation'] = JSON.stringify({
+      providerType: this.providerType,
+      apiUrl: this.apiUrl,
+      aiApiUrl: this.aiApiUrl,
+      aiApiKey: this.aiApiKey,
+      aiModel: this.aiModel,
+      aiPrompt: this.aiPrompt,
+      sendSourceLanguage: this.sendSourceLanguage,
+      sendTargetLanguage: this.sendTargetLanguage,
+      receiveSourceLanguage: this.receiveSourceLanguage,
+      receiveTargetLanguage: this.receiveTargetLanguage,
+      sendEnable: this.sendEnable,
+      receiveEnable: this.receiveEnable,
+      bioEnable: this.bioEnable,
+      bioVerticalLayout: this.bioVerticalLayout,
+      syncInputStatus: this.syncInputStatus,
+    });
+  }
+
+  private initBioTranslation() {
+    import('./bio-translate.ts').then(m => m.initBioTranslationHooks(this));
+  }
+
   private dispatchInputChatEvent(text: string) {
     const inputChat = document.getElementById('InputChat') as HTMLTextAreaElement | null;
     if (!inputChat) return;
@@ -100,13 +149,6 @@ class TranslationModule implements AbstractModule {
     Player.Status = status;
     Player.StatusTimer = status === 'Talk' ? CommonTime() + 5000 : null;
     ServerSend('ChatRoomChat', {Content: status ?? 'null', Type: 'Status'} as never);
-  }
-
-  translate(source: sourceLanguageCode | null, target: targetLanguageCode, text: string) {
-    if (this.providerType === 'ai') {
-      return new AiTranslationProvider(this.aiApiUrl, this.aiApiKey, this.aiModel, this.aiPrompt).translate(source ?? 'auto', target, text);
-    }
-    return new DeeplxTranslationProvider(this.apiUrl).translate(source, target, text);
   }
 
   private initReceiveTranslation() {
@@ -214,50 +256,6 @@ class TranslationModule implements AbstractModule {
             ChatRoomMessage(message);
           }
         });
-    });
-  }
-
-  loadConfig() {
-    const localStorageElement = localStorage['razorwings.translation'];
-    if (localStorageElement) {
-      const config = JSON.parse(localStorageElement);
-      this.providerType = config.providerType || this.providerType;
-      this.apiUrl = config.apiUrl || this.apiUrl;
-      this.aiApiUrl = config.aiApiUrl || this.aiApiUrl;
-      this.aiApiKey = config.aiApiKey || this.aiApiKey;
-      this.aiModel = config.aiModel || this.aiModel;
-      this.aiPrompt = config.aiPrompt || this.aiPrompt;
-      this.sendSourceLanguage = config.sendSourceLanguage || this.sendSourceLanguage;
-      this.sendTargetLanguage = config.sendTargetLanguage || this.sendTargetLanguage;
-      this.receiveSourceLanguage = config.receiveSourceLanguage || this.receiveSourceLanguage;
-      this.receiveTargetLanguage = config.receiveTargetLanguage || this.receiveTargetLanguage;
-      this.sendEnable = config.sendEnable ?? this.sendEnable;
-      this.receiveEnable = config.receiveEnable ?? this.receiveEnable;
-      this.bioEnable = config.bioEnable ?? this.bioEnable;
-      this.bioVerticalLayout = config.bioVerticalLayout ?? this.bioVerticalLayout;
-      this.syncInputStatus = config.syncInputStatus ?? this.syncInputStatus;
-    } else {
-      this.saveConfig();
-    }
-  }
-
-  saveConfig() {
-    localStorage['razorwings.translation'] = JSON.stringify({
-      providerType: this.providerType,
-      apiUrl: this.apiUrl,
-      aiApiUrl: this.aiApiUrl,
-      aiApiKey: this.aiApiKey,
-      aiModel: this.aiModel,
-      aiPrompt: this.aiPrompt,
-      sendSourceLanguage: this.sendSourceLanguage,
-      sendTargetLanguage: this.sendTargetLanguage,
-      receiveSourceLanguage: this.receiveSourceLanguage,
-      receiveTargetLanguage: this.receiveTargetLanguage,
-      sendEnable: this.sendEnable,
-      receiveEnable: this.receiveEnable,
-      bioEnable: this.bioEnable,
-      bioVerticalLayout: this.bioVerticalLayout,
-      syncInputStatus: this.syncInputStatus,
     });
   }
 }

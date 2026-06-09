@@ -1,7 +1,8 @@
 import React from "react";
-import './style.css'
 import PlayerAppearanceEditor from "./PlayerAppearanceEditor.tsx";
 import PlayerSelector from "../../components/PlayerSelector.tsx";
+import Button from "../../components/Button";
+import ToggleRow from "../../components/ToggleRow";
 import UpdatePropertyApplier from "../../util/applier/UpdatePropertyApplier.ts";
 import {deserializeAppearance, serializeAppearance} from "../../util/appearanceCodec.ts";
 import ForceSyncSelfApplier from "../../util/applier/ForceSyncSelfApplier.ts";
@@ -48,60 +49,25 @@ export default function UtilEditorPage() {
   };
 
   return (
-    <div style={{
-      height: '100%',
-      width: '100%',
-      display: 'flex',
-      flexDirection: 'column',
-      minHeight: 0
-    }}>
-      <div className="editor-page-editor" style={{
-        flex: 1,
-        minHeight: 0,
-        overflow: 'hidden'
-      }}>
+    <div className="flex h-full min-h-[0] w-full flex-col">
+      <div className="min-h-[0] flex-1 overflow-hidden">
         <PlayerAppearanceEditor value={value} onChange={setValue}/>
       </div>
-      <div className="editor-page-buttons" style={{
-        display: 'flex',
-        flexShrink: 0,
-        gap: '4px',
-        flexWrap: 'wrap'
-      }}>
+      <div className="flex shrink-0 flex-wrap gap-[4px]">
         {razorIsPro() && <PlayerSelector characterId={character?.CharacterID} onChange={setCharacter}/>}
-        <label className="toggle-row" style={{flex: 'none', minWidth: 120}}>
-          <span>禁用物品</span>
-          <span className="toggle-switch"><input type="checkbox" checked={applyConfig.disableItem}
-                                                 onChange={(e) => updateApplierConfig({disableItem: e.target.checked})}/><span
-            className="toggle-slider"/></span>
-        </label>
-        <label className="toggle-row" style={{flex: 'none', minWidth: 120}}>
-          <span>禁用衣服</span>
-          <span className="toggle-switch"><input type="checkbox" checked={applyConfig.disableCloth}
-                                                 onChange={(e) => updateApplierConfig({disableCloth: e.target.checked})}/><span
-            className="toggle-slider"/></span>
-        </label>
-        <label className="toggle-row" style={{flex: 'none', minWidth: 120}}>
-          <span>禁用内衣</span>
-          <span className="toggle-switch"><input type="checkbox" checked={applyConfig.disableUnderwear}
-                                                 onChange={(e) => updateApplierConfig({disableUnderwear: e.target.checked})}/><span
-            className="toggle-slider"/></span>
-        </label>
-        <label className="toggle-row" style={{flex: 'none', minWidth: 120}}>
-          <span>禁用角色</span>
-          <span className="toggle-switch"><input type="checkbox" checked={applyConfig.disableCosplay}
-                                                 onChange={(e) => updateApplierConfig({disableCosplay: e.target.checked})}/><span
-            className="toggle-slider"/></span>
-        </label>
-        <label className="toggle-row" style={{flex: 'none', minWidth: 130}}>
-          <span>不移除现有装扮</span>
-          <span className="toggle-switch"><input type="checkbox" checked={applyConfig.disableRemove}
-                                                 onChange={(e) => updateApplierConfig({disableRemove: e.target.checked})}/><span
-            className="toggle-slider"/></span>
-        </label>
-        <button onClick={() => setValue(serializeAppearance(character))} disabled={!character}>Load</button>
-        <button onClick={() => setValue(JSON.stringify(JSON.parse(value), null, 2))}>Format</button>
-        <button disabled={!character || applying} onClick={applyCharacter}>{applying ? 'applying' : 'Apply'}</button>
+        <ToggleRow className="w-auto min-w-[120px] flex-none" checked={applyConfig.disableItem}
+                   onChange={disableItem => updateApplierConfig({disableItem})}>禁用物品</ToggleRow>
+        <ToggleRow className="w-auto min-w-[120px] flex-none" checked={applyConfig.disableCloth}
+                   onChange={disableCloth => updateApplierConfig({disableCloth})}>禁用衣服</ToggleRow>
+        <ToggleRow className="w-auto min-w-[120px] flex-none" checked={applyConfig.disableUnderwear}
+                   onChange={disableUnderwear => updateApplierConfig({disableUnderwear})}>禁用内衣</ToggleRow>
+        <ToggleRow className="w-auto min-w-[120px] flex-none" checked={applyConfig.disableCosplay}
+                   onChange={disableCosplay => updateApplierConfig({disableCosplay})}>禁用角色</ToggleRow>
+        <ToggleRow className="w-auto min-w-[130px] flex-none" checked={applyConfig.disableRemove}
+                   onChange={disableRemove => updateApplierConfig({disableRemove})}>不移除现有装扮</ToggleRow>
+        <Button onClick={() => setValue(serializeAppearance(character))} disabled={!character}>Load</Button>
+        <Button onClick={() => setValue(JSON.stringify(JSON.parse(value), null, 2))}>Format</Button>
+        <Button disabled={!character || applying} onClick={applyCharacter}>{applying ? 'applying' : 'Apply'}</Button>
       </div>
     </div>
   )

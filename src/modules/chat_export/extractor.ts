@@ -7,7 +7,7 @@ interface MessageEntryBase {
   time: string
 }
 
-interface MessageEntryChat extends MessageEntryBase{
+interface MessageEntryChat extends MessageEntryBase {
   type: 'chat';
   senderNickname: string;
   content: string;
@@ -15,7 +15,7 @@ interface MessageEntryChat extends MessageEntryBase{
   msgId?: string;
 }
 
-interface MessageEntryPrivate extends MessageEntryBase{
+interface MessageEntryPrivate extends MessageEntryBase {
   type: 'private';
   senderNickname: string;
   content: string;
@@ -23,7 +23,7 @@ interface MessageEntryPrivate extends MessageEntryBase{
   msgId?: string;
 }
 
-interface MessageEntryAction extends MessageEntryBase{
+interface MessageEntryAction extends MessageEntryBase {
   type: 'action';
   content: string;
 }
@@ -101,12 +101,12 @@ export function extract(includePrivate: boolean = false) {
           content += childDivEntry.textContent;
         }
       }
-      messages.push({ type: 'action', sender: sender, time: time, content: content });
+      messages.push({type: 'action', sender: sender, time: time, content: content});
     }
   }
 
   const resultContent = render(messages);
-  const blob = new Blob([resultContent], { type: "text/html" });
+  const blob = new Blob([resultContent], {type: "text/html"});
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;

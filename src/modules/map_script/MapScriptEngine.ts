@@ -12,7 +12,7 @@ class MapScriptEngine {
   private sandbox: Sandbox;
 
   private scriptConfig: MapScriptConfig
-  private compiledScripts: {[k: number]: CompiledScript} = {};
+  private compiledScripts: { [k: number]: CompiledScript } = {};
 
   constructor() {
     const prototypeWhitelist = Sandbox.SAFE_PROTOTYPES;
@@ -46,7 +46,7 @@ class MapScriptEngine {
       this.compiledScripts[blockId] = compiled;
     }
 
-    const execution = compiled({character: character, x: x, y: y })
+    const execution = compiled({character: character, x: x, y: y})
     execution.run()
   }
 }

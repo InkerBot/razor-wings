@@ -1,6 +1,5 @@
 import type {JSX} from "react";
 import type AbstractModule from "./modules/AbstractModule.ts";
-import {razorIsPro} from "./util/pro.ts";
 
 export type ModuleConfig = {
   displayName: string;

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 
 interface Props {
   onComplete: () => void;
@@ -6,7 +6,7 @@ interface Props {
 }
 
 /** Cyber sci-fi boot animation — shows once per expand cycle */
-const LoadingScreen: React.FC<Props> = ({ onComplete, duration = 700 }) => {
+const LoadingScreen: React.FC<Props> = ({onComplete, duration = 700}) => {
   const [phase, setPhase] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
 
@@ -21,7 +21,9 @@ const LoadingScreen: React.FC<Props> = ({ onComplete, duration = 700 }) => {
         setTimeout(onComplete, 150);
       }
     }, step);
-    return () => { if (timerRef.current !== undefined) clearInterval(timerRef.current); };
+    return () => {
+      if (timerRef.current !== undefined) clearInterval(timerRef.current);
+    };
   }, []);
 
   const phases = [
@@ -33,37 +35,37 @@ const LoadingScreen: React.FC<Props> = ({ onComplete, duration = 700 }) => {
   ];
 
   return (
-    <div className="loading-screen">
-      <div className="loading-screen-inner">
+    <div className="rw-loading-screen">
+      <div className="relative flex h-full w-full items-center justify-center">
         {/* Decorative cyber grid */}
-        <div className="loading-grid" />
+        <div className="rw-loading-grid"/>
 
         {/* Central content */}
-        <div className="loading-center">
-          <div className="loading-logo">
-            <span className="loading-bracket">{'['}</span>
-            <span className="loading-rw">RW</span>
-            <span className="loading-bracket">{']'}</span>
+        <div className="z-[1] flex flex-col items-center gap-[14px]">
+          <div className="rw-loading-logo">
+            <span className="opacity-50">{'['}</span>
+            <span className="mx-0.5">RW</span>
+            <span className="opacity-50">{']'}</span>
           </div>
 
-          <div className="loading-bar-track">
+          <div className="rw-loading-bar">
             <div
-              className="loading-bar-fill"
-              style={{ width: `${(phase / 5) * 100}%` }}
+              className="rw-loading-bar-fill"
+              style={{width: `${(phase / 5) * 100}%`}}
             />
           </div>
 
-          <div className="loading-status">
-            <span className="loading-cursor">▌</span>
+          <div className="rw-loading-phase">
+            <span className="rw-loading-cursor">▌</span>
             {phase < 5 ? phases[phase] : phases[4]}
           </div>
         </div>
 
         {/* Corner decorations */}
-        <div className="loading-corner tl" />
-        <div className="loading-corner tr" />
-        <div className="loading-corner bl" />
-        <div className="loading-corner br" />
+        <div className="rw-loading-corner left-[8px] top-[8px] border-l border-t"/>
+        <div className="rw-loading-corner right-[8px] top-[8px] border-r border-t [animation-delay:0.3s]"/>
+        <div className="rw-loading-corner bottom-[8px] left-[8px] border-b border-l [animation-delay:0.6s]"/>
+        <div className="rw-loading-corner bottom-[8px] right-[8px] border-b border-r [animation-delay:0.9s]"/>
       </div>
     </div>
   );

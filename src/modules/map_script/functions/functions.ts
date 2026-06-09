@@ -43,7 +43,7 @@ export default {
     const hairFront = InventoryGet(character, "HairFront");
     const hairBack = InventoryGet(character, "HairBack");
 
-    let itemColor: string|string[]|undefined;
+    let itemColor: string | string[] | undefined;
     if (hairFront && hairFront.Color) {
       itemColor = hairFront.Color;
     } else if (hairBack && hairBack.Color) {

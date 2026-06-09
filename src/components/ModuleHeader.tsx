@@ -8,18 +8,21 @@ interface ModuleHeaderProps {
 }
 
 const ModuleHeader: React.FC<ModuleHeaderProps> = ({
-  currentModule,
-  currentScreen,
-  showBackButton,
-  onBack
-}) => {
+                                                     currentModule,
+                                                     currentScreen,
+                                                     showBackButton,
+                                                     onBack
+                                                   }) => {
   return (
-    <div className="module-header">
-      <span className="location-info">
+    <div className="rw-module-header">
+      <span className="rw-module-header-location">
         Current location: {currentModule ?? 'unknown'} - {currentScreen ?? 'unknown'}
       </span>
       {showBackButton && (
-        <button className="back-btn" onClick={onBack}>
+        <button
+          className="rw-module-back-button"
+          onClick={onBack}
+        >
           ← Back
         </button>
       )}

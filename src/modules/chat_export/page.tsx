@@ -1,17 +1,13 @@
 import {useState} from "react";
 import {extract} from "./extractor.ts";
+import Button from "../../components/Button";
+import ToggleRow from "../../components/ToggleRow";
 
 export default function ChatExportPage() {
   const [includePrivate, setIncludePrivate] = useState<boolean>(false);
   return (<>
-    <label className="toggle-row">
-      <span>包含私聊消息</span>
-      <span className="toggle-switch">
-        <input type="checkbox" checked={includePrivate} onChange={e => setIncludePrivate(e.target.checked)}/>
-        <span className="toggle-slider"/>
-      </span>
-    </label>
+    <ToggleRow checked={includePrivate} onChange={setIncludePrivate}>包含私聊消息</ToggleRow>
 
-    <button onClick={() => extract(includePrivate)}>run</button>
+    <Button onClick={() => extract(includePrivate)}>run</Button>
   </>)
 }

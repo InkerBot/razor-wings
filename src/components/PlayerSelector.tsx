@@ -1,4 +1,5 @@
-import {useEffect, useState, useCallback, useMemo, useRef} from "react";
+import {useCallback, useEffect, useMemo, useRef, useState} from "react";
+import {InlineLabel, Select} from "./FieldControls";
 
 interface PlayerSelectorProps {
   characterId?: string;
@@ -56,18 +57,18 @@ export default function PlayerSelector({
   }, [players, onChange]);
 
   const playerOptions = useMemo(() =>
-    players.map((character) => ({
-      id: character.CharacterID,
-      displayName: character.Nickname || character.Name,
-      name: character.Name,
-    })),
+      players.map((character) => ({
+        id: character.CharacterID,
+        displayName: character.Nickname || character.Name,
+        name: character.Name,
+      })),
     [players]
   );
 
   return (
-    <label htmlFor="player-select">
+    <InlineLabel htmlFor="player-select">
       选择玩家:
-      <select
+      <Select
         id="player-select"
         value={characterId || ""}
         onChange={handlePlayerChange}
@@ -80,7 +81,7 @@ export default function PlayerSelector({
             {displayName} ({name})
           </option>
         ))}
-      </select>
-    </label>
+      </Select>
+    </InlineLabel>
   );
 }

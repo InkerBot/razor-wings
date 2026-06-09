@@ -1,6 +1,7 @@
 import './bio-style.css?page'
 import razorModSdk from "../../razor-wings";
 import type module from "./module.ts";
+
 type TranslationModule = typeof module;
 
 const CONTAINER_ID = 'rw-bio-container';

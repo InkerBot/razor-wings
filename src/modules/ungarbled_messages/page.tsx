@@ -1,5 +1,6 @@
 import {useEffect, useState} from "react";
 import module from "./module.ts";
+import ToggleRow from "../../components/ToggleRow";
 
 export default function UngarbledMessagesPage() {
   const [enabled, setEnabled] = useState(module.enabled);
@@ -14,12 +15,7 @@ export default function UngarbledMessagesPage() {
       <p>显示未加扰消息</p>
       <p>此功能可以显示被口球等道具加扰前的原始消息内容。</p>
 
-      <label className="toggle-row">
-        <span>启用</span>
-        <span className="toggle-switch">
-          <input type="checkbox" checked={enabled} onChange={e => setEnabled(e.target.checked)}/>
-          <span className="toggle-slider"/></span>
-      </label>
+      <ToggleRow checked={enabled} onChange={setEnabled}>启用</ToggleRow>
     </div>
   );
 }

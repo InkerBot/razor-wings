@@ -2,6 +2,8 @@ import type DglabProvider from "./DglabProvider.ts";
 import {BrowserSupportStatus, ConnectionStatus} from "./DglabProvider.ts";
 import {type JSX} from "react";
 import module from "../module.ts";
+import Button from "../../../components/Button";
+import {InlineLabel, RangeInput, Select} from "../../../components/FieldControls";
 
 const DG2_PREFIX = 'D-LAB'; // Scan prefix
 const DG2_SERVICE_ID = '955a180b-0fe2-f5aa-a094-84b8d4f3e8ad'; // Service ID
@@ -166,60 +168,59 @@ export default class DglabV2Provider implements DglabProvider {
           <>
             {/* Connection control buttons */}
             {this.state.connectionStatus === ConnectionStatus.DISCONNECTED && (
-              <button onClick={this.scanAndConnect}>Scan Coyote Device</button>
+              <Button onClick={this.scanAndConnect}>Scan Coyote Device</Button>
             )}
 
             {this.state.connectionStatus === ConnectionStatus.CONNECTING && (
-              <button disabled>Connecting...</button>
+              <Button disabled>Connecting...</Button>
             )}
 
             {this.state.connectionStatus === ConnectionStatus.CONNECTED && (
-              <button onClick={this.disconnect}>Disconnect Device</button>
+              <Button variant="danger" onClick={this.disconnect}>Disconnect Device</Button>
             )}
 
             {/* Device status info */}
             {this.state.connectionStatus === ConnectionStatus.CONNECTED && (
               <>
-                <p>Battery: {this.state.batteryLevel}% Strength: <span style={{
-                  color: (this.state.powerLevelA == this.state.realPowerLevelA) ? 'green' : 'red'
-                }}>{this.state.powerLevelA}-{this.state.realPowerLevelA}</span> | <span style={{
-                  color: (this.state.powerLevelB == this.state.realPowerLevelB) ? 'green' : 'red'
-                }}>{this.state.powerLevelB}-{this.state.realPowerLevelB}</span> Transmit: <span
-                  style={{color: 'green'}}>{this.state.transmitCount}</span> | <span
-                  style={{color: 'red'}}>{this.state.errorCount}</span></p>
+                <p>Battery: {this.state.batteryLevel}% Strength: <span
+                  className={(this.state.powerLevelA == this.state.realPowerLevelA) ? "rw-status-success" : "rw-status-error"}>{this.state.powerLevelA}-{this.state.realPowerLevelA}</span> | <span
+                  className={(this.state.powerLevelB == this.state.realPowerLevelB) ? "rw-status-success" : "rw-status-error"}>{this.state.powerLevelB}-{this.state.realPowerLevelB}</span> Transmit: <span
+                  className="rw-status-success">{this.state.transmitCount}</span> | <span
+                  className="rw-status-error">{this.state.errorCount}</span></p>
               </>
             )}
 
             {/* Power level controls */}
             {this.state.connectionStatus === ConnectionStatus.CONNECTED && (
-              <div>
-                <label>
-                  Power A:
-                  <input type="range" min={0} max={this.state.maxPower} step={1} value={this.state.maxPowerA}
-                         onChange={e => this.setState({maxPowerA: Number(e.target.value)})}
-                         placeholder="max power A"/>
-                  {this.state.maxPowerA}
-                </label>
-                <br/>
-                <label>
-                  Power B:
-                  <input type="range" min={0} max={this.state.maxPower} step={1} value={this.state.maxPowerB}
-                         onChange={e => this.setState({maxPowerB: Number(e.target.value)})}
-                         placeholder="max power B"/>
-                  {this.state.maxPowerB}
-                </label>
+              <div className="flex flex-col gap-[var(--rw-space-2)]">
+                <InlineLabel className="w-full">
+                  <span className="w-[64px]">Power A:</span>
+                  <RangeInput min={0} max={this.state.maxPower} step={1} value={this.state.maxPowerA}
+                              onChange={e => this.setState({maxPowerA: Number(e.target.value)})}
+                              placeholder="max power A" className="flex-1"/>
+                  <span className="rw-value w-[48px]">{this.state.maxPowerA}</span>
+                </InlineLabel>
+                <InlineLabel className="w-full">
+                  <span className="w-[64px]">Power B:</span>
+                  <RangeInput min={0} max={this.state.maxPower} step={1} value={this.state.maxPowerB}
+                              onChange={e => this.setState({maxPowerB: Number(e.target.value)})}
+                              placeholder="max power B" className="flex-1"/>
+                  <span className="rw-value w-[48px]">{this.state.maxPowerB}</span>
+                </InlineLabel>
               </div>
             )}
 
             {/* Waveform selection and transmit control */}
             {this.state.connectionStatus === ConnectionStatus.CONNECTED && (
-              <div>
-                <label>Select waveform to send to AB channel:</label>
-                <select value={this.state.selectedWave} onChange={this.handleWaveChange}>
-                  <option value="a">Waveform A</option>
-                  <option value="b">Waveform B</option>
-                  <option value="c">Waveform C</option>
-                </select>
+              <div className="mt-[var(--rw-space-2)]">
+                <InlineLabel>
+                  <span>Select waveform to send to AB channel:</span>
+                  <Select value={this.state.selectedWave} onChange={this.handleWaveChange}>
+                    <option value="a">Waveform A</option>
+                    <option value="b">Waveform B</option>
+                    <option value="c">Waveform C</option>
+                  </Select>
+                </InlineLabel>
               </div>
             )}
           </>

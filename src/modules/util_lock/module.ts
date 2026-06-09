@@ -57,7 +57,7 @@ class UtilLockModule implements AbstractModule {
     })
     target.ArousalSettings.Progress = 0
 
-    historyModule.pushReason({ text: "razor-wings lock" }, () => {
+    historyModule.pushReason({text: "razor-wings lock"}, () => {
       if (!razorIsPro()) {
         sendActivityText(`${Player.Nickname || Player.Name} 上锁了 ${target.Nickname || target.Name} 的拘束。`);
       }
