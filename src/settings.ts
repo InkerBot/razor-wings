@@ -9,6 +9,7 @@ export interface UserSettings {
   backdropBlur: number;      // 0-20, default 16 (px)
   enableAnimations: boolean; // default true
   themeMode: 'dark' | 'light'; // default 'dark'
+  language: 'zh-CN' | 'en-US'; // default 'zh-CN'
 }
 
 const DEFAULTS: UserSettings = {
@@ -20,6 +21,7 @@ const DEFAULTS: UserSettings = {
   backdropBlur: 16,
   enableAnimations: true,
   themeMode: 'dark',
+  language: 'zh-CN',
 };
 
 export function loadSettings(): UserSettings {

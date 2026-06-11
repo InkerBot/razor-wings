@@ -1,4 +1,5 @@
 import React from "react";
+import {withTranslation, type WithTranslation} from "react-i18next";
 import module from "@/modules/util_trap/module.ts";
 import type {TrapScript} from "@/modules/util_trap/TrapConfig.ts";
 import ScriptEditor from "@/modules/map_script/component/ScriptEditor.tsx";
@@ -17,7 +18,7 @@ interface TrapMainState {
   selectedCharacter: Character | null;
 }
 
-export default class TrapMain extends React.Component<object, TrapMainState> {
+class TrapMain extends React.Component<WithTranslation, TrapMainState> {
   state: TrapMainState = {
     scripts: module.config.scripts,
     selectedScriptId: null,
@@ -43,9 +44,10 @@ export default class TrapMain extends React.Component<object, TrapMainState> {
   }
 
   handleNewScript = () => {
+    const {t} = this.props;
     const newScript: TrapScript = {
       id: Date.now().toString(),
-      name: '新脚本',
+      name: t('trap.newScriptName'),
       content: '',
       enabled: true
     };
@@ -59,8 +61,9 @@ export default class TrapMain extends React.Component<object, TrapMainState> {
   };
 
   handleDeleteScript = () => {
+    const {t} = this.props;
     if (!this.state.selectedScriptId) return;
-    if (!confirm('确定要删除这个脚本吗？')) return;
+    if (!confirm(t('trap.confirmDelete'))) return;
 
     const index = module.config.scripts.findIndex(s => s.id === this.state.selectedScriptId);
     if (index >= 0) {
@@ -110,30 +113,31 @@ export default class TrapMain extends React.Component<object, TrapMainState> {
   };
 
   render() {
+    const {t} = this.props;
     const selectedScript = this.state.selectedScriptId
       ? module.config.scripts.find(s => s.id === this.state.selectedScriptId)
       : null;
 
     return (
       <div className="flex h-full min-h-[0] w-full flex-col">
-        {/* 顶部陷阱屋开关 */}
+        {/* Trap room toggle */}
         <div className="rw-panel-toolbar border-b-2">
           <ToggleRow
             checked={this.state.trapRoomEnabled}
             onChange={this.handleToggleTrapRoom}
             padding="none"
           >
-            <span className="text-[16px] font-bold">陷阱屋模式</span>
+            <span className="text-[16px] font-bold">{t('trap.trapRoomMode')}</span>
           </ToggleRow>
         </div>
 
-        {/* 主内容区域 */}
+        {/* Main content */}
         <div className="flex min-h-[0] flex-1 flex-row">
-          {/* 左侧脚本列表 */}
+          {/* Script list */}
           <div className="flex min-h-0 w-[250px] flex-col border-r border-r-[color:var(--rw-border-color)]">
             <div className="rw-panel-toolbar flex-col items-stretch">
               <Button onClick={this.handleNewScript} className="mb-[5px] w-full">
-                新建脚本
+                {t('trap.newScript')}
               </Button>
               <Button
                 onClick={this.handleDeleteScript}
@@ -141,7 +145,7 @@ export default class TrapMain extends React.Component<object, TrapMainState> {
                 variant="danger"
                 className="w-full"
               >
-                删除脚本
+                {t('trap.deleteScript')}
               </Button>
             </div>
             <div className="min-h-[0] flex-1 overflow-y-auto">
@@ -161,7 +165,7 @@ export default class TrapMain extends React.Component<object, TrapMainState> {
                       e.stopPropagation();
                       this.handleToggleEnabled(script.id);
                     }}
-                    title={script.enabled ? '禁用' : '启用'}
+                    title={script.enabled ? t('common.disable') : t('common.enable')}
                     className="absolute h-[0] w-[0] opacity-0"
                   />
                   <span
@@ -176,25 +180,25 @@ export default class TrapMain extends React.Component<object, TrapMainState> {
               ))}
               {this.state.scripts.length === 0 && (
                 <div className="p-[var(--rw-space-5)] text-center text-[color:var(--rw-text-muted)]">
-                  暂无脚本
+                  {t('trap.noScripts')}
                 </div>
               )}
             </div>
           </div>
 
-          {/* 右侧编辑器 */}
+          {/* Editor */}
           <div className="flex min-h-[0] flex-1 flex-col">
             {selectedScript ? (
               <>
                 <div className="rw-panel-toolbar">
-                  <span>脚本名称:</span>
+                  <span>{t('trap.scriptName')}</span>
                   <TextInput
                     type="text"
                     value={this.state.editingName}
                     onChange={(e) => this.setState({editingName: e.target.value})}
                     className="flex-1"
                   />
-                  <Button onClick={this.handleSaveScript}>保存</Button>
+                  <Button onClick={this.handleSaveScript}>{t('common.save')}</Button>
                   <PlayerSelector characterId={this.state.selectedCharacter?.CharacterID}
                                   onChange={(character) => this.setState({selectedCharacter: character})}/>
                   <Button onClick={() => {
@@ -202,12 +206,12 @@ export default class TrapMain extends React.Component<object, TrapMainState> {
                       try {
                         module.runTrapOnCharacter(this.state.selectedCharacter, selectedScript, this.state.editingContent);
                       } catch (e) {
-                        ToastManager.error('运行脚本时出错，详情请查看控制台');
+                        ToastManager.error(t('trap.runError'));
                         console.error(e);
                       }
                     }
                   }}>
-                    运行脚本
+                    {t('trap.runScript')}
                   </Button>
                 </div>
                 <div className="min-h-[0] flex-1 overflow-hidden">
@@ -219,7 +223,7 @@ export default class TrapMain extends React.Component<object, TrapMainState> {
               </>
             ) : (
               <div className="flex h-full items-center justify-center text-[color:var(--rw-text-muted)]">
-                请选择或新建一个脚本
+                {t('trap.selectOrCreate')}
               </div>
             )}
           </div>
@@ -228,3 +232,5 @@ export default class TrapMain extends React.Component<object, TrapMainState> {
     );
   }
 }
+
+export default withTranslation()(TrapMain);

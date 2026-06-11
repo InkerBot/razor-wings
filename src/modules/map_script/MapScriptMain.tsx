@@ -1,4 +1,5 @@
 import React from "react";
+import {withTranslation, type WithTranslation} from "react-i18next";
 import module from "@/modules/map_script/module.ts";
 import ScriptEditor from "@/modules/map_script/component/ScriptEditor.tsx";
 import Button from "@/components/Button";
@@ -8,7 +9,7 @@ interface MapScriptMainState {
   scriptContent: string
 }
 
-export default class MapMainPage extends React.Component<object, MapScriptMainState> {
+class MapMainPage extends React.Component<WithTranslation, MapScriptMainState> {
   state: MapScriptMainState = {
     playerPos: module.playerPos,
     scriptContent: ''
@@ -42,12 +43,14 @@ export default class MapMainPage extends React.Component<object, MapScriptMainSt
   }
 
   render() {
+    const {t} = this.props;
+
     return (<>
       <div className="flex h-full min-h-[0] w-full flex-col">
         <div className="rw-inline-toolbar">
-          Player Position: X: {this.state.playerPos.X}, Y: {this.state.playerPos.Y}
-          <Button onClick={this.loadScript}>Load</Button>
-          <Button onClick={this.saveScript}>Save</Button>
+          {t('mapScript.playerPosition', {x: this.state.playerPos.X, y: this.state.playerPos.Y})}
+          <Button onClick={this.loadScript}>{t('common.load')}</Button>
+          <Button onClick={this.saveScript}>{t('common.save')}</Button>
         </div>
         <div className="min-h-[0] flex-1 overflow-hidden">
           <ScriptEditor value={this.state.scriptContent} onChange={(scriptContent) => this.setState({scriptContent})}/>
@@ -56,3 +59,5 @@ export default class MapMainPage extends React.Component<object, MapScriptMainSt
     </>);
   }
 }
+
+export default withTranslation()(MapMainPage);

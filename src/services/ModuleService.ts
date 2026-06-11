@@ -1,5 +1,6 @@
 import modules, {type ModuleConfig} from "@/modules.ts";
 import type {GameState} from "@/services/GameStateService.ts";
+import i18n from "@/i18n";
 
 export interface ModuleLoadingState {
   isLoading: boolean;
@@ -72,7 +73,7 @@ class ModuleService {
   }
 
   async initModulesAfterLogin(): Promise<void> {
-    console.info('Player logged in, initializing Razor Wings modules...');
+    console.info(i18n.t('loading.playerLoggedInInitializingModules'));
 
     try {
       const moduleEntries = Object.entries(modules);

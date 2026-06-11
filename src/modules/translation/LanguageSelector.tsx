@@ -1,4 +1,5 @@
 import React from 'react';
+import {useTranslation} from 'react-i18next';
 import {type languageCode, sourceLanguages, targetLanguages} from "@/modules/translation/languages.ts";
 import {Select} from "@/components/FieldControls";
 import {cn} from "@/util/cn";
@@ -20,10 +21,11 @@ export default function LanguageSelector(
     onChange,
     className = '',
     disabled = false,
-    placeholder = 'select language',
+    placeholder = '',
     label,
   }: LanguageSelectorProps) {
   const availableLanguages = type === 'source' ? sourceLanguages : targetLanguages;
+  const {t} = useTranslation();
 
   const handleLanguageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newLanguage = e.target.value;
@@ -42,7 +44,7 @@ export default function LanguageSelector(
         disabled={disabled}
       >
         <option value="">
-          {placeholder}
+          {placeholder || t('translation.selectLanguage')}
         </option>
         {Object.values(availableLanguages).map((lang) => (
           <option key={lang.code} value={lang.code}>

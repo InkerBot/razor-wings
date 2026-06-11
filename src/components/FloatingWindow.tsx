@@ -1,6 +1,7 @@
 import React, {Component, type ReactNode} from 'react';
 import type {Position, Size} from "@/types";
 import {cn} from "@/util/cn";
+import i18n from "@/i18n";
 
 export interface HeaderConfig {
   /** Header title */
@@ -247,7 +248,7 @@ class FloatingWindow extends Component<FloatingWindowProps, FloatingWindowState>
               data-collapse-button
               className="rw-window-collapse-button"
               onClick={this.handleToggleExpanded}
-              aria-label="Toggle window"
+              aria-label={i18n.t('common.toggleWindow')}
             >
               {toggleButtonContent || '_'}
             </button>
@@ -265,7 +266,7 @@ class FloatingWindow extends Component<FloatingWindowProps, FloatingWindowState>
           collapsedConfig.className || "",
         )}
         onClick={this.handleToggleExpanded}
-        aria-label="Expand window"
+        aria-label={i18n.t('common.expandWindow')}
       >
         {collapsedConfig.content}
       </button>

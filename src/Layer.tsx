@@ -1,4 +1,5 @@
 import React, {useEffect, useState} from 'react';
+import {useTranslation} from 'react-i18next';
 import FloatingWindow from '@/components/FloatingWindow';
 import LoadingProgress from '@/components/LoadingProgress';
 import LoadingScreen from '@/components/LoadingScreen';
@@ -16,6 +17,7 @@ import {useGameState} from '@/hooks/useGameState';
 import {useModuleManager} from '@/hooks/useModuleManager';
 
 const Layer: React.FC = () => {
+  const {t} = useTranslation();
   const [isExpanded, setIsExpanded] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showLoading, setShowLoading] = useState(false);
@@ -96,12 +98,12 @@ const Layer: React.FC = () => {
   const settingsAnimation = enableAnimations ? 'fade' : false;
 
   const headerConfig = {
-    title: "Razor Wings" + (razorIsPro() ? ' Pro' : ''),
+    title: t('common.appName') + (razorIsPro() ? ' Pro' : ''),
     actions: (
       <button
         className="rw-icon-button rw-icon-button--plain"
         onClick={toggleSettings}
-        title="Settings"
+        title={t('common.settings')}
       >
         ⚙
       </button>

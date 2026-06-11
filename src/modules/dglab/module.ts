@@ -7,9 +7,11 @@ import DglabV3BlueToothProvider from '@/modules/dglab/provider/DglabV3BlueToothP
 import {ConfigRegistry} from "@/modules/dglab/controller/ConfigRegistry.ts";
 import {ToyIntensitySystem} from "@/modules/dglab/controller/ToyIntensitySystem.ts";
 import razorModSdk from "@/razor-wings";
+import i18n from "@/i18n";
 
 interface DglabProviderEntry {
-  name: string;
+  id: string;
+  nameKey: string;
   provider: () => DglabProvider;
 }
 
@@ -40,22 +42,26 @@ class DglabModule implements AbstractModule {
   activityEffect = [];
 
   provider: DglabProvider = new TestProvider();
-  providerName: string = '测试';
+  providerName: string = 'test';
   providerList: DglabProviderEntry[] = [
     {
-      name: '测试',
+      id: 'test',
+      nameKey: 'dglab.providers.test',
       provider: () => new TestProvider(),
     },
     {
-      name: '郊狼v2 蓝牙协议',
+      id: 'v2Bluetooth',
+      nameKey: 'dglab.providers.v2Bluetooth',
       provider: () => new DglabV2Provider(),
     },
     {
-      name: '郊狼v3 WebSocket协议',
+      id: 'v3Websocket',
+      nameKey: 'dglab.providers.v3Websocket',
       provider: () => new DglabV3WebsocketProvider(),
     },
     {
-      name: '郊狼v3 蓝牙协议 [WIP]',
+      id: 'v3Bluetooth',
+      nameKey: 'dglab.providers.v3Bluetooth',
       provider: () => new DglabV3BlueToothProvider(),
     }
   ];
@@ -72,7 +78,7 @@ class DglabModule implements AbstractModule {
     const tigger = (action, target, item) => {
       const intensity = this.intensitySystem.calculateIntensity(action, target, item);
       if (intensity > 0) {
-        console.info(`Dglab 触发: action=${action}, target=${target}, item=${item}, intensity=${intensity}`);
+        console.info(i18n.t('dglab.activityTriggered', {action, target, item, intensity}));
         this.activityEffect.push({
           intensity: intensity,
           startTime: Date.now(),
@@ -88,7 +94,7 @@ class DglabModule implements AbstractModule {
         case 'Activity': {
           const dictionary = extractDictionary(message.Dictionary);
           if (dictionary['TargetCharacter'] == Player.MemberNumber) {
-            console.info('Dglab 收到Activity消息:', message, dictionary);
+            console.info(i18n.t('dglab.activityMessageReceived'), message, dictionary);
 
             tigger(
               dictionary['ActivityName'] as string,
@@ -105,7 +111,7 @@ class DglabModule implements AbstractModule {
             || dictionary['DestinationCharacter']?.['MemberNumber'] == Player.MemberNumber
             || dictionary['TargetCharacterName']?.['MemberNumber'] == Player.MemberNumber
           ) {
-            console.info('Dglab 收到Action消息:', message, dictionary);
+            console.info(i18n.t('dglab.actionMessageReceived'), message, dictionary);
 
             tigger(
               message.Content,
@@ -165,12 +171,12 @@ class DglabModule implements AbstractModule {
     if (name === this.providerName) {
       return;
     }
-    const entry = this.providerList.find(p => p.name === name);
+    const entry = this.providerList.find(p => p.id === name);
     if (entry) {
       const previousProvider = this.provider;
 
       this.provider = entry.provider();
-      this.providerName = name;
+      this.providerName = entry.id;
 
       previousProvider.destroy()
       this.provider.initial();
@@ -178,7 +184,7 @@ class DglabModule implements AbstractModule {
 
       action?.(this.provider);
     } else {
-      throw new Error('未找到指定的提供者: ' + name);
+      throw new Error(i18n.t('dglab.providerNotFound', {name}));
     }
   }
 

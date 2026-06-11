@@ -1,10 +1,12 @@
 import React, {useCallback, useEffect, useState} from 'react';
+import {useTranslation} from 'react-i18next';
 import {applySettings, loadSettings, saveSettings, type UserSettings} from '@/settings';
 import Button from '@/components/Button';
-import {RangeInput} from '@/components/FieldControls';
+import {RangeInput, Select} from '@/components/FieldControls';
 import {FormField, FormSectionTitle} from '@/components/Form';
 import ToggleRow from '@/components/ToggleRow';
 import {cn} from "@/util/cn";
+import i18n, {APP_LANGUAGES, normalizeAppLanguage} from "@/i18n";
 
 interface Props {
   onClose: () => void;
@@ -12,21 +14,22 @@ interface Props {
   styleRoot: HTMLElement;
 }
 
-const ACCENT_OPTIONS: { value: string; label: string; color: string }[] = [
-  {value: 'cyan', label: 'Cyan', color: '#00e5ff'},
-  {value: 'blue', label: 'Blue', color: '#448aff'},
-  {value: 'purple', label: 'Purple', color: '#7c4dff'},
-  {value: 'green', label: 'Green', color: '#00e676'},
-  {value: 'red', label: 'Red', color: '#ff4444'},
-  {value: 'pink', label: 'Pink', color: '#ff80ab'},
+const ACCENT_OPTIONS: { value: string; labelKey: string; color: string }[] = [
+  {value: 'cyan', labelKey: 'settings.accents.cyan', color: '#00e5ff'},
+  {value: 'blue', labelKey: 'settings.accents.blue', color: '#448aff'},
+  {value: 'purple', labelKey: 'settings.accents.purple', color: '#7c4dff'},
+  {value: 'green', labelKey: 'settings.accents.green', color: '#00e676'},
+  {value: 'red', labelKey: 'settings.accents.red', color: '#ff4444'},
+  {value: 'pink', labelKey: 'settings.accents.pink', color: '#ff80ab'},
 ];
 
-const THEME_OPTIONS: { value: 'dark' | 'light'; label: string; icon: string }[] = [
-  {value: 'dark', label: '深色', icon: '🌙'},
-  {value: 'light', label: '浅色', icon: '☀️'},
+const THEME_OPTIONS: { value: 'dark' | 'light'; labelKey: string; icon: string }[] = [
+  {value: 'dark', labelKey: 'settings.theme.dark', icon: '🌙'},
+  {value: 'light', labelKey: 'settings.theme.light', icon: '☀️'},
 ];
 
 const SettingsPanel: React.FC<Props> = ({onClose, styleRoot}) => {
+  const {t} = useTranslation();
   const [settings, setSettings] = useState<UserSettings>(() => loadSettings());
 
   const update = useCallback((patch: Partial<UserSettings>) => {
@@ -34,6 +37,9 @@ const SettingsPanel: React.FC<Props> = ({onClose, styleRoot}) => {
       const next = {...prev, ...patch};
       saveSettings(next);
       applySettings(next, styleRoot);
+      if (patch.language) {
+        void i18n.changeLanguage(normalizeAppLanguage(patch.language));
+      }
       return next;
     });
   }, [styleRoot]);
@@ -48,10 +54,12 @@ const SettingsPanel: React.FC<Props> = ({onClose, styleRoot}) => {
       backdropBlur: 16,
       enableAnimations: true,
       themeMode: 'dark',
+      language: 'zh-CN',
     };
     setSettings(def);
     saveSettings(def);
     applySettings(def, styleRoot);
+    void i18n.changeLanguage(def.language);
   };
 
   // Apply on mount
@@ -66,15 +74,16 @@ const SettingsPanel: React.FC<Props> = ({onClose, styleRoot}) => {
           <button
             className="rw-icon-button rw-icon-button--cyan"
             onClick={onClose}
-            title="返回主菜单"
+            title={t('common.backToMainMenu')}
           >
             ←
           </button>
-          <h3 className="rw-settings-title">Settings</h3>
+          <h3 className="rw-settings-title">{t('settings.title')}</h3>
         </div>
         <button
           className="rw-icon-button rw-icon-button--magenta"
           onClick={onClose}
+          title={t('common.close')}
         >
           ✕
         </button>
@@ -82,8 +91,8 @@ const SettingsPanel: React.FC<Props> = ({onClose, styleRoot}) => {
       <div className="flex-1 overflow-y-auto p-[var(--rw-space-3)]">
 
         {/* Font Size */}
-        <FormSectionTitle>Typography</FormSectionTitle>
-        <FormField label="字号大小" controlClassName="gap-[8px]">
+        <FormSectionTitle>{t('settings.sections.typography')}</FormSectionTitle>
+        <FormField label={t('settings.fields.fontSize')} controlClassName="gap-[8px]">
           <RangeInput
             min="12"
             max="20"
@@ -98,8 +107,8 @@ const SettingsPanel: React.FC<Props> = ({onClose, styleRoot}) => {
         </FormField>
 
         {/* Theme Mode — Dark / Light */}
-        <FormSectionTitle className="mt-[var(--rw-space-3)]">Theme</FormSectionTitle>
-        <FormField label="主题模式" controlClassName="gap-[4px]">
+        <FormSectionTitle className="mt-[var(--rw-space-3)]">{t('settings.sections.theme')}</FormSectionTitle>
+        <FormField label={t('settings.fields.themeMode')} controlClassName="gap-[4px]">
           {THEME_OPTIONS.map(opt => (
             <Button
               key={opt.value}
@@ -107,35 +116,50 @@ const SettingsPanel: React.FC<Props> = ({onClose, styleRoot}) => {
               onClick={() => update({themeMode: opt.value})}
               className="flex-1 px-[8px] py-[6px] text-[13px]"
             >
-              {opt.icon} {opt.label}
+              {opt.icon} {t(opt.labelKey)}
             </Button>
           ))}
         </FormField>
 
+        <FormField label={t('settings.fields.language')} controlClassName="w-full">
+          <Select
+            className="w-full"
+            value={settings.language}
+            onChange={e => update({language: normalizeAppLanguage(e.target.value)})}
+          >
+            {APP_LANGUAGES.map(opt => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </Select>
+        </FormField>
+
         {/* Accent Color */}
-        <FormField label="主题色" controlClassName="grid w-full grid-cols-3 gap-[6px]">
+        <FormField label={t('settings.fields.accentColor')} controlClassName="grid w-full grid-cols-3 gap-[6px]">
           {ACCENT_OPTIONS.map(opt => {
             const active = settings.accentColor === opt.value;
+            const label = t(opt.labelKey);
             return (
               <button
                 key={opt.value}
                 className={cn("rw-color-option", active && "rw-color-option--active")}
                 onClick={() => update({accentColor: opt.value})}
-                title={opt.label}
+                title={label}
               >
                 <span
                   className={cn("rw-color-swatch", active && "rw-color-swatch--active")}
                   style={{background: opt.color}}
                 />
-                <span className="text-[11px] font-[var(--rw-font-weight-medium)]">{opt.label}</span>
+                <span className="text-[11px] font-[var(--rw-font-weight-medium)]">{label}</span>
               </button>
             );
           })}
         </FormField>
 
         {/* Background Opacity */}
-        <FormSectionTitle className="mt-[var(--rw-space-3)]">Appearance</FormSectionTitle>
-        <FormField label="背景透明度" controlClassName="gap-[8px]">
+        <FormSectionTitle className="mt-[var(--rw-space-3)]">{t('settings.sections.appearance')}</FormSectionTitle>
+        <FormField label={t('settings.fields.bgOpacity')} controlClassName="gap-[8px]">
           <RangeInput
             min="70"
             max="100"
@@ -150,7 +174,7 @@ const SettingsPanel: React.FC<Props> = ({onClose, styleRoot}) => {
         </FormField>
 
         {/* Backdrop Blur */}
-        <FormField label="毛玻璃模糊" controlClassName="gap-[8px]">
+        <FormField label={t('settings.fields.backdropBlur')} controlClassName="gap-[8px]">
           <RangeInput
             min="0"
             max="20"
@@ -165,7 +189,7 @@ const SettingsPanel: React.FC<Props> = ({onClose, styleRoot}) => {
         </FormField>
 
         {/* Glow Intensity */}
-        <FormField label="发光强度" controlClassName="gap-[8px]">
+        <FormField label={t('settings.fields.glowIntensity')} controlClassName="gap-[8px]">
           <RangeInput
             min="0"
             max="2"
@@ -180,20 +204,20 @@ const SettingsPanel: React.FC<Props> = ({onClose, styleRoot}) => {
         </FormField>
 
         {/* Animations Toggle */}
-        <FormSectionTitle className="mt-[var(--rw-space-3)]">Effects</FormSectionTitle>
-        <FormField label="菜单动画">
+        <FormSectionTitle className="mt-[var(--rw-space-3)]">{t('settings.sections.effects')}</FormSectionTitle>
+        <FormField label={t('settings.fields.menuAnimation')}>
           <ToggleRow
             checked={settings.enableAnimations}
             onChange={enableAnimations => update({enableAnimations})}
           >
-            启用切换动画
+            {t('settings.enableAnimations')}
           </ToggleRow>
         </FormField>
 
         {/* Reset button */}
         <div className="mt-[var(--rw-space-3)] flex justify-center">
           <Button variant="secondary" size="small" onClick={handleReset}>
-            ↺ 恢复默认
+            ↺ {t('common.reset')}
           </Button>
         </div>
       </div>

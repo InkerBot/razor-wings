@@ -1,10 +1,15 @@
+import i18n from "@/i18n";
+
 export default function render(data: unknown) {
+  const title = i18n.t('chatExport.title');
+  const whisperPrefix = i18n.t('chatExport.whisperPrefix');
+
   return `<!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="${i18n.language}">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>聊天记录导出</title>
+  <title>${title}</title>
   <style>
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -94,7 +99,7 @@ export default function render(data: unknown) {
     const container = document.getElementById('chatContainer');
 
     data.forEach(item => {
-      if (item.type === 'action' && !item.content) return; // 跳过空内容动作
+      if (item.type === 'action' && !item.content) return;
 
       const messageEl = document.createElement('div');
       messageEl.className = 'message';
@@ -140,7 +145,7 @@ export default function render(data: unknown) {
 
         const senderNameEl = document.createElement('span');
         senderNameEl.style.color = getColorBySenderId(item.sender);
-        senderNameEl.textContent = '悄悄话 ' + item.senderNickname + ': ';
+        senderNameEl.textContent = ${JSON.stringify(whisperPrefix)} + ' ' + item.senderNickname + ': ';
 
         contentEl.appendChild(senderNameEl);
         contentEl.appendChild(document.createTextNode(item.content));

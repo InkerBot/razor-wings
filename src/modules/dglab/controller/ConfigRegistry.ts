@@ -16,7 +16,7 @@ export class ConfigRegistry {
     this.system = system;
   }
 
-  // 注册动作修饰器
+  // Register action modifiers.
   registerAction(actions: string | string[], modifier: Modifier) {
     if (typeof actions === 'string') {
       this.system.registerModifier(`action:${actions}`, modifier);
@@ -25,7 +25,7 @@ export class ConfigRegistry {
     }
   }
 
-  // 注册目标部位修饰器
+  // Register target modifiers.
   registerTarget(targets: string | string[], modifier: Modifier) {
     if (typeof targets === 'string') {
       this.system.registerModifier(`target:${targets}`, modifier);
@@ -34,7 +34,7 @@ export class ConfigRegistry {
     }
   }
 
-  // 注册物品修饰器
+  // Register item modifiers.
   registerItem(items: string | string[], modifier: Modifier) {
     if (typeof items === 'string') {
       this.system.registerModifier(`item:${items}`, modifier);
@@ -43,9 +43,8 @@ export class ConfigRegistry {
     }
   }
 
-  // 注册全局修饰器
+  // Register global modifiers.
   registerGlobal(modifier: Modifier) {
     this.system.registerModifier('global', modifier);
   }
 }
-

@@ -1,4 +1,5 @@
 import {useCallback, useEffect, useMemo, useRef, useState} from "react";
+import {useTranslation} from "react-i18next";
 import {InlineLabel, Select} from "@/components/FieldControls";
 
 interface PlayerSelectorProps {
@@ -10,6 +11,7 @@ export default function PlayerSelector({
                                          characterId,
                                          onChange,
                                        }: PlayerSelectorProps) {
+  const {t} = useTranslation();
   const [players, setPlayers] = useState<Character[]>([]);
   const onChangeRef = useRef(onChange);
 
@@ -67,14 +69,14 @@ export default function PlayerSelector({
 
   return (
     <InlineLabel htmlFor="player-select">
-      选择玩家:
+      {t('playerSelector.label')}
       <Select
         id="player-select"
         value={characterId || ""}
         onChange={handlePlayerChange}
       >
         <option value="" disabled>
-          请选择玩家
+          {t('playerSelector.placeholder')}
         </option>
         {playerOptions.map(({id, displayName, name}) => (
           <option key={id} value={id}>

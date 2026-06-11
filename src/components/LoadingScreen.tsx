@@ -1,4 +1,5 @@
 import React, {useEffect, useRef, useState} from 'react';
+import {useTranslation} from 'react-i18next';
 
 interface Props {
   onComplete: () => void;
@@ -7,6 +8,7 @@ interface Props {
 
 /** Cyber sci-fi boot animation — shows once per expand cycle */
 const LoadingScreen: React.FC<Props> = ({onComplete, duration = 700}) => {
+  const {t} = useTranslation();
   const [phase, setPhase] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
 
@@ -27,11 +29,11 @@ const LoadingScreen: React.FC<Props> = ({onComplete, duration = 700}) => {
   }, []);
 
   const phases = [
-    'INITIALIZING_KERNEL',
-    'LOADING_MODULES',
-    'ESTABLISHING_HANDSHAKE',
-    'CALIBRATING_RENDERER',
-    'SYSTEM_READY',
+    t('loading.phases.initializingKernel'),
+    t('loading.phases.loadingModules'),
+    t('loading.phases.establishingHandshake'),
+    t('loading.phases.calibratingRenderer'),
+    t('loading.phases.systemReady'),
   ];
 
   return (

@@ -1,6 +1,7 @@
 import '@/modules/translation/bio-style.css?page'
 import razorModSdk from "@/razor-wings";
 import type module from "@/modules/translation/module.ts";
+import i18n from "@/i18n";
 
 type TranslationModule = typeof module;
 
@@ -57,7 +58,7 @@ function createContainer(module: TranslationModule) {
 
     const translatedCell = document.createElement('div');
     translatedCell.className = 'rw-bio-cell rw-bio-pending';
-    translatedCell.textContent = '翻译中...';
+    translatedCell.textContent = i18n.t('translation.translating');
 
     row.appendChild(originalCell);
     row.appendChild(translatedCell);
@@ -72,7 +73,7 @@ function createContainer(module: TranslationModule) {
       .catch(error => {
         if (generation !== gen) return;
         translatedCell.className = 'rw-bio-cell rw-bio-error';
-        translatedCell.textContent = `翻译失败: ${error.message}`;
+        translatedCell.textContent = i18n.t('translation.failed', {message: error.message});
       });
   }
 

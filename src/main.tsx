@@ -1,5 +1,6 @@
 import React, {StrictMode} from 'react'
 import {createRoot} from 'react-dom/client'
+import '@/i18n'
 import '@/tailwind.css'
 import {setShadowRoot} from '@/shadow-style.ts'
 import Layer from '@/Layer.tsx'

@@ -1,7 +1,9 @@
 import {useState} from "react";
+import {useTranslation} from "react-i18next";
 import Button from "@/components/Button";
 
 export default function CheatAllThings() {
+  const {t} = useTranslation();
   const [message, setMessage] = useState<string[]>([]);
 
   const appendMessage = (msg: string) => {
@@ -9,7 +11,7 @@ export default function CheatAllThings() {
   }
 
   const onClick = () => {
-    appendMessage("RW: exiting...")
+    appendMessage(t('exit.exiting'))
 
     if (CurrentScreen === 'ChatRoom') {
       ChatRoomLeave();
@@ -18,13 +20,13 @@ export default function CheatAllThings() {
       MainHallWalk('MainHall')
     }
 
-    appendMessage("RW: success")
+    appendMessage(t('exit.success'))
   }
 
   return <>
-    <p>退出房间</p>
+    <p>{t('exit.title')}</p>
     {message.length == 0 ?
-      <Button onClick={onClick}>run</Button> :
+      <Button onClick={onClick}>{t('common.run')}</Button> :
       message.map((msg, index) => (
         <p key={index}>{msg}</p>
       ))}

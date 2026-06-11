@@ -1,4 +1,5 @@
 import React from 'react';
+import {useTranslation} from 'react-i18next';
 
 interface ModuleHeaderProps {
   currentModule: ModuleType | null;
@@ -13,17 +14,22 @@ const ModuleHeader: React.FC<ModuleHeaderProps> = ({
                                                      showBackButton,
                                                      onBack
                                                    }) => {
+  const {t} = useTranslation();
+
   return (
     <div className="rw-module-header">
       <span className="rw-module-header-location">
-        Current location: {currentModule ?? 'unknown'} - {currentScreen ?? 'unknown'}
+        {t('header.currentLocation', {
+          module: currentModule ?? t('common.unknown'),
+          screen: currentScreen ?? t('common.unknown'),
+        })}
       </span>
       {showBackButton && (
         <button
           className="rw-module-back-button"
           onClick={onBack}
         >
-          ← Back
+          ← {t('common.back')}
         </button>
       )}
     </div>

@@ -4,6 +4,7 @@ import {type JSX} from "react";
 import module from "@/modules/dglab/module.ts";
 import Button from "@/components/Button";
 import {InlineLabel, RangeInput, Select} from "@/components/FieldControls";
+import i18n from "@/i18n";
 
 const DG2_PREFIX = 'D-LAB'; // Scan prefix
 const DG2_SERVICE_ID = '955a180b-0fe2-f5aa-a094-84b8d4f3e8ad'; // Service ID
@@ -139,12 +140,12 @@ export default class DglabV2Provider implements DglabProvider {
       this.setState({
         browserSupportStatus: supported ? BrowserSupportStatus.SUPPORTED : BrowserSupportStatus.NOT_SUPPORTED,
       });
-      module.infoLog('Device not connected yet');
+      module.infoLog(i18n.t('dglab.deviceNotConnected'));
     }).catch(() => {
       this.setState({
         browserSupportStatus: BrowserSupportStatus.NOT_SUPPORTED,
       });
-      module.infoLog('Browser does not support Bluetooth');
+      module.infoLog(i18n.t('dglab.browserNoBluetooth'));
     });
   }
 
@@ -156,35 +157,35 @@ export default class DglabV2Provider implements DglabProvider {
     return (
       <div>
         {this.state.browserSupportStatus === BrowserSupportStatus.LOADING && (
-          <p>Checking browser support...</p>
+          <p>{i18n.t('dglab.checkingBrowserSupport')}</p>
         )}
 
         {this.state.browserSupportStatus === BrowserSupportStatus.NOT_SUPPORTED ? (
           <>
-            <p>Your browser does not support Bluetooth protocol, please use a browser that supports Bluetooth.</p>
-            <p>It is recommended to use Chrome or Edge browser.</p>
+            <p>{i18n.t('dglab.bluetoothUnsupported')}</p>
+            <p>{i18n.t('dglab.browserRecommendation')}</p>
           </>
         ) : (
           <>
             {/* Connection control buttons */}
             {this.state.connectionStatus === ConnectionStatus.DISCONNECTED && (
-              <Button onClick={this.scanAndConnect}>Scan Coyote Device</Button>
+              <Button onClick={this.scanAndConnect}>{i18n.t('dglab.scanCoyote')}</Button>
             )}
 
             {this.state.connectionStatus === ConnectionStatus.CONNECTING && (
-              <Button disabled>Connecting...</Button>
+              <Button disabled>{i18n.t('dglab.connecting')}</Button>
             )}
 
             {this.state.connectionStatus === ConnectionStatus.CONNECTED && (
-              <Button variant="danger" onClick={this.disconnect}>Disconnect Device</Button>
+              <Button variant="danger" onClick={this.disconnect}>{i18n.t('dglab.disconnectDevice')}</Button>
             )}
 
             {/* Device status info */}
             {this.state.connectionStatus === ConnectionStatus.CONNECTED && (
               <>
-                <p>Battery: {this.state.batteryLevel}% Strength: <span
+                <p>{i18n.t('dglab.battery')}: {this.state.batteryLevel}% {i18n.t('dglab.strength')}: <span
                   className={(this.state.powerLevelA == this.state.realPowerLevelA) ? "rw-status-success" : "rw-status-error"}>{this.state.powerLevelA}-{this.state.realPowerLevelA}</span> | <span
-                  className={(this.state.powerLevelB == this.state.realPowerLevelB) ? "rw-status-success" : "rw-status-error"}>{this.state.powerLevelB}-{this.state.realPowerLevelB}</span> Transmit: <span
+                  className={(this.state.powerLevelB == this.state.realPowerLevelB) ? "rw-status-success" : "rw-status-error"}>{this.state.powerLevelB}-{this.state.realPowerLevelB}</span> {i18n.t('dglab.transmit')}: <span
                   className="rw-status-success">{this.state.transmitCount}</span> | <span
                   className="rw-status-error">{this.state.errorCount}</span></p>
               </>
@@ -194,17 +195,17 @@ export default class DglabV2Provider implements DglabProvider {
             {this.state.connectionStatus === ConnectionStatus.CONNECTED && (
               <div className="flex flex-col gap-[var(--rw-space-2)]">
                 <InlineLabel className="w-full">
-                  <span className="w-[64px]">Power A:</span>
+                  <span className="w-[64px]">{i18n.t('dglab.powerA')}</span>
                   <RangeInput min={0} max={this.state.maxPower} step={1} value={this.state.maxPowerA}
                               onChange={e => this.setState({maxPowerA: Number(e.target.value)})}
-                              placeholder="max power A" className="flex-1"/>
+                              placeholder={i18n.t('dglab.maxPowerA')} className="flex-1"/>
                   <span className="rw-value w-[48px]">{this.state.maxPowerA}</span>
                 </InlineLabel>
                 <InlineLabel className="w-full">
-                  <span className="w-[64px]">Power B:</span>
+                  <span className="w-[64px]">{i18n.t('dglab.powerB')}</span>
                   <RangeInput min={0} max={this.state.maxPower} step={1} value={this.state.maxPowerB}
                               onChange={e => this.setState({maxPowerB: Number(e.target.value)})}
-                              placeholder="max power B" className="flex-1"/>
+                              placeholder={i18n.t('dglab.maxPowerB')} className="flex-1"/>
                   <span className="rw-value w-[48px]">{this.state.maxPowerB}</span>
                 </InlineLabel>
               </div>
@@ -214,11 +215,11 @@ export default class DglabV2Provider implements DglabProvider {
             {this.state.connectionStatus === ConnectionStatus.CONNECTED && (
               <div className="mt-[var(--rw-space-2)]">
                 <InlineLabel>
-                  <span>Select waveform to send to AB channel:</span>
+                  <span>{i18n.t('dglab.selectWaveformAb')}</span>
                   <Select value={this.state.selectedWave} onChange={this.handleWaveChange}>
-                    <option value="a">Waveform A</option>
-                    <option value="b">Waveform B</option>
-                    <option value="c">Waveform C</option>
+                    <option value="a">{i18n.t('dglab.waveformA')}</option>
+                    <option value="b">{i18n.t('dglab.waveformB')}</option>
+                    <option value="c">{i18n.t('dglab.waveformC')}</option>
                   </Select>
                 </InlineLabel>
               </div>
@@ -231,7 +232,7 @@ export default class DglabV2Provider implements DglabProvider {
 
   setPower(powerA: number, powerB: number) {
     if (powerA > 1 || powerB > 1 || powerA < 0 || powerB < 0) {
-      module.infoLog('Power value must be between 0 and 1');
+      module.infoLog(i18n.t('dglab.powerRangeError'));
     }
     this.setState({
       powerLevelA: Math.round(powerA * Math.min(this.state.maxPowerA, this.state.maxPower)),
@@ -254,17 +255,17 @@ export default class DglabV2Provider implements DglabProvider {
 
   private scanAndConnect = async () => {
     if (!navigator.bluetooth) {
-      module.infoLog('Your browser does not support Bluetooth API, please use Chrome browser');
+      module.infoLog(i18n.t('dglab.bluetoothApiUnsupported'));
       return;
     }
 
     if (this.gattServer) {
-      module.infoLog('Please disconnect the current device first, wait a few seconds to confirm disconnection, then rescan');
+      module.infoLog(i18n.t('dglab.pleaseDisconnectAndRescan'));
       return;
     }
 
     this.setState({connectionStatus: ConnectionStatus.CONNECTING});
-    module.infoLog('Scanning for Bluetooth Device...');
+    module.infoLog(i18n.t('dglab.scanBluetooth'));
 
     try {
       const device = await navigator.bluetooth.requestDevice({
@@ -277,7 +278,7 @@ export default class DglabV2Provider implements DglabProvider {
       device.addEventListener('gattserverdisconnected', this.onDeviceDisconnected);
       module.debugLog('Device Name: ' + device.name);
       module.debugLog('Device Id: ' + device.id);
-      module.infoLog('Connecting to GATT Server...');
+      module.infoLog(i18n.t('dglab.connectingGatt'));
 
       this.gattServer = await device.gatt!.connect();
 
@@ -289,11 +290,11 @@ export default class DglabV2Provider implements DglabProvider {
         errorCount: 0,
         transmitCount: 0
       });
-      module.infoLog('Device connected');
+      module.infoLog(i18n.t('dglab.deviceConnected'));
 
     } catch (error) {
       console.error('Error: ' + error);
-      module.infoLog('Exception: Failed to connect to device. error: ' + error);
+      module.infoLog(i18n.t('dglab.connectionFailed', {message: String(error)}));
       this.setState({connectionStatus: ConnectionStatus.DISCONNECTED});
     }
   };
@@ -303,11 +304,11 @@ export default class DglabV2Provider implements DglabProvider {
 
     try {
       // Get primary service
-      module.infoLog('Getting primary service...');
+      module.infoLog(i18n.t('dglab.gettingPrimaryService'));
       const service = await this.gattServer.getPrimaryService(DG2_SERVICE_ID);
 
       // Read config info
-      module.infoLog('Reading device config...');
+      module.infoLog(i18n.t('dglab.readingDeviceConfig'));
       const configCharacteristic = await service.getCharacteristic(DG2_CONFIG_ID);
       const configValue = await configCharacteristic.readValue();
       const {maxPower, powerStep} = this.parseConfig(configValue);
@@ -316,7 +317,7 @@ export default class DglabV2Provider implements DglabProvider {
       module.debugLog(`Device config: maxPower=${maxPower}, powerStep=${powerStep}`);
 
       // Get power characteristic
-      module.infoLog('Initializing power control...');
+      module.infoLog(i18n.t('dglab.initializingPowerControl'));
       this.powerCharacteristic = await service.getCharacteristic(DG2_POWER_ID);
 
       // Read current power setting
@@ -334,7 +335,7 @@ export default class DglabV2Provider implements DglabProvider {
       await this.powerCharacteristic.startNotifications();
 
       // Get pattern characteristics
-      module.infoLog('Initializing pattern control...');
+      module.infoLog(i18n.t('dglab.initializingPatternControl'));
       this.patternACharacteristic = await service.getCharacteristic(DG2_CHANNEL_A_ID);
       this.patternBCharacteristic = await service.getCharacteristic(DG2_CHANNEL_B_ID);
 
@@ -355,7 +356,7 @@ export default class DglabV2Provider implements DglabProvider {
 
       this.startTransmitting();
     } catch (error) {
-      module.infoLog('Device initialization failed: ' + error);
+      module.infoLog(i18n.t('dglab.deviceInitializationFailed', {message: String(error)}));
       throw error;
     }
   }
@@ -364,7 +365,7 @@ export default class DglabV2Provider implements DglabProvider {
     if (!this.gattServer) return;
 
     try {
-      module.infoLog('Initializing battery monitoring...');
+      module.infoLog(i18n.t('dglab.initializingBatteryMonitoring'));
       const batteryService = await this.gattServer.getPrimaryService(DG2_BATTERY_SERVICE_ID);
       this.batteryCharacteristic = await batteryService.getCharacteristic(DG2_BATTERY_ID);
 
@@ -372,19 +373,19 @@ export default class DglabV2Provider implements DglabProvider {
       const batteryValue = await this.batteryCharacteristic.readValue();
       const batteryLevel = batteryValue.getUint8(0);
       this.setState({batteryLevel});
-      module.infoLog(`Current battery level: ${batteryLevel}%`);
+      module.infoLog(i18n.t('dglab.currentBattery', {level: batteryLevel}));
 
       // Listen for battery level changes
       this.batteryCharacteristic.addEventListener('characteristicvaluechanged', this.onBatteryChanged);
       await this.batteryCharacteristic.startNotifications();
 
     } catch (error) {
-      module.infoLog('Battery monitoring initialization failed: ' + error);
+      module.infoLog(i18n.t('dglab.batteryMonitoringFailed', {message: String(error)}));
     }
   }
 
   private parseConfig(dataView: DataView): { maxPower: number; powerStep: number } {
-    // 翻转第一和第三字节
+    // Swap the first and third bytes.
     this.flipFirstAndThirdByte(dataView.buffer);
     const maxPower = dataView.getUint16(0);
     const powerStep = dataView.getUint8(2);
@@ -447,13 +448,13 @@ export default class DglabV2Provider implements DglabProvider {
     const target = event.target as BluetoothRemoteGATTCharacteristic;
     const batteryLevel = target.value!.getUint8(0);
     this.setState({batteryLevel});
-    module.debugLog(`Battery level: ${batteryLevel}%`);
+    module.debugLog(i18n.t('dglab.currentBattery', {level: batteryLevel}));
   };
 
   private handleWaveChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedWave = event.target.value as 'a' | 'b' | 'c';
     this.setState({selectedWave});
-    module.infoLog('Switched waveform to: ' + selectedWave);
+    module.infoLog(i18n.t('dglab.switchedWaveform', {wave: selectedWave}));
   };
 
   private async updatePower(powerA: number, powerB: number) {
@@ -463,13 +464,13 @@ export default class DglabV2Provider implements DglabProvider {
       const powerBuffer = this.encodePower(powerA, powerB);
       await this.powerCharacteristic.writeValue(powerBuffer);
     } catch (error) {
-      module.infoLog('Power update failed: ' + error);
+      module.infoLog(i18n.t('dglab.powerUpdateFailed', {message: String(error)}));
     }
   }
 
   private startTransmitting = () => {
     if (!this.gattServer) {
-      module.infoLog('Please connect the device first');
+      module.infoLog(i18n.t('dglab.pleaseConnectFirst'));
       return;
     }
 
@@ -478,7 +479,7 @@ export default class DglabV2Provider implements DglabProvider {
       errorCount: 0,
       transmitCount: 0
     });
-    module.infoLog('Start writing waveform data');
+    module.infoLog(i18n.t('dglab.startWritingWaveform'));
 
     this.transmitInterval = setInterval(this.transmitWaveform, 100);
   };
@@ -486,13 +487,13 @@ export default class DglabV2Provider implements DglabProvider {
   private transmitWaveform = async () => {
     if (this.state.errorCount > 5) {
       this.stopTransmitting();
-      module.infoLog('Too many errors, stop transmission');
+      module.infoLog(i18n.t('dglab.tooManyErrors'));
       return;
     }
 
     if (!this.patternACharacteristic || !this.patternBCharacteristic) {
       this.setState(prev => ({errorCount: prev.errorCount + 1}));
-      module.infoLog('Device characteristics not initialized');
+      module.infoLog(i18n.t('dglab.characteristicsNotInitialized'));
       return;
     }
 
@@ -516,7 +517,7 @@ export default class DglabV2Provider implements DglabProvider {
       this.setState({transmitCount: newCount});
     } catch (error) {
       this.setState(prev => ({errorCount: prev.errorCount + 1}));
-      module.infoLog('Write exception: ' + error);
+      module.infoLog(i18n.t('dglab.writeException', {message: String(error)}));
     }
   };
 
@@ -530,7 +531,7 @@ export default class DglabV2Provider implements DglabProvider {
       isTransmitting: false,
       transmitCount: 0
     });
-    module.infoLog('Stop writing waveform data');
+    module.infoLog(i18n.t('dglab.stopWritingWaveform'));
   };
 
   private disconnect = () => {
@@ -545,13 +546,13 @@ export default class DglabV2Provider implements DglabProvider {
       this.batteryCharacteristic = null;
       this.stopTransmitting();
       this.setState({connectionStatus: ConnectionStatus.DISCONNECTED});
-      module.infoLog('Manual disconnect');
+      module.infoLog(i18n.t('dglab.manualDisconnect'));
     }
   };
 
   private onDeviceDisconnected = (event: Event) => {
     const device = event.target as BluetoothDevice;
-    module.infoLog(`Device: ${device.name} has been disconnected`);
+    module.infoLog(i18n.t('dglab.deviceDisconnectedNamed', {name: device.name ?? ''}));
     this.gattServer = null;
     this.powerCharacteristic = null;
     this.patternACharacteristic = null;
@@ -563,7 +564,7 @@ export default class DglabV2Provider implements DglabProvider {
 
   private hexStringToUint8Array = (hexString: string): Uint8Array => {
     if (hexString.length % 2 !== 0) {
-      throw new Error('Hex string length must be even');
+      throw new Error(i18n.t('dglab.hexLengthEven'));
     }
 
     const array = new Uint8Array(hexString.length / 2);

@@ -6,6 +6,7 @@ import module from "@/modules/dglab/module.ts";
 import {QRCodeSVG} from 'qrcode.react';
 import Button from "@/components/Button";
 import {InlineLabel, Select, TextInput} from "@/components/FieldControls";
+import i18n from "@/i18n";
 
 const waveData = {
   'a': `["0A0A0A0A00000000","0A0A0A0A0A0A0A0A","0A0A0A0A14141414","0A0A0A0A1E1E1E1E","0A0A0A0A28282828","0A0A0A0A32323232","0A0A0A0A3C3C3C3C","0A0A0A0A46464646","0A0A0A0A50505050","0A0A0A0A5A5A5A5A","0A0A0A0A64646464"]`,
@@ -105,7 +106,7 @@ export default class DglabV3WebsocketProvider implements DglabProvider {
     return (<>
       {/* Server address configuration */}
       <InlineLabel className="mb-[var(--rw-space-2)] flex-wrap">
-        <span>WebSocket Server Address:</span>
+        <span>{i18n.t('dglab.websocketServerAddress')}</span>
         <TextInput
           type="text"
           value={this.state.serverUrl}
@@ -117,29 +118,29 @@ export default class DglabV3WebsocketProvider implements DglabProvider {
 
       {/* Connection control buttons */}
       {this.state.connectionStatus === ConnectionStatus.DISCONNECTED && (
-        <Button onClick={this.connect}>Connect to WebSocket Server</Button>
+        <Button onClick={this.connect}>{i18n.t('dglab.connectWebsocket')}</Button>
       )}
 
       {this.state.connectionStatus === ConnectionStatus.CONNECTING && (
-        <Button disabled>Connecting...</Button>
+        <Button disabled>{i18n.t('dglab.connecting')}</Button>
       )}
 
       {this.state.connectionStatus === ConnectionStatus.CONNECTED && (
-        <Button variant="danger" onClick={this.disconnect}>Disconnect</Button>
+        <Button variant="danger" onClick={this.disconnect}>{i18n.t('dglab.disconnect')}</Button>
       )}
 
       {/* Connection status info */}
       {this.state.connectionStatus === ConnectionStatus.CONNECTED && (
         <>
-          <p>Connection ID: {this.state.connectionId}</p>
+          <p>{i18n.t('dglab.connectionId', {id: this.state.connectionId})}</p>
           {this.state.targetId && (
-            <p>Target ID: {this.state.targetId}</p>
+            <p>{i18n.t('dglab.targetId', {id: this.state.targetId})}</p>
           )}
 
           {/* QR code display */}
           {this.state.qrCodeData && !this.state.targetId && (
             <>
-              <p>Please scan the QR code with DG-Lab APP to connect:</p>
+              <p>{i18n.t('dglab.scanQr')}</p>
               <div className="rw-qr-frame">
                 <QRCodeSVG value={this.state.qrCodeData}/>,
               </div>
@@ -149,9 +150,9 @@ export default class DglabV3WebsocketProvider implements DglabProvider {
           {/* Device status info */}
           {this.state.connectionStatus === ConnectionStatus.CONNECTED && (
             <>
-              <p>Strength: <span
+              <p>{i18n.t('dglab.strength')}: <span
                 className={(this.state.powerLevelA == this.state.realPowerLevelA) ? "rw-status-success" : "rw-status-error"}>{this.state.powerLevelA}-{this.state.realPowerLevelA}</span> {this.state.maxPowerA} | <span
-                className={(this.state.powerLevelB == this.state.realPowerLevelB) ? "rw-status-success" : "rw-status-error"}>{this.state.powerLevelB}-{this.state.realPowerLevelB}</span> {this.state.maxPowerB} Transmit: <span
+                className={(this.state.powerLevelB == this.state.realPowerLevelB) ? "rw-status-success" : "rw-status-error"}>{this.state.powerLevelB}-{this.state.realPowerLevelB}</span> {this.state.maxPowerB} {i18n.t('dglab.transmit')}: <span
                 className="rw-status-success">{this.state.transmitCount}</span> | <span
                 className="rw-status-error">{this.state.errorCount}</span></p>
             </>
@@ -161,11 +162,11 @@ export default class DglabV3WebsocketProvider implements DglabProvider {
           {this.state.connectionStatus === ConnectionStatus.CONNECTED && (
             <div className="mt-[var(--rw-space-2)]">
               <InlineLabel>
-                <span>Select waveform to send to AB channel:</span>
+                <span>{i18n.t('dglab.selectWaveformAb')}</span>
                 <Select value={this.state.selectedWave} onChange={this.handleWaveChange}>
-                  <option value="a">Waveform A</option>
-                  <option value="b">Waveform B</option>
-                  <option value="c">Waveform C</option>
+                  <option value="a">{i18n.t('dglab.waveformA')}</option>
+                  <option value="b">{i18n.t('dglab.waveformB')}</option>
+                  <option value="c">{i18n.t('dglab.waveformC')}</option>
                 </Select>
               </InlineLabel>
             </div>
@@ -177,7 +178,7 @@ export default class DglabV3WebsocketProvider implements DglabProvider {
 
   setPower(powerA: number, powerB: number) {
     if (powerA > 1 || powerB > 1 || powerA < 0 || powerB < 0) {
-      module.infoLog('Power value must be between 0 and 1');
+      module.infoLog(i18n.t('dglab.powerRangeError'));
       return;
     }
 
@@ -211,11 +212,11 @@ export default class DglabV3WebsocketProvider implements DglabProvider {
         this.setState(prev => ({transmitCount: prev.transmitCount + 1}));
         module.debugLog('Message sent:', JSON.stringify(message));
       } catch (error) {
-        module.infoLog('Failed to send message: ' + error);
+        module.infoLog(i18n.t('dglab.sendMessageFailed', {message: String(error)}));
         this.setState(prev => ({errorCount: prev.errorCount + 1}));
       }
     } else {
-      module.infoLog('WebSocket not connected');
+      module.infoLog(i18n.t('dglab.websocketNotConnected'));
     }
   }
 
@@ -244,12 +245,12 @@ export default class DglabV3WebsocketProvider implements DglabProvider {
 
   private connect = () => {
     if (!this.state.serverUrl) {
-      module.infoLog('Please enter the WebSocket server address');
+      module.infoLog(i18n.t('dglab.websocketAddressRequired'));
       return;
     }
 
     this.setState({connectionStatus: ConnectionStatus.CONNECTING});
-    module.infoLog('Connecting to WebSocket server...');
+    module.infoLog(i18n.t('dglab.connectingWebsocket'));
 
     try {
       this.ws = new WebSocket(this.state.serverUrl);
@@ -259,7 +260,7 @@ export default class DglabV3WebsocketProvider implements DglabProvider {
       this.ws.onerror = this.onWebSocketError;
       this.ws.onclose = this.onWebSocketClose;
     } catch (error) {
-      module.infoLog('Connection failed: ' + error);
+      module.infoLog(i18n.t('dglab.websocketConnectionFailed', {message: String(error)}));
       this.setState({connectionStatus: ConnectionStatus.DISCONNECTED});
     }
   };
@@ -282,11 +283,11 @@ export default class DglabV3WebsocketProvider implements DglabProvider {
       qrCodeData: '',
       feedbackMessage: '',
     });
-    module.infoLog('Disconnected');
+    module.infoLog(i18n.t('dglab.websocketDisconnected'));
   };
 
   private onWebSocketOpen = () => {
-    module.infoLog('WebSocket connection established');
+    module.infoLog(i18n.t('dglab.websocketEstablished'));
   };
 
   private onWebSocketMessage = (event: MessageEvent) => {
@@ -294,17 +295,17 @@ export default class DglabV3WebsocketProvider implements DglabProvider {
       const message: WebSocketMessage = JSON.parse(event.data);
       this.handleWebSocketMessage(message);
     } catch {
-      module.infoLog('Received non-JSON message: ' + event.data);
+      module.infoLog(i18n.t('dglab.websocketNonJson', {message: event.data}));
     }
   };
 
   private onWebSocketError = () => {
-    module.infoLog('WebSocket connection error');
+    module.infoLog(i18n.t('dglab.websocketError'));
     this.setState(prev => ({errorCount: prev.errorCount + 1}));
   };
 
   private onWebSocketClose = () => {
-    module.infoLog('WebSocket connection closed');
+    module.infoLog(i18n.t('dglab.websocketClosed'));
     this.setState({connectionStatus: ConnectionStatus.DISCONNECTED});
   };
 
@@ -340,7 +341,7 @@ export default class DglabV3WebsocketProvider implements DglabProvider {
         connectionId: message.clientId,
         qrCodeData: `https://www.dungeon-lab.com/app-download.php#DGLAB-SOCKET#${this.state.serverUrl}${message.clientId}`,
       });
-      module.infoLog('Received connection ID: ' + message.clientId);
+      module.infoLog(i18n.t('dglab.receivedConnectionId', {id: message.clientId}));
     } else {
       // Binding complete
       if (message.message === '200') {
@@ -348,10 +349,10 @@ export default class DglabV3WebsocketProvider implements DglabProvider {
           targetId: message.targetId,
           qrCodeData: '',
         });
-        module.infoLog('Device binding successful');
+        module.infoLog(i18n.t('dglab.deviceBindingSuccessful'));
         this.startHeartbeat();
       } else {
-        module.infoLog('Binding failed, error code: ' + message.message);
+        module.infoLog(i18n.t('dglab.bindingFailed', {code: message.message}));
       }
     }
   };
@@ -374,7 +375,7 @@ export default class DglabV3WebsocketProvider implements DglabProvider {
       // Parse feedback data
       const feedbackMsg = feedbackMessages[message.message] || message.message;
       this.setState({feedbackMessage: feedbackMsg});
-      module.infoLog('Received feedback: ' + feedbackMsg);
+      module.infoLog(i18n.t('dglab.receivedFeedback', {message: feedbackMsg}));
 
       // Clear feedback message after 3 seconds
       setTimeout(() => {
@@ -384,12 +385,12 @@ export default class DglabV3WebsocketProvider implements DglabProvider {
   };
 
   private handleBreakMessage = () => {
-    module.infoLog('The other party has disconnected');
+    module.infoLog(i18n.t('dglab.otherPartyDisconnected'));
     this.disconnect();
   };
 
   private handleErrorMessage = (message: WebSocketMessage) => {
-    module.infoLog('Server error: ' + message.message);
+    module.infoLog(i18n.t('dglab.serverError', {message: message.message}));
     this.setState(prev => ({errorCount: prev.errorCount + 1}));
   };
 
@@ -407,7 +408,6 @@ export default class DglabV3WebsocketProvider implements DglabProvider {
 
   private setPowerDirect = (channel: 'A' | 'B', power: number) => {
     if (!this.ws || !this.state.targetId) {
-      // module.infoLog('Device not connected');
       return;
     }
 
@@ -429,7 +429,7 @@ export default class DglabV3WebsocketProvider implements DglabProvider {
       } as Partial<DglabV3WebsocketState>));
       module.debugLog(`Set channel ${channel} strength: ${power}`);
     } catch (error) {
-      module.infoLog('Failed to send message: ' + error);
+      module.infoLog(i18n.t('dglab.writeException', {message: String(error)}));
       this.setState(prev => ({errorCount: prev.errorCount + 1}));
     }
   };

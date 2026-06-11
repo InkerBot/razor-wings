@@ -4,6 +4,7 @@ import {AiTranslationProvider} from "@/modules/translation/provider/ai.ts";
 import type {sourceLanguageCode, targetLanguageCode} from "@/modules/translation/languages.ts";
 import razorModSdk from "@/razor-wings";
 import type AbstractModule from "@/modules/AbstractModule.ts";
+import i18n from "@/i18n";
 
 const defaultApiUrl = 'https://aurora-wings.bgp.ink/translate';
 const defaultAiPrompt = 'You are a translator for Bondage Club, an online BDSM role-playing game. Messages may contain roleplay actions, BDSM terminology, and domain-specific abbreviations. Preserve the original tone and style. Translate from {sourceLang} to {targetLang}. Output only the translated text, nothing else.';
@@ -163,7 +164,7 @@ class TranslationModule implements AbstractModule {
       const element = next([data, ...msg]);
 
       const translationElement = document.createElement('span');
-      translationElement.innerText = '翻译中...';
+      translationElement.innerText = i18n.t('translation.translating');
       translationElement.className = 'razorwings-translation-text razorwings-translation-pending';
       element.insertAdjacentElement('beforeend', document.createElement('br'));
       element.insertAdjacentElement('beforeend', translationElement);
@@ -182,7 +183,7 @@ class TranslationModule implements AbstractModule {
         .catch(error => {
           const wasAtEnd = ElementIsScrolledToEnd("TextAreaChatLog");
           translationElement.className = 'razorwings-translation-text razorwings-translation-error';
-          translationElement.innerText = `翻译失败: ${error.message}`;
+          translationElement.innerText = i18n.t('translation.failed', {message: error.message});
           if (wasAtEnd) ElementScrollToEnd("TextAreaChatLog");
         });
 
@@ -230,7 +231,7 @@ class TranslationModule implements AbstractModule {
         .replace(/\n/g, '<br>');
       ChatRoomSendLocal(
         `<span id="${pendingId}" class="razorwings-send-pending">` +
-        `<span class="razorwings-translation-text razorwings-translation-pending">正在翻译...</span><br>` +
+        `<span class="razorwings-translation-text razorwings-translation-pending">${i18n.t('translation.pendingSend')}</span><br>` +
         `${escapedContent}` +
         `</span>`
       );
@@ -250,7 +251,7 @@ class TranslationModule implements AbstractModule {
         })
         .catch(error => {
           removePending();
-          ChatRoomSendLocal(`翻译失败: ${error.message}`);
+          ChatRoomSendLocal(i18n.t('translation.failed', {message: error.message}));
           next([messageType, ...args]);
           if (isNonSelfWhisper) {
             ChatRoomMessage(message);
