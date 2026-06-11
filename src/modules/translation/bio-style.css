@@ -1,60 +1,68 @@
-@layer components {
-    .rw-bio-container {
-        @apply box-border overflow-y-auto rounded-[var(--rw-radius-sm)] border border-[color:rgb(200,190,170)] bg-[rgb(244,236,216)];
-    }
+.rw-bio-container {
+    box-sizing: border-box;
+    overflow-y: auto;
+    background: rgb(244, 236, 216);
+}
 
-    .rw-bio-table {
-        @apply flex min-h-full w-full flex-col;
-    }
+.rw-bio-table {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    min-height: 100%;
+}
 
-    .rw-bio-row {
-        @apply flex flex-row border-b border-b-[color:rgb(200,190,170)];
-    }
+.rw-bio-row {
+    display: flex;
+    flex-direction: row;
+    border-bottom: 1px solid rgb(200, 190, 170);
+}
 
-    .rw-bio-row:last-child {
-        @apply border-b-0;
-    }
+.rw-bio-row:last-child {
+    border-bottom: none;
+}
 
-    .rw-bio-cell {
-        @apply min-w-[0] flex-1 overflow-hidden whitespace-pre-wrap px-[4px] py-[3px] text-[0.7em] leading-[1.5] text-[color:rgb(45,35,27)];
-        word-break: break-word;
-    }
+.rw-bio-cell {
+    flex: 1;
+    min-width: 0;
+    padding: 2px;
+    white-space: pre-wrap;
+    word-break: break-word;
+    overflow: hidden;
+    font-size: 0.5em;
+    color: rgb(45, 35, 27);
+}
 
-    .rw-bio-original {
-        @apply border-r border-r-[color:rgb(200,190,170)];
-    }
+.rw-bio-original {
+    border-right: 1px solid rgb(200, 190, 170);
+}
 
-    .rw-bio-vertical .rw-bio-row {
-        @apply flex-col;
-    }
+.rw-bio-vertical .rw-bio-row {
+    flex-direction: column;
+}
 
-    .rw-bio-vertical .rw-bio-cell {
-        font-size: inherit;
-    }
+.rw-bio-vertical .rw-bio-cell {
+    font-size: inherit;
+}
 
-    .rw-bio-vertical .rw-bio-original {
-        @apply border-r-0 border-b border-dashed border-b-[color:rgb(200,190,170)];
-    }
+.rw-bio-vertical .rw-bio-original {
+    border-right: none;
+    border-bottom: 1px dashed rgb(200, 190, 170);
+}
 
-    .rw-bio-pending {
-        animation: rw-bio-pulse 1.5s ease-in-out infinite;
-        @apply text-[color:var(--rw-text-muted)];
-    }
-
-    .rw-bio-success {
-        @apply text-[color:var(--rw-color-success)];
-    }
-
-    .rw-bio-error {
-        @apply text-[color:var(--rw-color-error)];
-    }
+.rw-bio-pending {
+    color: #888;
+    animation: rw-bio-pulse 1.5s ease-in-out infinite;
 }
 
 @keyframes rw-bio-pulse {
-    0%, 100% {
-        opacity: 1;
-    }
-    50% {
-        opacity: 0.4;
-    }
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+}
+
+.rw-bio-success {
+    color: #49bbcf;
+}
+
+.rw-bio-error {
+    color: #d9534f;
 }
