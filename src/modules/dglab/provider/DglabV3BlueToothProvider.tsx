@@ -6,36 +6,48 @@ import Button from "@/components/Button";
 import {InlineLabel, Select} from "@/components/FieldControls";
 import i18n from "@/i18n";
 
-// V3 protocol constants.
-const DG3_PREFIX = '47L121000'; // V3 device Bluetooth name prefix.
-const DG3_SERVICE_UUID = '0000180c-0000-1000-8000-00805f9b34fb'; // Primary service UUID.
-const DG3_WRITE_UUID = '0000150a-0000-1000-8000-00805f9b34fb'; // Write characteristic UUID.
-const DG3_NOTIFY_UUID = '0000150b-0000-1000-8000-00805f9b34fb'; // Notify characteristic UUID.
-const DG3_BATTERY_SERVICE_UUID = '0000180a-0000-1000-8000-00805f9b34fb'; // Battery service UUID.
-const DG3_BATTERY_UUID = '00001500-0000-1000-8000-00805f9b34fb'; // Battery characteristic UUID.
+// Bluetooth GATT identifiers (base UUID 0000xxxx-0000-1000-8000-00805f9b34fb).
+const DG3_NAME_PREFIX = '47L121000';                                       // V3 pulse host advertised name.
+const DG3_SERVICE_UUID = '0000180c-0000-1000-8000-00805f9b34fb';           // Primary service (0x180C).
+const DG3_WRITE_UUID = '0000150a-0000-1000-8000-00805f9b34fb';             // Write characteristic (0x150A): all commands.
+const DG3_NOTIFY_UUID = '0000150b-0000-1000-8000-00805f9b34fb';            // Notify characteristic (0x150B): all responses.
+const DG3_BATTERY_SERVICE_UUID = '0000180a-0000-1000-8000-00805f9b34fb';   // Battery service (0x180A).
+const DG3_BATTERY_UUID = '00001500-0000-1000-8000-00805f9b34fb';           // Battery characteristic (0x1500).
+
+// Protocol constants.
+const STRENGTH_MAX = 200;          // Absolute per-channel strength range is 0-200.
+const SEQ_MAX = 15;                // Sequence number occupies 4 bits (0-15); 0 disables strength feedback.
+const TRANSMIT_INTERVAL_MS = 100;  // The B0 command must be written every 100ms.
+const STRENGTH_ACK_TIMEOUT_MS = 500; // If a B1 acknowledgement is lost, reopen the input gate after this long.
+
+// BF balance parameters (0-255). Written once per connection; persisted across power cycles by the device.
+const DG3_FREQ_BALANCE = 128;      // 频率平衡参数 1: relative feel of low/high frequency waveforms.
+const DG3_STRENGTH_BALANCE = 128;  // 频率平衡参数 2: waveform pulse width.
+
+// Strength interpretation modes for the high (channel A) / low (channel B) nibbles of the parsing byte.
+const PARSE_NO_CHANGE = 0b00;
+const PARSE_ABSOLUTE = 0b11;
 
 interface DglabV3State {
   browserSupportStatus: BrowserSupportStatus;
   connectionStatus: ConnectionStatus;
   selectedWave: 'a' | 'b' | 'c';
-  isTransmitting: boolean;
   errorCount: number;
   transmitCount: number;
   batteryLevel: number;
-  maxPowerA: number;
-  maxPowerB: number;
-  powerLevelA: number;
-  powerLevelB: number;
-  realPowerLevelA: number;
-  realPowerLevelB: number;
-  frequencyBalance1A: number;
-  frequencyBalance2A: number;
-  frequencyBalance1B: number;
-  frequencyBalance2B: number;
+  maxPowerA: number;       // Channel A soft limit (0-200).
+  maxPowerB: number;       // Channel B soft limit (0-200).
+  powerLevelA: number;     // Channel A target strength we want the device to reach.
+  powerLevelB: number;     // Channel B target strength we want the device to reach.
+  realPowerLevelA: number; // Channel A strength last reported by the device (B1).
+  realPowerLevelB: number; // Channel B strength last reported by the device (B1).
 }
 
-// Waveform data adapted for the V3 protocol format.
-const coyote3wave = {
+// Each entry describes 100ms of output: 4 frequency/strength pairs, one per 25ms slice.
+// Frequencies use the 10-1000 input scale (converted before transmission); strengths are 0-100.
+type WaveFrame = {freq: [number, number, number, number]; strength: [number, number, number, number]};
+
+const coyote3wave: Record<'a' | 'b' | 'c', WaveFrame[]> = {
   'a': [
     {freq: [10, 10, 10, 10], strength: [0, 10, 20, 30]},
     {freq: [10, 10, 10, 10], strength: [20, 30, 40, 50]},
@@ -66,24 +78,28 @@ const coyote3wave = {
     {freq: [30, 30, 30, 30], strength: [0, 50, 100, 100]},
     {freq: [40, 40, 40, 40], strength: [0, 50, 100, 100]},
     {freq: [50, 50, 50, 50], strength: [0, 50, 100, 70]},
-  ]
+  ],
 };
 
 export default class DglabV3BlueToothProvider implements DglabProvider {
   private stateChangeListeners: Array<() => void> = [];
   private state: DglabV3State;
+
   private gattServer: BluetoothRemoteGATTServer | null = null;
-  private transmitInterval: number | null = null;
   private writeCharacteristic: BluetoothRemoteGATTCharacteristic | null = null;
   private notifyCharacteristic: BluetoothRemoteGATTCharacteristic | null = null;
   private batteryCharacteristic: BluetoothRemoteGATTCharacteristic | null = null;
+  private transmitInterval: number | null = null;
 
-  // V3 protocol state.
-  private orderNo: number = 0;
-  private inputOrderNo: number = 0;
+  // Strength flow control. A strength change carries a sequence number; the device echoes it back in a B1
+  // response. We keep at most one change in flight at a time, as recommended by the protocol.
+  private orderNo: number = 0;       // Rolling sequence counter (1-15).
+  private inputOrderNo: number = 0;  // Sequence number of the in-flight strength change (0 when idle).
   private isInputAllowed: boolean = true;
-  private accumulatedStrengthValueA: number = 0;
-  private accumulatedStrengthValueB: number = 0;
+  private strengthSentAt: number = 0; // Timestamp of the in-flight change, for the lost-ack timeout.
+  private sentPowerA: number = 0;     // Last channel A target acknowledged/sent to the device.
+  private sentPowerB: number = 0;     // Last channel B target acknowledged/sent to the device.
+
   private currentWaveIndex: number = 0;
 
   constructor() {
@@ -91,20 +107,15 @@ export default class DglabV3BlueToothProvider implements DglabProvider {
       browserSupportStatus: BrowserSupportStatus.LOADING,
       connectionStatus: ConnectionStatus.DISCONNECTED,
       selectedWave: 'a',
-      isTransmitting: false,
       errorCount: 0,
       transmitCount: 0,
       batteryLevel: 0,
-      maxPowerA: 200, // V3 protocol maximum.
-      maxPowerB: 200,
+      maxPowerA: STRENGTH_MAX,
+      maxPowerB: STRENGTH_MAX,
       powerLevelA: 0,
       powerLevelB: 0,
       realPowerLevelA: 0,
       realPowerLevelB: 0,
-      frequencyBalance1A: 128,
-      frequencyBalance2A: 128,
-      frequencyBalance1B: 128,
-      frequencyBalance2B: 128,
     };
   }
 
@@ -198,13 +209,9 @@ export default class DglabV3BlueToothProvider implements DglabProvider {
       return;
     }
 
-    // Convert into the V3 protocol strength range (0-200).
-    const targetPowerA = Math.max(1, Math.round(powerA * 200));
-    const targetPowerB = Math.max(1, Math.round(powerB * 200));
-
-    // Accumulate strength deltas.
-    this.accumulatedStrengthValueA += targetPowerA - this.state.powerLevelA;
-    this.accumulatedStrengthValueB += targetPowerB - this.state.powerLevelB;
+    // Map the 0-1 fraction onto the per-channel soft limit; the B0 loop drives the device to this target.
+    const targetPowerA = this.clampStrength(Math.round(powerA * this.state.maxPowerA));
+    const targetPowerB = this.clampStrength(Math.round(powerB * this.state.maxPowerB));
 
     this.setState({
       powerLevelA: targetPowerA,
@@ -224,6 +231,10 @@ export default class DglabV3BlueToothProvider implements DglabProvider {
     return 'bluetooth' in navigator;
   }
 
+  private clampStrength(value: number): number {
+    return Math.max(0, Math.min(STRENGTH_MAX, value));
+  }
+
   private scanAndConnect = async () => {
     if (!navigator.bluetooth) {
       module.infoLog(i18n.t('dglab.bluetoothApiUnsupported'));
@@ -240,10 +251,8 @@ export default class DglabV3BlueToothProvider implements DglabProvider {
 
     try {
       const device = await navigator.bluetooth.requestDevice({
-        filters: [{
-          namePrefix: DG3_PREFIX
-        }],
-        optionalServices: [DG3_SERVICE_UUID, DG3_BATTERY_SERVICE_UUID]
+        filters: [{namePrefix: DG3_NAME_PREFIX}],
+        optionalServices: [DG3_SERVICE_UUID, DG3_BATTERY_SERVICE_UUID],
       });
 
       device.addEventListener('gattserverdisconnected', this.onDeviceDisconnected);
@@ -257,10 +266,9 @@ export default class DglabV3BlueToothProvider implements DglabProvider {
       this.setState({
         connectionStatus: ConnectionStatus.CONNECTED,
         errorCount: 0,
-        transmitCount: 0
+        transmitCount: 0,
       });
       module.infoLog(i18n.t('dglab.coyoteV3Connected'));
-
     } catch (error) {
       console.error('Connection Error: ' + error);
       module.infoLog(i18n.t('dglab.connectionFailed', {message: String(error)}));
@@ -275,25 +283,20 @@ export default class DglabV3BlueToothProvider implements DglabProvider {
       module.infoLog(i18n.t('dglab.gettingPrimaryService'));
       const service = await this.gattServer.getPrimaryService(DG3_SERVICE_UUID);
 
-      // Get the write characteristic.
       module.infoLog(i18n.t('dglab.gettingWriteCharacteristic'));
       this.writeCharacteristic = await service.getCharacteristic(DG3_WRITE_UUID);
 
-      // Get the notify characteristic.
       module.infoLog(i18n.t('dglab.gettingNotifyCharacteristic'));
       this.notifyCharacteristic = await service.getCharacteristic(DG3_NOTIFY_UUID);
-
-      // Listen for B1 response messages.
       this.notifyCharacteristic.addEventListener('characteristicvaluechanged', this.onNotifyReceived);
       await this.notifyCharacteristic.startNotifications();
 
-      // Initialize battery monitoring.
       await this.initializeBatteryMonitoring();
 
-      // Send BF command to set soft limits and balance parameters.
+      // Reset flow-control state, then push BF so the soft limit/balance parameters are known after reconnect.
+      this.resetStrengthState();
       await this.sendBFCommand();
 
-      // Start B0 command transmission.
       this.startTransmitting();
     } catch (error) {
       module.infoLog(i18n.t('dglab.deviceInitializationFailed', {message: String(error)}));
@@ -310,18 +313,19 @@ export default class DglabV3BlueToothProvider implements DglabProvider {
       this.batteryCharacteristic = await batteryService.getCharacteristic(DG3_BATTERY_UUID);
 
       const batteryValue = await this.batteryCharacteristic.readValue();
-      const batteryLevel = batteryValue.getUint8(0);
-      this.setState({batteryLevel});
-      module.debugLog(i18n.t('dglab.currentBattery', {level: batteryLevel}));
+      this.setState({batteryLevel: batteryValue.getUint8(0)});
+      module.debugLog(i18n.t('dglab.currentBattery', {level: batteryValue.getUint8(0)}));
 
       this.batteryCharacteristic.addEventListener('characteristicvaluechanged', this.onBatteryChanged);
       await this.batteryCharacteristic.startNotifications();
-
     } catch (error) {
       module.infoLog(i18n.t('dglab.batteryMonitoringFailed', {message: String(error)}));
     }
   }
 
+  // BF command (7 bytes): 0xBF + AB soft limits (2) + AB frequency balance (2) + AB strength balance (2).
+  // Note: it takes effect immediately, returns nothing, and the soft limit must be rewritten after every
+  // reconnect, otherwise a stale persisted limit could clamp the output unexpectedly.
   private async sendBFCommand() {
     if (!this.writeCharacteristic) return;
 
@@ -329,65 +333,77 @@ export default class DglabV3BlueToothProvider implements DglabProvider {
       const buffer = new ArrayBuffer(7);
       const view = new DataView(buffer);
 
-      // BF format: 0xBF + AB soft strength limits (2 bytes) + AB frequency balance (2 bytes) + AB strength balance (2 bytes).
-      view.setUint8(0, 0xBF); // Command header.
-      view.setUint8(1, this.state.maxPowerA); // Channel A soft limit.
-      view.setUint8(2, this.state.maxPowerB); // Channel B soft limit.
-      view.setUint8(3, this.state.frequencyBalance1A); // Channel A frequency balance.
-      view.setUint8(4, this.state.frequencyBalance1B); // Channel B frequency balance.
-      view.setUint8(5, this.state.frequencyBalance2A); // Channel A strength balance.
-      view.setUint8(6, this.state.frequencyBalance2B); // Channel B strength balance.
+      view.setUint8(0, 0xBF);
+      view.setUint8(1, this.clampStrength(this.state.maxPowerA)); // Channel A soft limit.
+      view.setUint8(2, this.clampStrength(this.state.maxPowerB)); // Channel B soft limit.
+      view.setUint8(3, DG3_FREQ_BALANCE);                         // Channel A frequency balance.
+      view.setUint8(4, DG3_FREQ_BALANCE);                         // Channel B frequency balance.
+      view.setUint8(5, DG3_STRENGTH_BALANCE);                     // Channel A strength balance.
+      view.setUint8(6, DG3_STRENGTH_BALANCE);                     // Channel B strength balance.
 
       await this.writeCharacteristic.writeValue(buffer);
-      module.debugLog(`BF command sent: maxPowerA=${this.state.maxPowerA}, maxPowerB=${this.state.maxPowerB}`);
+      module.debugLog(`BF sent: softLimit A=${this.state.maxPowerA}, B=${this.state.maxPowerB}`);
     } catch (error) {
       module.infoLog(i18n.t('dglab.failedBfCommand', {message: String(error)}));
     }
   }
 
-  private strengthDataProcessing(): {
-    sequenceNo: number,
-    strengthParsingMethod: number,
-    strengthValueA: number,
-    strengthValueB: number
+  // Decide the strength portion of the next B0 command. We use absolute interpretation (0b11): each change
+  // tells the device the exact target. At most one change is kept in flight, identified by its sequence
+  // number; subsequent ticks send 0b00 (no change) until the matching B1 arrives or the ack times out.
+  private resolveStrengthCommand(): {
+    sequenceNo: number;
+    parsingMethod: number;
+    strengthValueA: number;
+    strengthValueB: number;
   } {
-    let sequenceNo = 0;
-    let strengthParsingMethod = 0;
-    let strengthValueA = 0;
-    let strengthValueB = 0;
+    const idle = {sequenceNo: 0, parsingMethod: 0, strengthValueA: 0, strengthValueB: 0};
 
-    if (this.isInputAllowed) {
-      // Handle channel A.
-      if (this.accumulatedStrengthValueA > 0) {
-        strengthParsingMethod |= 0b0100; // Channel A relative increase.
-      } else if (this.accumulatedStrengthValueA < 0) {
-        strengthParsingMethod |= 0b1000; // Channel A relative decrease.
-      }
-
-      // Handle channel B.
-      if (this.accumulatedStrengthValueB > 0) {
-        strengthParsingMethod |= 0b0001; // Channel B relative increase.
-      } else if (this.accumulatedStrengthValueB < 0) {
-        strengthParsingMethod |= 0b0010; // Channel B relative decrease.
-      }
-
-      if (strengthParsingMethod !== 0) {
-        this.orderNo = (this.orderNo % 15) + 1; // Sequence range: 1-15.
-        sequenceNo = this.orderNo;
-        this.inputOrderNo = this.orderNo;
-        this.isInputAllowed = false;
-
-        strengthValueA = Math.abs(this.accumulatedStrengthValueA);
-        strengthValueB = Math.abs(this.accumulatedStrengthValueB);
-
-        this.accumulatedStrengthValueA = 0;
-        this.accumulatedStrengthValueB = 0;
+    if (!this.isInputAllowed) {
+      // Recover from a dropped B1 acknowledgement so strength updates never deadlock.
+      if (Date.now() - this.strengthSentAt >= STRENGTH_ACK_TIMEOUT_MS) {
+        this.isInputAllowed = true;
+        this.inputOrderNo = 0;
+      } else {
+        return idle;
       }
     }
 
-    return {sequenceNo, strengthParsingMethod, strengthValueA, strengthValueB};
+    const needA = this.state.powerLevelA !== this.sentPowerA;
+    const needB = this.state.powerLevelB !== this.sentPowerB;
+    if (!needA && !needB) {
+      return idle;
+    }
+
+    let parsingMethod = 0;
+    let strengthValueA = 0;
+    let strengthValueB = 0;
+
+    if (needA) {
+      parsingMethod |= PARSE_ABSOLUTE << 2; // High nibble controls channel A.
+      strengthValueA = this.state.powerLevelA;
+      this.sentPowerA = this.state.powerLevelA;
+    } else {
+      parsingMethod |= PARSE_NO_CHANGE << 2;
+    }
+
+    if (needB) {
+      parsingMethod |= PARSE_ABSOLUTE;       // Low nibble controls channel B.
+      strengthValueB = this.state.powerLevelB;
+      this.sentPowerB = this.state.powerLevelB;
+    } else {
+      parsingMethod |= PARSE_NO_CHANGE;
+    }
+
+    this.orderNo = (this.orderNo % SEQ_MAX) + 1; // Sequence numbers cycle through 1-15.
+    this.inputOrderNo = this.orderNo;
+    this.isInputAllowed = false;
+    this.strengthSentAt = Date.now();
+
+    return {sequenceNo: this.orderNo, parsingMethod, strengthValueA, strengthValueB};
   }
 
+  // Map a 10-1000 input frequency to the 10-240 value transmitted in the B0 command.
   private convertFrequency(inputFreq: number): number {
     if (inputFreq >= 10 && inputFreq <= 100) {
       return inputFreq;
@@ -400,92 +416,67 @@ export default class DglabV3BlueToothProvider implements DglabProvider {
     }
   }
 
+  // B0 command (20 bytes): 0xB0 + (seqNo<<4 | parsingMethod) + A target + B target
+  //   + A frequencies (4) + A strengths (4) + B frequencies (4) + B strengths (4).
   private async sendB0Command() {
     if (!this.writeCharacteristic) return;
 
     try {
-      const {sequenceNo, strengthParsingMethod, strengthValueA, strengthValueB} = this.strengthDataProcessing();
+      const {sequenceNo, parsingMethod, strengthValueA, strengthValueB} = this.resolveStrengthCommand();
 
-      // Get the current waveform data.
-      const selectedWaveform = coyote3wave[this.state.selectedWave];
-      const waveData = selectedWaveform[this.currentWaveIndex % selectedWaveform.length];
+      const waveform = coyote3wave[this.state.selectedWave];
+      const frame = waveform[this.currentWaveIndex % waveform.length];
 
       const buffer = new ArrayBuffer(20);
       const view = new DataView(buffer);
 
-      // B0 format: 0xB0 (1 byte) + sequence (4 bits) + strength parsing method (4 bits) + channel strengths.
-      // Followed by A frequency/strength waveform bytes and B frequency/strength waveform bytes.
-      view.setUint8(0, 0xB0); // Command header.
-      view.setUint8(1, (sequenceNo << 4) | strengthParsingMethod); // Sequence and strength parsing method.
-      view.setUint8(2, strengthValueA); // Channel A target strength.
-      view.setUint8(3, strengthValueB); // Channel B target strength.
+      view.setUint8(0, 0xB0);
+      view.setUint8(1, (sequenceNo << 4) | parsingMethod);
+      view.setUint8(2, strengthValueA);
+      view.setUint8(3, strengthValueB);
 
-      // Channel A waveform frequency (4 bytes).
-      view.setUint8(4, this.convertFrequency(waveData.freq[0]));
-      view.setUint8(5, this.convertFrequency(waveData.freq[1]));
-      view.setUint8(6, this.convertFrequency(waveData.freq[2]));
-      view.setUint8(7, this.convertFrequency(waveData.freq[3]));
-
-      // Channel A waveform strength (4 bytes).
-      view.setUint8(8, waveData.strength[0]);
-      view.setUint8(9, waveData.strength[1]);
-      view.setUint8(10, waveData.strength[2]);
-      view.setUint8(11, waveData.strength[3]);
-
-      // Channel B waveform frequency (4 bytes), using the same waveform data.
-      view.setUint8(12, this.convertFrequency(waveData.freq[0]));
-      view.setUint8(13, this.convertFrequency(waveData.freq[1]));
-      view.setUint8(14, this.convertFrequency(waveData.freq[2]));
-      view.setUint8(15, this.convertFrequency(waveData.freq[3]));
-
-      // Channel B waveform strength (4 bytes).
-      view.setUint8(16, waveData.strength[0]);
-      view.setUint8(17, waveData.strength[1]);
-      view.setUint8(18, waveData.strength[2]);
-      view.setUint8(19, waveData.strength[3]);
+      // Both channels play the same selected waveform; the per-channel strength gates whether it is felt.
+      for (let i = 0; i < 4; i++) {
+        view.setUint8(4 + i, this.convertFrequency(frame.freq[i]));  // Channel A frequencies.
+        view.setUint8(8 + i, frame.strength[i]);                    // Channel A strengths.
+        view.setUint8(12 + i, this.convertFrequency(frame.freq[i])); // Channel B frequencies.
+        view.setUint8(16 + i, frame.strength[i]);                   // Channel B strengths.
+      }
 
       await this.writeCharacteristic.writeValue(buffer);
 
-      this.setState(prevState => ({
-        transmitCount: prevState.transmitCount + 1
-      }));
-
       this.currentWaveIndex++;
-
+      this.setState(prevState => ({transmitCount: prevState.transmitCount + 1}));
     } catch (error) {
       module.infoLog(i18n.t('dglab.failedB0Command', {message: String(error)}));
-      this.setState(prevState => ({
-        errorCount: prevState.errorCount + 1
-      }));
+      this.setState(prevState => ({errorCount: prevState.errorCount + 1}));
     }
   }
 
+  // B1 response (4 bytes): 0xB1 + sequenceNo + channel A actual strength + channel B actual strength.
   private onNotifyReceived = (event: Event) => {
     const target = event.target as BluetoothRemoteGATTCharacteristic;
     const value = target.value;
-    if (!value) return;
+    if (!value || value.byteLength < 4) return;
 
-    const command = value.getUint8(0);
+    if (value.getUint8(0) !== 0xB1) return;
 
-    if (command === 0xB1) {
-      // B1 format: 0xB1 + sequence (1 byte) + current channel A/B strength.
-      const returnOrderNo = value.getUint8(1);
-      const realPowerA = value.getUint8(2);
-      const realPowerB = value.getUint8(3);
+    const returnOrderNo = value.getUint8(1);
+    const realPowerA = value.getUint8(2);
+    const realPowerB = value.getUint8(3);
 
-      this.setState({
-        realPowerLevelA: realPowerA,
-        realPowerLevelB: realPowerB
-      });
+    this.setState({
+      realPowerLevelA: realPowerA,
+      realPowerLevelB: realPowerB,
+    });
 
-      // Allow the next input when the sequence matches.
-      if (returnOrderNo === this.inputOrderNo) {
-        this.isInputAllowed = true;
-        this.inputOrderNo = 0;
-      }
-
-      module.debugLog(`B1 received: orderNo=${returnOrderNo}, powerA=${realPowerA}, powerB=${realPowerB}`);
+    // A non-zero sequence number that matches our in-flight change clears the gate for the next update.
+    if (returnOrderNo !== 0 && returnOrderNo === this.inputOrderNo) {
+      this.isInputAllowed = true;
+      this.inputOrderNo = 0;
     }
+
+    module.debugLog(`B1 received: orderNo=${returnOrderNo}, powerA=${realPowerA}, powerB=${realPowerB}`);
   };
 
   private onBatteryChanged = (event: Event) => {
@@ -498,15 +489,28 @@ export default class DglabV3BlueToothProvider implements DglabProvider {
     module.debugLog(i18n.t('dglab.currentBattery', {level: batteryLevel}));
   };
 
+  private resetStrengthState() {
+    this.orderNo = 0;
+    this.inputOrderNo = 0;
+    this.isInputAllowed = true;
+    this.strengthSentAt = 0;
+    this.sentPowerA = 0;
+    this.sentPowerB = 0;
+    this.currentWaveIndex = 0;
+    this.setState({
+      powerLevelA: 0,
+      powerLevelB: 0,
+      realPowerLevelA: 0,
+      realPowerLevelB: 0,
+    });
+  }
+
   private startTransmitting = () => {
     if (this.transmitInterval) return;
 
-    this.setState({isTransmitting: true});
-
-    // The V3 protocol sends one B0 command every 100ms.
     this.transmitInterval = window.setInterval(() => {
       this.sendB0Command();
-    }, 100);
+    }, TRANSMIT_INTERVAL_MS);
 
     module.infoLog(i18n.t('dglab.startedB0'));
   };
@@ -516,13 +520,12 @@ export default class DglabV3BlueToothProvider implements DglabProvider {
       clearInterval(this.transmitInterval);
       this.transmitInterval = null;
     }
-    this.setState({isTransmitting: false});
     module.infoLog(i18n.t('dglab.stoppedTransmitting'));
   };
 
   private handleWaveChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     this.setState({selectedWave: event.target.value as 'a' | 'b' | 'c'});
-    this.currentWaveIndex = 0; // Reset waveform index.
+    this.currentWaveIndex = 0;
   };
 
   private disconnect = () => {
