@@ -111,6 +111,7 @@ const Layer: React.FC = () => {
     <FloatingWindow
       isExpanded={isExpanded}
       onToggleExpanded={toggleExpanded}
+      enableAnimations={enableAnimations}
       header={headerConfig}
       collapsed="R"
       initialSize={{width: 520, height: 400}}

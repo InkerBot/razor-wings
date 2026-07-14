@@ -62,6 +62,8 @@ export interface FloatingWindowProps extends FloatingWindowCallbacks {
   /** Overlay layers (loading screen, settings panel) rendered OUTSIDE the
    *  scaled inner wrapper so their own backdrop-filter works */
   overlays?: ReactNode;
+  /** Enable expand/collapse transition animation */
+  enableAnimations?: boolean;
 }
 
 interface FloatingWindowState {
@@ -73,6 +75,15 @@ interface FloatingWindowState {
   resizeStart: { position: Position; size: Size } | null;
   resizeDirection: string | null;
   hasMoved: boolean;
+  /** Tracks the open/close transition phase:
+   *  'idle'            — no animation
+   *  'enter-start'     — expand just began, rendered small (initial frame)
+   *  'enter-active'    — expand, rendered full (transition target)
+   *  'leave-start'     — collapse just began, rendered full (initial frame)
+   *  'leave-active'    — collapse, rendered small (transition target) */
+  animation: 'idle' | 'enter-start' | 'enter-active' | 'leave-start' | 'leave-active';
+  /** Snapshot of the last isExpanded prop, used to detect prop changes */
+  prevExpanded: boolean;
 }
 
 class FloatingWindow extends Component<FloatingWindowProps, FloatingWindowState> {
@@ -83,6 +94,18 @@ class FloatingWindow extends Component<FloatingWindowProps, FloatingWindowState>
     header: 'Window'
   };
   private floatingWindowRef = React.createRef<HTMLDivElement>();
+  private animTimeout: number | null = null;
+
+  static getDerivedStateFromProps(nextProps: FloatingWindowProps, prevState: FloatingWindowState): Partial<FloatingWindowState> | null {
+    if (nextProps.isExpanded === prevState.prevExpanded) return null;
+    if (!nextProps.enableAnimations) {
+      return {prevExpanded: nextProps.isExpanded};
+    }
+    return {
+      animation: nextProps.isExpanded ? 'enter-start' : 'leave-start',
+      prevExpanded: nextProps.isExpanded
+    };
+  }
 
   constructor(props: FloatingWindowProps) {
     super(props);
@@ -102,7 +125,9 @@ class FloatingWindow extends Component<FloatingWindowProps, FloatingWindowState>
       dragStart: null,
       resizeStart: null,
       resizeDirection: null,
-      hasMoved: false
+      hasMoved: false,
+      animation: 'idle',
+      prevExpanded: props.isExpanded
     };
   }
 
@@ -114,12 +139,40 @@ class FloatingWindow extends Component<FloatingWindowProps, FloatingWindowState>
   componentWillUnmount() {
     this.removeEventListeners();
     window.removeEventListener('resize', this.handleWindowResize);
+    if (this.animTimeout) window.clearTimeout(this.animTimeout);
   }
 
   componentDidUpdate(prevProps: FloatingWindowProps, prevState: FloatingWindowState) {
     // Recheck position when expanded state changes
     if (prevProps.isExpanded !== this.props.isExpanded) {
       setTimeout(() => this.checkAndConstrainPosition(), 0);
+    }
+
+    // Drive the transition: when we just entered a '*-start' phase, flip to
+    // the matching '*-active' on the next animation frame so the browser
+    // paints the start state first, then transitions to the target.
+    if (prevState.animation !== this.state.animation) {
+      if (this.animTimeout) {
+        window.clearTimeout(this.animTimeout);
+        this.animTimeout = null;
+      }
+    }
+    if (this.state.animation === 'enter-start') {
+      requestAnimationFrame(() => this.setState({animation: 'enter-active'}));
+    } else if (this.state.animation === 'leave-start') {
+      requestAnimationFrame(() => this.setState({animation: 'leave-active'}));
+    }
+
+    // When the transition target is reached, settle back to idle after the
+    // transition duration so a later re-render doesn't replay it.
+    if (
+      (prevState.animation === 'enter-start' && this.state.animation === 'enter-active') ||
+      (prevState.animation === 'leave-start' && this.state.animation === 'leave-active')
+    ) {
+      if (this.animTimeout) window.clearTimeout(this.animTimeout);
+      this.animTimeout = window.setTimeout(() => {
+        this.setState({animation: 'idle'});
+      }, 240);
     }
 
     // Notify callbacks
@@ -142,7 +195,7 @@ class FloatingWindow extends Component<FloatingWindowProps, FloatingWindowState>
       className = '',
       showHeader = true
     } = this.props;
-    const {position, size} = this.state;
+    const {position, size, animation} = this.state;
     const dimensions = this.getResponsiveDimensions();
 
     // Normalize header config
@@ -152,8 +205,26 @@ class FloatingWindow extends Component<FloatingWindowProps, FloatingWindowState>
 
     const scale = dimensions.scale;
 
+    // Whether we are currently in an open/close transition
+    const isAnimating = animation !== 'idle';
+    // The expanded window stays mounted while entering OR leaving
+    const showExpanded = isExpanded || animation === 'leave-start' || animation === 'leave-active';
+    // The collapsed button is shown only when fully collapsed (not during a transition)
+    const showCollapsed = !isExpanded && animation === 'idle';
+
+    const finalWidth = size.width * scale;
+    const finalHeight = size.height * scale;
+    // During the transition the outer is clipped to a small circle that
+    // grows into the full panel; the inner/backdrop stay full-size so the
+    // backdrop-filter still has a non-transformed ancestor.
+    // '*-start' = initial frame of that direction; '*-active' = transition target.
+    const isSmall = animation === 'enter-start' || animation === 'leave-active';
+    const isStartVisual = animation === 'enter-start' || animation === 'leave-active';
+    const animWidth = isSmall ? 32 : finalWidth;
+    const animHeight = isSmall ? 32 : finalHeight;
+
     // ── Collapsed: simple button, no transform, no backdrop ──
-    if (!isExpanded) {
+    if (showCollapsed) {
       return (
         <div
           ref={this.floatingWindowRef}
@@ -168,7 +239,7 @@ class FloatingWindow extends Component<FloatingWindowProps, FloatingWindowState>
       );
     }
 
-    // ── Expanded ──
+    // ── Expanded (or mid-transition) ──
     // The OUTER element is intentionally NOT transformed. Only the inner
     // content wrapper carries `transform: scale()`. This keeps the
     // backdrop-filter element (and any overlay) free of a transformed
@@ -178,12 +249,20 @@ class FloatingWindow extends Component<FloatingWindowProps, FloatingWindowState>
     return (
       <div
         ref={this.floatingWindowRef}
-        className={cn("rw-floating-window rw-floating-window--expanded", className)}
+        className={cn(
+          "rw-floating-window rw-floating-window--expanded",
+          (animation === 'enter-start' || animation === 'enter-active') && "rw-window-entering",
+          (animation === 'leave-start' || animation === 'leave-active') && "rw-window-leaving",
+          !this.props.enableAnimations && "rw-window-no-anim",
+          className
+        )}
         style={{
           left: position.x,
           top: position.y,
-          width: size.width * scale,
-          height: size.height * scale,
+          width: animWidth,
+          height: animHeight,
+          opacity: isStartVisual ? 0 : 1,
+          borderRadius: isStartVisual ? '50%' : 'var(--rw-radius-md)',
         }}
         onMouseDown={this.onMouseDown}
         onMouseMove={this.onMouseMoveForCursor}
@@ -213,12 +292,10 @@ class FloatingWindow extends Component<FloatingWindowProps, FloatingWindowState>
             transformOrigin: 'top left'
           }}
         >
-          {isExpanded && (
-            <span
-              aria-hidden="true"
-              className="rw-window-corner-accent"
-            />
-          )}
+          <span
+            aria-hidden="true"
+            className="rw-window-corner-accent"
+          />
           <div className={cn("rw-window-shell", "flex")}>
             {showHeader && this.renderHeader(headerConfig)}
 

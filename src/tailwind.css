@@ -429,6 +429,20 @@
     .rw-floating-window--expanded {
         position: relative;
         color: var(--rw-text-primary);
+        /* Clip the full-size inner/backdrop to the (small) outer box while
+           the open/close transition plays, and animate the size/opacity/
+           radius so it grows/shrinks from the R button into the panel. */
+        overflow: hidden;
+        transition: width var(--rw-anim-duration, 220ms) cubic-bezier(0.22, 0.61, 0.36, 1),
+                    height var(--rw-anim-duration, 220ms) cubic-bezier(0.22, 0.61, 0.36, 1),
+                    opacity var(--rw-anim-duration, 220ms) ease,
+                    border-radius var(--rw-anim-duration, 220ms) ease;
+    }
+
+    /* When animations are disabled, kill the transition so the window
+       appears/disappears instantly even if React reuses the same DOM node. */
+    .rw-floating-window--expanded.rw-window-no-anim {
+        transition: none;
     }
 
     /* Blurred background. This sits as a SIBLING of the scaled inner
