@@ -1,5 +1,5 @@
-import type AbstractApplier from "./AbstractApplier.ts";
-import {type ApplyConfig, configDisabledGroup} from "./config.ts";
+import type AbstractApplier from "@/util/applier/AbstractApplier.ts";
+import {type ApplyConfig, configDisabledGroup} from "@/util/applier/config.ts";
 
 export default {
   async apply(target: Character, appearance: AppearanceBundle, config?: ApplyConfig) {
@@ -10,7 +10,7 @@ export default {
       }
     }
 
-    appearance.forEach(it =>{
+    appearance.forEach(it => {
       if (configDisabledGroup(config, it.Group)) return;
       InventoryWear(target, it.Name, it.Group, it.Color, it.Difficulty, Player.ID, it.Craft, false)
     });

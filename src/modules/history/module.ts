@@ -1,11 +1,11 @@
-import type AbstractModule from "../AbstractModule.ts";
-import razorModSdk from "../../razor-wings";
+import type AbstractModule from "@/modules/AbstractModule.ts";
+import razorModSdk from "@/razor-wings";
 
 export interface HistoryEntry {
   timestamp: number;
-  removed: {[k: string]: ItemBundle};
-  added: {[k: string]: ItemBundle};
-  changed: {[k: string]: {old: ItemBundle, new: ItemBundle}};
+  removed: { [k: string]: ItemBundle };
+  added: { [k: string]: ItemBundle };
+  changed: { [k: string]: { old: ItemBundle, new: ItemBundle } };
   reason: ReasonLine[];
   fully?: ServerAppearanceBundle
 }
@@ -16,7 +16,7 @@ export interface ReasonLine {
 }
 
 class HistoryModule implements AbstractModule {
-  latestAppearance: {[k: string]: ItemBundle} = {};
+  latestAppearance: { [k: string]: ItemBundle } = {};
   history: HistoryEntry[] = [];
   private historyChangeListeners: (() => void)[] = [];
   private reasonStack: ReasonLine[] = [];
@@ -76,8 +76,67 @@ class HistoryModule implements AbstractModule {
   }
 
   initAfterLogin() {
-    this.pushReason({ text: "login" }, () => {
+    this.pushReason({text: "login"}, () => {
       this.handleAppearanceUpdate(ServerAppearanceBundle(Player.Appearance));
+    });
+  }
+
+  init() {
+    razorModSdk.hookFunction('ServerAccountUpdate.QueueData', 10, ([data, ...args], next) => {
+      if (data.Appearance && Array.isArray(data.Appearance)) {
+        // fix: change cloth will cause server update, which is not required to record
+        if (CurrentModule !== "Character" && CurrentScreen !== "Appearance") {
+          this.pushReason({text: "local server update"}, () => {
+            this.handleAppearanceUpdate(data.Appearance);
+          });
+        }
+      }
+      next([data, ...args]);
+    });
+    razorModSdk.hookFunction('ChatRoomCharacterUpdate', 10, ([character, ...args], next) => {
+      if (character.MemberNumber === Player.MemberNumber) {
+        this.pushReason({text: "local chat room update"}, () => {
+          this.handleAppearanceUpdate(ServerAppearanceBundle(character.Appearance));
+        });
+      }
+      next([character, ...args]);
+    });
+
+    // reasons
+    razorModSdk.hookFunction('ChatRoomSyncItem', 10, ([data, ...args], next) => {
+      if (data.Item.Target === Player.MemberNumber) {
+        const dictionary: ChatMessageDictionary = [];
+        dictionary.push({SourceCharacter: data.Source});
+        dictionary.push({TargetCharacter: data.Item.Target});
+        dictionary.push({
+          Tag: "DestinationCharacter",
+          MemberNumber: Player.MemberNumber,
+          Text: CharacterNickname(Player)
+        });
+        this.pushReason({text: "Update by " + this.renderCharacterName(data.Item.Target)}, () => {
+          next([data, ...args]);
+        });
+      } else {
+        next([data, ...args]);
+      }
+    });
+
+    razorModSdk.hookFunction('ServerAppearanceLoadFromBundle', 10, ([character, assetFamily, bundle, source, appearanceFull, ...args], next) => {
+      if (character.MemberNumber === Player.MemberNumber) {
+        const dictionary: ChatMessageDictionary = [];
+        dictionary.push({SourceCharacter: source});
+        dictionary.push({TargetCharacter: character.MemberNumber});
+        dictionary.push({
+          Tag: "DestinationCharacter",
+          MemberNumber: Player.MemberNumber,
+          Text: CharacterNickname(Player)
+        });
+        return this.pushReason({text: "Large update by " + this.renderCharacterName(source)}, () => {
+          return next([character, assetFamily, bundle, source, appearanceFull, ...args]);
+        });
+      } else {
+        return next([character, assetFamily, bundle, source, appearanceFull, ...args]);
+      }
     });
   }
 
@@ -91,13 +150,13 @@ class HistoryModule implements AbstractModule {
 
   private handleAppearanceUpdate(newAppearance: ServerAppearanceBundle) {
     let removedCount = 0;
-    const removed: {[k: string]: ItemBundle} = {};
+    const removed: { [k: string]: ItemBundle } = {};
     let addedCount = 0;
-    const added: {[k: string]: ItemBundle} = {};
+    const added: { [k: string]: ItemBundle } = {};
     let changedCount = 0;
-    const changed: {[k: string]: {old: ItemBundle, new: ItemBundle}} = {};
+    const changed: { [k: string]: { old: ItemBundle, new: ItemBundle } } = {};
 
-    const newMap: {[k: string]: ItemBundle} = {};
+    const newMap: { [k: string]: ItemBundle } = {};
     for (const item of newAppearance) {
       newMap[item.Group] = item;
     }
@@ -145,57 +204,6 @@ class HistoryModule implements AbstractModule {
     } else {
       return target + " - unknown";
     }
-  }
-
-  init() {
-    razorModSdk.hookFunction('ServerAccountUpdate.QueueData', 10, ([data, ...args], next) => {
-      if (data.Appearance && Array.isArray(data.Appearance)) {
-        // fix: change cloth will cause server update, which is not required to record
-        if (CurrentModule !== "Character" && CurrentScreen !== "Appearance") {
-          this.pushReason({text: "local server update"}, () => {
-            this.handleAppearanceUpdate(data.Appearance);
-          });
-        }
-      }
-      next([data, ...args]);
-    });
-    razorModSdk.hookFunction('ChatRoomCharacterUpdate', 10, ([character, ...args], next) => {
-      if (character.MemberNumber === Player.MemberNumber) {
-        this.pushReason({text: "local chat room update"}, () => {
-          this.handleAppearanceUpdate(ServerAppearanceBundle(character.Appearance));
-        });
-      }
-      next([character, ...args]);
-    });
-
-    // reasons
-    razorModSdk.hookFunction('ChatRoomSyncItem', 10, ([data, ...args], next) => {
-      if (data.Item.Target === Player.MemberNumber) {
-        const dictionary: ChatMessageDictionary = [];
-        dictionary.push({SourceCharacter: data.Source});
-        dictionary.push({TargetCharacter: data.Item.Target});
-        dictionary.push({Tag: "DestinationCharacter", MemberNumber: Player.MemberNumber, Text: CharacterNickname(Player)});
-        this.pushReason({text: "Update by " + this.renderCharacterName(data.Item.Target)}, () => {
-          next([data, ...args]);
-        });
-      } else {
-        next([data, ...args]);
-      }
-    });
-
-    razorModSdk.hookFunction('ServerAppearanceLoadFromBundle', 10, ([character, assetFamily, bundle, source, appearanceFull, ...args], next) => {
-      if (character.MemberNumber === Player.MemberNumber) {
-        const dictionary: ChatMessageDictionary = [];
-        dictionary.push({SourceCharacter: source});
-        dictionary.push({TargetCharacter: character.MemberNumber});
-        dictionary.push({Tag: "DestinationCharacter", MemberNumber: Player.MemberNumber, Text: CharacterNickname(Player)});
-        return this.pushReason({text: "Large update by " + this.renderCharacterName(source)}, () => {
-          return next([character, assetFamily, bundle, source, appearanceFull, ...args]);
-        });
-      } else {
-        return next([character, assetFamily, bundle, source, appearanceFull, ...args]);
-      }
-    });
   }
 }
 

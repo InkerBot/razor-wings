@@ -1,6 +1,9 @@
 import {useState} from "react";
+import {useTranslation} from "react-i18next";
+import Button from "@/components/Button";
 
 export default function CheatAllThings() {
+  const {t} = useTranslation();
   const [message, setMessage] = useState<string[]>([]);
 
   const appendMessage = (msg: string) => {
@@ -8,12 +11,9 @@ export default function CheatAllThings() {
   }
 
   const onClick = () => {
-    appendMessage("RW: 获取所有外观...")
-    AssetFemale3DCG.forEach((group) => group.Asset.forEach((asset: AssetDefinitionBase) => {
-      InventoryAdd(Player, asset.Name, group.Group, false)
-    }))
+    appendMessage(t('cheatAllThings.getAppearance'))
 
-    appendMessage("RW: all skills...")
+    appendMessage(t('cheatAllThings.allSkills'))
     SkillProgress(Player, 'Bondage', 114514)
     SkillProgress(Player, 'SelfBondage', 114514)
     SkillProgress(Player, 'LockPicking', 114514)
@@ -22,20 +22,20 @@ export default function CheatAllThings() {
     SkillProgress(Player, 'Infiltration', 114514)
     SkillProgress(Player, 'Dressage', 114514)
 
-    appendMessage("RW: money...")
+    appendMessage(t('cheatAllThings.money'))
     CharacterChangeMoney(Player, 1000000)
 
-    appendMessage("RW: sync...")
+    appendMessage(t('cheatAllThings.sync'))
     ServerAccountUpdate.QueueData({Game: Player.Game}, true);
     ServerPlayerInventorySync()
 
-    appendMessage("RW: success")
+    appendMessage(t('cheatAllThings.success'))
   }
 
   return <>
-    <p>获取所有物品</p>
+    <p>{t('cheatAllThings.title')}</p>
     {message.length == 0 ?
-      <button onClick={onClick}>run</button> :
+      <Button onClick={onClick}>{t('common.run')}</Button> :
       message.map((msg, index) => (
         <p key={index}>{msg}</p>
       ))}

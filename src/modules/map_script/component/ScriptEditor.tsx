@@ -1,6 +1,7 @@
 import React, {useEffect} from "react";
+import {useTranslation} from "react-i18next";
 import {Editor, loader} from "@monaco-editor/react";
-import main from "../../../main.tsx";
+import main from "@/main.tsx";
 
 let isStyleInjected = false;
 
@@ -10,6 +11,7 @@ interface Props {
 }
 
 export default function ScriptEditor({value, onChange}: Props) {
+  const {t} = useTranslation();
   const [error, setError] = React.useState<string | null>(null);
 
   useEffect(() => {
@@ -28,12 +30,12 @@ export default function ScriptEditor({value, onChange}: Props) {
       }
     }).catch((e) => {
       console.error("Monaco Editor failed to load:", e.message);
-      setError("Failed to load Monaco Editor: " + e.message);
+      setError(t('utilEditor.editorLoadFailed', {message: e.message}));
     });
-  }, []);
+  }, [t]);
 
   return (<>
-    {error ? <p>Error: {error}</p> : <Editor
+    {error ? <p>{t('common.error')}: {error}</p> : <Editor
       height="100%"
       width="100%"
       value={value}

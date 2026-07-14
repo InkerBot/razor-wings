@@ -1,5 +1,5 @@
-import type AbstractModule from "../AbstractModule.ts";
-import razorModSdk from "../../razor-wings";
+import type AbstractModule from "@/modules/AbstractModule.ts";
+import razorModSdk from "@/razor-wings";
 
 /** Beep request with mod-extended Message field (BCX, LSCG, etc. send objects instead of strings) */
 interface ModBeepRequest extends Omit<ServerAccountBeepRequest, 'Message'> {
@@ -89,7 +89,7 @@ class PrivacyModule implements AbstractModule {
           // remove hidden mods from wce report
           if (this.hiddenMods.length != 0 && entry.Type === 'Hidden' && entry.Content == 'BCEMsg' && entry.Dictionary) {
             for (const dictionaryElement of (entry.Dictionary as never[])) {
-              if (dictionaryElement['message'] && dictionaryElement['message']['type'] == 'Hello') {
+              if (dictionaryElement['message'] && dictionaryElement['message']['type'] == 'Hello' && Array.isArray(dictionaryElement['message']['otherAddons'])) {
                 dictionaryElement['message']['otherAddons'] = (dictionaryElement['message']['otherAddons'] as ModSDKModInfo[])
                   .filter(mod => !this.hiddenMods.includes(mod.name)) as never;
               }

@@ -1,8 +1,13 @@
 import {useEffect, useState} from "react";
-import PlayerSelector from "../../components/PlayerSelector.tsx";
-import module from "./module.ts";
+import {useTranslation} from "react-i18next";
+import PlayerSelector from "@/components/PlayerSelector.tsx";
+import module from "@/modules/util_unlock/module.ts";
+import Button from "@/components/Button";
+import {InlineLabel, TextInput} from "@/components/FieldControls";
+import ToggleRow from "@/components/ToggleRow";
 
 export default function UtilUnlockPage() {
+  const {t} = useTranslation();
   const [tiggerTextEnable, setTiggerTextEnable] = useState(module.tiggerTextEnable);
   const [tiggerText, setTiggerText] = useState(module.tiggerText);
 
@@ -20,13 +25,13 @@ export default function UtilUnlockPage() {
 
   const onClick = () => {
     if (character == null) {
-      setMessage("请先选择一个角色");
+      setMessage(t('unlock.selectCharacterFirst'));
       return;
     }
 
     module.run(character);
 
-    setMessage(`已解锁角色 ${character.Nickname ?? character.Name} (${character.Name}) 的所有拘束`);
+    setMessage(t('unlock.success', {name: character.Nickname ?? character.Name, id: character.Name}));
     setTimeout(() => {
       setMessage("");
     }, 3000);
@@ -34,30 +39,27 @@ export default function UtilUnlockPage() {
 
   return <>
     <div>
-      <p>解锁角色的所有拘束</p>
+      <p>{t('unlock.description')}</p>
       {message && <p>{message}</p>}
       {character && (
-        <p>当前选择的角色: {character.Nickname ?? character.Name} ({character.Name})</p>
+        <p>{t('unlock.selectedCharacter', {name: character.Nickname ?? character.Name, id: character.Name})}</p>
       )}
       <PlayerSelector onChange={setCharacter} characterId={character?.CharacterID}/>
-      <button onClick={onClick} disabled={!character}>解锁</button>
+      <Button onClick={onClick} disabled={!character}>{t('unlock.action')}</Button>
     </div>
     <div>
-      <label>
-        <input type="checkbox" checked={tiggerTextEnable} onChange={e => setTiggerTextEnable(e.target.checked)}/>
-        启用触发文本
-      </label>
+      <ToggleRow checked={tiggerTextEnable} onChange={setTiggerTextEnable}>{t('unlock.enableTriggerText')}</ToggleRow>
     </div>
     <div>
-      <label>
-        触发文本:
-        <input
+      <InlineLabel>
+        {t('unlock.triggerText')}
+        <TextInput
           type="text"
           value={tiggerText}
           onChange={e => setTiggerText(e.target.value)}
-          placeholder="输入触发文本"
+          placeholder={t('unlock.triggerPlaceholder')}
         />
-      </label>
+      </InlineLabel>
     </div>
   </>
 }

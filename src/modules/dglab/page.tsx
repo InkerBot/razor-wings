@@ -1,9 +1,12 @@
-import DglabProviderContainer from "./provider/DglabProviderContainer.ts";
-import module from "./module.ts";
+import DglabProviderContainer from "@/modules/dglab/provider/DglabProviderContainer.ts";
+import module from "@/modules/dglab/module.ts";
 import {useEffect, useState} from "react";
-import type DglabProvider from "./provider/DglabProvider.ts";
+import {useTranslation} from "react-i18next";
+import type DglabProvider from "@/modules/dglab/provider/DglabProvider.ts";
+import {InlineLabel, RangeInput, Select} from "@/components/FieldControls";
 
 export default function DglabPage() {
+  const {t} = useTranslation();
   const [providerName, setProviderName] = useState<string>(module.providerName);
   const [provider, setProvider] = useState<DglabProvider>(module.provider);
   const [powerA, setPowerA] = useState<number>(module.powerA);
@@ -21,33 +24,32 @@ export default function DglabPage() {
   }, []);
 
   useEffect(() => {
-    const newProvider = module.providerList.find(p => p.name === providerName);
+    const newProvider = module.providerList.find(p => p.id === providerName);
     if (newProvider) {
       module.setProvider(providerName, setProvider);
     }
   }, [providerName]);
 
   return (<>
-    <select value={providerName} onChange={e => setProviderName(e.target.value)}>
+    <Select className="mb-[var(--rw-space-2)] w-full" value={providerName}
+            onChange={e => setProviderName(e.target.value)}>
       {module.providerList.map((p, index) => (
-        <option key={index} value={p.name}>{p.name}</option>
+        <option key={index} value={p.id}>{t(p.nameKey)}</option>
       ))}
-    </select>
+    </Select>
     <DglabProviderContainer provider={provider}/>
     <hr/>
-    <div>
-      <label>
-        A:
-        <input type="range" min={0} max={1} step={0.01} value={powerA} placeholder="Power A"/>
-        {Math.round(powerA * 100)}%
-      </label>
-    </div>
-    <div>
-      <label>
-        B:
-        <input type="range" min={0} max={1} step={0.01} value={powerB} placeholder="Power B"/>
-        {Math.round(powerB * 100)}%
-      </label>
+    <div className="flex flex-col gap-[var(--rw-space-2)]">
+      <InlineLabel className="w-full">
+        <span className="w-[18px]">A:</span>
+        <RangeInput min={0} max={1} step={0.01} value={powerA} placeholder={t('dglab.powerA')} readOnly className="flex-1"/>
+        <span className="rw-value w-[42px]">{Math.round(powerA * 100)}%</span>
+      </InlineLabel>
+      <InlineLabel className="w-full">
+        <span className="w-[18px]">B:</span>
+        <RangeInput min={0} max={1} step={0.01} value={powerB} placeholder={t('dglab.powerB')} readOnly className="flex-1"/>
+        <span className="rw-value w-[42px]">{Math.round(powerB * 100)}%</span>
+      </InlineLabel>
     </div>
   </>);
 }

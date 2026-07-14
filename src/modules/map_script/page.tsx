@@ -1,5 +1,5 @@
-import MapMainPage from "./MapScriptMain.tsx";
+import MapMainPage from "@/modules/map_script/MapScriptMain.tsx";
 
 export default function MapScriptPage() {
-  return <MapMainPage />
+  return <MapMainPage/>
 }

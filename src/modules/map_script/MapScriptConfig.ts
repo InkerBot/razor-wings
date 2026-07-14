@@ -1,3 +1,3 @@
 export default interface MapScriptConfig {
-  tiggers: {[k: number]: string}
+  tiggers: { [k: number]: string }
 }

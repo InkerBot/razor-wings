@@ -1,13 +1,15 @@
 import React from "react";
-import module from "./module.ts";
-import ScriptEditor from "./component/ScriptEditor.tsx";
+import {withTranslation, type WithTranslation} from "react-i18next";
+import module from "@/modules/map_script/module.ts";
+import ScriptEditor from "@/modules/map_script/component/ScriptEditor.tsx";
+import Button from "@/components/Button";
 
 interface MapScriptMainState {
   playerPos: ChatRoomMapPos
   scriptContent: string
 }
 
-export default class MapMainPage extends React.Component<object, MapScriptMainState> {
+class MapMainPage extends React.Component<WithTranslation, MapScriptMainState> {
   state: MapScriptMainState = {
     playerPos: module.playerPos,
     scriptContent: ''
@@ -41,30 +43,21 @@ export default class MapMainPage extends React.Component<object, MapScriptMainSt
   }
 
   render() {
+    const {t} = this.props;
+
     return (<>
-      <div style={{
-        height: '100%',
-        width: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        minHeight: 0
-      }}>
-        <div className="editor-page-buttons" style={{
-          display: 'flex',
-          flexShrink: 0
-        }}>
-          Player Position: X: {this.state.playerPos.X}, Y: {this.state.playerPos.Y}
-          <button onClick={this.loadScript}>Load</button>
-          <button onClick={this.saveScript}>Save</button>
+      <div className="flex h-full min-h-[0] w-full flex-col">
+        <div className="rw-inline-toolbar">
+          {t('mapScript.playerPosition', {x: this.state.playerPos.X, y: this.state.playerPos.Y})}
+          <Button onClick={this.loadScript}>{t('common.load')}</Button>
+          <Button onClick={this.saveScript}>{t('common.save')}</Button>
         </div>
-        <div className="editor-page-editor" style={{
-          flex: 1,
-          minHeight: 0,
-          overflow: 'hidden'
-        }}>
+        <div className="min-h-[0] flex-1 overflow-hidden">
           <ScriptEditor value={this.state.scriptContent} onChange={(scriptContent) => this.setState({scriptContent})}/>
         </div>
       </div>
     </>);
   }
 }
+
+export default withTranslation()(MapMainPage);

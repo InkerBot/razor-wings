@@ -1,10 +1,10 @@
-import type AbstractModule from "../AbstractModule.ts";
-import type TrapConfig from "./TrapConfig.ts";
-import type { TrapScript } from "./TrapConfig.ts";
-import razorModSdk from "../../razor-wings";
+import type AbstractModule from "@/modules/AbstractModule.ts";
+import type TrapConfig from "@/modules/util_trap/TrapConfig.ts";
+import type {TrapScript} from "@/modules/util_trap/TrapConfig.ts";
+import razorModSdk from "@/razor-wings";
 import type {IExecContext, IScope} from "@nyariv/sandboxjs/dist/node/utils";
 import Sandbox from "@nyariv/sandboxjs";
-import common_functions from "../map_script/functions/functions.ts";
+import common_functions from "@/modules/map_script/functions/functions.ts";
 
 const STORAGE_KEY = 'razorwings.util_trap_config';
 
@@ -12,13 +12,13 @@ class UtilTrapModule implements AbstractModule {
   config: TrapConfig = {
     scripts: []
   };
-
-  private sandbox: Sandbox;
   trapRoomEnabled: boolean = false;
-
+  private sandbox: Sandbox;
   private scriptCache: Map<string, (...scopes: IScope[]) => { context: IExecContext; run: () => unknown; }> = new Map();
   private configChangeListeners: (() => void)[] = [
-    ()=> { this.scriptCache.clear(); },
+    () => {
+      this.scriptCache.clear();
+    },
   ];
 
   constructor() {
@@ -28,15 +28,6 @@ class UtilTrapModule implements AbstractModule {
     const globals = {...Sandbox.SAFE_GLOBALS, ...common_functions};
 
     this.sandbox = new Sandbox({globals, prototypeWhitelist});
-  }
-
-  private randomScript(): TrapScript {
-    const enabledScripts = this.config.scripts.filter(s => s.enabled);
-    if (enabledScripts.length === 0) {
-      throw new Error('No enabled trap scripts available');
-    }
-    const index = Math.floor(Math.random() * enabledScripts.length);
-    return enabledScripts[index];
   }
 
   init() {
@@ -104,6 +95,15 @@ class UtilTrapModule implements AbstractModule {
     if (index >= 0) {
       this.configChangeListeners.splice(index, 1);
     }
+  }
+
+  private randomScript(): TrapScript {
+    const enabledScripts = this.config.scripts.filter(s => s.enabled);
+    if (enabledScripts.length === 0) {
+      throw new Error('No enabled trap scripts available');
+    }
+    const index = Math.floor(Math.random() * enabledScripts.length);
+    return enabledScripts[index];
   }
 
   private notifyConfigChange() {

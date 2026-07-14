@@ -1,9 +1,10 @@
-import './style.css?page'
-import {DeeplxTranslationProvider} from "./provider/deeplx.ts";
-import {AiTranslationProvider} from "./provider/ai.ts";
-import type {sourceLanguageCode, targetLanguageCode} from "./languages.ts";
-import razorModSdk from "../../razor-wings";
-import type AbstractModule from "../AbstractModule.ts";
+import '@/modules/translation/style.css?page'
+import {DeeplxTranslationProvider} from "@/modules/translation/provider/deeplx.ts";
+import {AiTranslationProvider} from "@/modules/translation/provider/ai.ts";
+import type {sourceLanguageCode, targetLanguageCode} from "@/modules/translation/languages.ts";
+import razorModSdk from "@/razor-wings";
+import type AbstractModule from "@/modules/AbstractModule.ts";
+import i18n from "@/i18n";
 
 const defaultApiUrl = 'https://aurora-wings.bgp.ink/translate';
 const defaultAiPrompt = 'You are a translator for Bondage Club, an online BDSM role-playing game. Messages may contain roleplay actions, BDSM terminology, and domain-specific abbreviations. Preserve the original tone and style. Translate from {sourceLang} to {targetLang}. Output only the translated text, nothing else.';
@@ -28,7 +29,7 @@ class TranslationModule implements AbstractModule {
   bioEnable: boolean = false;
   bioVerticalLayout: boolean = false;
   syncInputStatus: boolean = false;
-
+  initialized: boolean = false;
   private statusTimer: ReturnType<typeof setTimeout> | null = null;
 
   switchSend(enable: boolean) {
@@ -39,8 +40,6 @@ class TranslationModule implements AbstractModule {
     this.receiveEnable = enable;
   }
 
-  initialized: boolean = false;
-
   init() {
     if (this.initialized) {
       return;
@@ -50,10 +49,6 @@ class TranslationModule implements AbstractModule {
     this.initReceiveTranslation();
     this.initSendTranslation();
     this.initBioTranslation();
-  }
-
-  private initBioTranslation() {
-    import('./bio-translate.ts').then(m => m.initBioTranslationHooks(this));
   }
 
   updateTypingStatus(text: string) {
@@ -86,6 +81,61 @@ class TranslationModule implements AbstractModule {
     this.sendBCStatus(null);
   }
 
+  translate(source: sourceLanguageCode | null, target: targetLanguageCode, text: string) {
+    if (this.providerType === 'ai') {
+      return new AiTranslationProvider(this.aiApiUrl, this.aiApiKey, this.aiModel, this.aiPrompt).translate(source ?? 'auto', target, text);
+    }
+    return new DeeplxTranslationProvider(this.apiUrl).translate(source, target, text);
+  }
+
+  loadConfig() {
+    const localStorageElement = localStorage['razorwings.translation'];
+    if (localStorageElement) {
+      const config = JSON.parse(localStorageElement);
+      this.providerType = config.providerType || this.providerType;
+      this.apiUrl = config.apiUrl || this.apiUrl;
+      this.aiApiUrl = config.aiApiUrl || this.aiApiUrl;
+      this.aiApiKey = config.aiApiKey || this.aiApiKey;
+      this.aiModel = config.aiModel || this.aiModel;
+      this.aiPrompt = config.aiPrompt || this.aiPrompt;
+      this.sendSourceLanguage = config.sendSourceLanguage || this.sendSourceLanguage;
+      this.sendTargetLanguage = config.sendTargetLanguage || this.sendTargetLanguage;
+      this.receiveSourceLanguage = config.receiveSourceLanguage || this.receiveSourceLanguage;
+      this.receiveTargetLanguage = config.receiveTargetLanguage || this.receiveTargetLanguage;
+      this.sendEnable = config.sendEnable ?? this.sendEnable;
+      this.receiveEnable = config.receiveEnable ?? this.receiveEnable;
+      this.bioEnable = config.bioEnable ?? this.bioEnable;
+      this.bioVerticalLayout = config.bioVerticalLayout ?? this.bioVerticalLayout;
+      this.syncInputStatus = config.syncInputStatus ?? this.syncInputStatus;
+    } else {
+      this.saveConfig();
+    }
+  }
+
+  saveConfig() {
+    localStorage['razorwings.translation'] = JSON.stringify({
+      providerType: this.providerType,
+      apiUrl: this.apiUrl,
+      aiApiUrl: this.aiApiUrl,
+      aiApiKey: this.aiApiKey,
+      aiModel: this.aiModel,
+      aiPrompt: this.aiPrompt,
+      sendSourceLanguage: this.sendSourceLanguage,
+      sendTargetLanguage: this.sendTargetLanguage,
+      receiveSourceLanguage: this.receiveSourceLanguage,
+      receiveTargetLanguage: this.receiveTargetLanguage,
+      sendEnable: this.sendEnable,
+      receiveEnable: this.receiveEnable,
+      bioEnable: this.bioEnable,
+      bioVerticalLayout: this.bioVerticalLayout,
+      syncInputStatus: this.syncInputStatus,
+    });
+  }
+
+  private initBioTranslation() {
+    import('@/modules/translation/bio-translate.ts').then(m => m.initBioTranslationHooks(this));
+  }
+
   private dispatchInputChatEvent(text: string) {
     const inputChat = document.getElementById('InputChat') as HTMLTextAreaElement | null;
     if (!inputChat) return;
@@ -102,13 +152,6 @@ class TranslationModule implements AbstractModule {
     ServerSend('ChatRoomChat', {Content: status ?? 'null', Type: 'Status'} as never);
   }
 
-  translate(source: sourceLanguageCode | null, target: targetLanguageCode, text: string) {
-    if (this.providerType === 'ai') {
-      return new AiTranslationProvider(this.aiApiUrl, this.aiApiKey, this.aiModel, this.aiPrompt).translate(source ?? 'auto', target, text);
-    }
-    return new DeeplxTranslationProvider(this.apiUrl).translate(source, target, text);
-  }
-
   private initReceiveTranslation() {
     razorModSdk.hookFunction("ChatRoomMessageDisplay", 10, ([data, ...msg], next) => {
       if (!this.receiveEnable || ['Chat', 'Whisper', 'Emote'].indexOf(data.Type) === -1 || data.Sender === Player.MemberNumber) {
@@ -121,7 +164,7 @@ class TranslationModule implements AbstractModule {
       const element = next([data, ...msg]);
 
       const translationElement = document.createElement('span');
-      translationElement.innerText = '翻译中...';
+      translationElement.innerText = i18n.t('translation.translating');
       translationElement.className = 'razorwings-translation-text razorwings-translation-pending';
       element.insertAdjacentElement('beforeend', document.createElement('br'));
       element.insertAdjacentElement('beforeend', translationElement);
@@ -140,7 +183,7 @@ class TranslationModule implements AbstractModule {
         .catch(error => {
           const wasAtEnd = ElementIsScrolledToEnd("TextAreaChatLog");
           translationElement.className = 'razorwings-translation-text razorwings-translation-error';
-          translationElement.innerText = `翻译失败: ${error.message}`;
+          translationElement.innerText = i18n.t('translation.failed', {message: error.message});
           if (wasAtEnd) ElementScrollToEnd("TextAreaChatLog");
         });
 
@@ -188,7 +231,7 @@ class TranslationModule implements AbstractModule {
         .replace(/\n/g, '<br>');
       ChatRoomSendLocal(
         `<span id="${pendingId}" class="razorwings-send-pending">` +
-        `<span class="razorwings-translation-text razorwings-translation-pending">正在翻译...</span><br>` +
+        `<span class="razorwings-translation-text razorwings-translation-pending">${i18n.t('translation.pendingSend')}</span><br>` +
         `${escapedContent}` +
         `</span>`
       );
@@ -208,56 +251,12 @@ class TranslationModule implements AbstractModule {
         })
         .catch(error => {
           removePending();
-          ChatRoomSendLocal(`翻译失败: ${error.message}`);
+          ChatRoomSendLocal(i18n.t('translation.failed', {message: error.message}));
           next([messageType, ...args]);
           if (isNonSelfWhisper) {
             ChatRoomMessage(message);
           }
         });
-    });
-  }
-
-  loadConfig() {
-    const localStorageElement = localStorage['razorwings.translation'];
-    if (localStorageElement) {
-      const config = JSON.parse(localStorageElement);
-      this.providerType = config.providerType || this.providerType;
-      this.apiUrl = config.apiUrl || this.apiUrl;
-      this.aiApiUrl = config.aiApiUrl || this.aiApiUrl;
-      this.aiApiKey = config.aiApiKey || this.aiApiKey;
-      this.aiModel = config.aiModel || this.aiModel;
-      this.aiPrompt = config.aiPrompt || this.aiPrompt;
-      this.sendSourceLanguage = config.sendSourceLanguage || this.sendSourceLanguage;
-      this.sendTargetLanguage = config.sendTargetLanguage || this.sendTargetLanguage;
-      this.receiveSourceLanguage = config.receiveSourceLanguage || this.receiveSourceLanguage;
-      this.receiveTargetLanguage = config.receiveTargetLanguage || this.receiveTargetLanguage;
-      this.sendEnable = config.sendEnable ?? this.sendEnable;
-      this.receiveEnable = config.receiveEnable ?? this.receiveEnable;
-      this.bioEnable = config.bioEnable ?? this.bioEnable;
-      this.bioVerticalLayout = config.bioVerticalLayout ?? this.bioVerticalLayout;
-      this.syncInputStatus = config.syncInputStatus ?? this.syncInputStatus;
-    } else {
-      this.saveConfig();
-    }
-  }
-
-  saveConfig() {
-    localStorage['razorwings.translation'] = JSON.stringify({
-      providerType: this.providerType,
-      apiUrl: this.apiUrl,
-      aiApiUrl: this.aiApiUrl,
-      aiApiKey: this.aiApiKey,
-      aiModel: this.aiModel,
-      aiPrompt: this.aiPrompt,
-      sendSourceLanguage: this.sendSourceLanguage,
-      sendTargetLanguage: this.sendTargetLanguage,
-      receiveSourceLanguage: this.receiveSourceLanguage,
-      receiveTargetLanguage: this.receiveTargetLanguage,
-      sendEnable: this.sendEnable,
-      receiveEnable: this.receiveEnable,
-      bioEnable: this.bioEnable,
-      bioVerticalLayout: this.bioVerticalLayout,
-      syncInputStatus: this.syncInputStatus,
     });
   }
 }

@@ -1,5 +1,8 @@
 import React from 'react';
-import {type languageCode, sourceLanguages, targetLanguages} from "./languages.ts";
+import {useTranslation} from 'react-i18next';
+import {type languageCode, sourceLanguages, targetLanguages} from "@/modules/translation/languages.ts";
+import {Select} from "@/components/FieldControls";
+import {cn} from "@/util/cn";
 
 interface LanguageSelectorProps {
   value?: string;
@@ -18,10 +21,11 @@ export default function LanguageSelector(
     onChange,
     className = '',
     disabled = false,
-    placeholder = 'select language',
+    placeholder = '',
     label,
   }: LanguageSelectorProps) {
   const availableLanguages = type === 'source' ? sourceLanguages : targetLanguages;
+  const {t} = useTranslation();
 
   const handleLanguageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newLanguage = e.target.value;
@@ -33,21 +37,21 @@ export default function LanguageSelector(
   return (
     <div className={className}>
       {label && <label>{label}</label>}
-      <select
-        className="language-selector-select"
+      <Select
+        className={cn("w-full", !className && "block")}
         value={value}
         onChange={handleLanguageChange}
         disabled={disabled}
       >
         <option value="">
-          {placeholder}
+          {placeholder || t('translation.selectLanguage')}
         </option>
         {Object.values(availableLanguages).map((lang) => (
           <option key={lang.code} value={lang.code}>
             {lang.name}
           </option>
         ))}
-      </select>
+      </Select>
     </div>
   );
 };

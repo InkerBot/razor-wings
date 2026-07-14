@@ -1,7 +1,10 @@
 import {useEffect, useState} from "react";
-import module from "./module.ts";
+import {useTranslation} from "react-i18next";
+import module from "@/modules/ungarbled_messages/module.ts";
+import ToggleRow from "@/components/ToggleRow";
 
 export default function UngarbledMessagesPage() {
+  const {t} = useTranslation();
   const [enabled, setEnabled] = useState(module.enabled);
 
   useEffect(() => {
@@ -11,13 +14,10 @@ export default function UngarbledMessagesPage() {
 
   return (
     <div>
-      <p>显示未加扰消息</p>
-      <p>此功能可以显示被口球等道具加扰前的原始消息内容。</p>
+      <p>{t('ungarbled.title')}</p>
+      <p>{t('ungarbled.description')}</p>
 
-      <label>
-        <input type="checkbox" checked={enabled} onChange={e => setEnabled(e.target.checked)}/>
-        启用
-      </label>
+      <ToggleRow checked={enabled} onChange={setEnabled}>{t('common.enable')}</ToggleRow>
     </div>
   );
 }

@@ -1,32 +1,30 @@
 import {useState} from "react";
+import {useTranslation} from "react-i18next";
+import Button from "@/components/Button";
+import {InlineLabel, TextInput} from "@/components/FieldControls";
+import ToggleRow from "@/components/ToggleRow";
 
 export default function UtilRemoveSubmissivePage() {
+  const {t} = useTranslation();
   const [memberNumber, setMemberNumber] = useState<string>('');
   const [removeListOnly, setRemoveListOnly] = useState<boolean>(false);
 
   return (<>
-    <label>
-      角色ID:
-      <input type="number" value={memberNumber} onChange={e => setMemberNumber(e.target.value)} />
-    </label>
-    <label>
-      <input
-        type="checkbox"
-        checked={removeListOnly}
-        onChange={e => setRemoveListOnly(e.target.checked)}
-      />
-      是否仅移除 SubmissionList
-    </label>
+    <InlineLabel>
+      {t('removeSubmissive.characterId')}
+      <TextInput type="number" value={memberNumber} onChange={e => setMemberNumber(e.target.value)}/>
+    </InlineLabel>
+    <ToggleRow checked={removeListOnly} onChange={setRemoveListOnly}>{t('removeSubmissive.removeListOnly')}</ToggleRow>
     <p>
-      如果勾选了 仅移除 SubmissionList，则只会从 Player.SubmissivesList 中移除奴隶，实际上不会解除关系。在下次见到时会再次加上。
+      {t('removeSubmissive.description')}
     </p>
-    <button onClick={() => {
+    <Button onClick={() => {
       const number = parseInt(memberNumber);
       if (removeListOnly) {
-        ServerSend("AccountOwnership", { MemberNumber: number, Action: "Release" });
+        ServerSend("AccountOwnership", {MemberNumber: number, Action: "Release"});
       }
       Player.SubmissivesList.delete(number);
       ServerPlayerRelationsSync();
-    }}>run</button>
+    }}>{t('common.run')}</Button>
   </>)
 }

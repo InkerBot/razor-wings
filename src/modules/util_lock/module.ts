@@ -1,13 +1,14 @@
-import type AbstractModule from "../AbstractModule.ts";
-import razorModSdk from "../../razor-wings";
-import {selectTarget} from "../../util/selectTarget.ts";
-import historyModule from "../history/module.ts";
-import {razorIsPro} from "../../util/pro.ts";
-import {sendActivityText} from "../../util/message.ts";
+import type AbstractModule from "@/modules/AbstractModule.ts";
+import razorModSdk from "@/razor-wings";
+import {selectTarget} from "@/util/selectTarget.ts";
+import historyModule from "@/modules/history/module.ts";
+import {razorIsPro} from "@/util/pro.ts";
+import {sendActivityText} from "@/util/message.ts";
+import i18n from "@/i18n";
 
 class UtilLockModule implements AbstractModule {
   tiggerTextEnable: boolean = false;
-  tiggerText: string = '上锁';
+  tiggerText: string = i18n.t('lock.defaultTrigger');
 
   init() {
     razorModSdk.hookFunction("ChatRoomMessageDisplay", 10, ([data, ...msg], next) => {
@@ -16,7 +17,7 @@ class UtilLockModule implements AbstractModule {
           const targetExpr = data.Content.substring(this.tiggerText.length);
           const target = selectTarget(targetExpr);
           if (!target) {
-            ChatRoomSendLocal(`target not found: ${targetExpr}`, 3000);
+            ChatRoomSendLocal(i18n.t('lock.targetNotFound', {target: targetExpr}), 3000);
             return
           }
           this.run(target, Player.ID);
@@ -57,9 +58,12 @@ class UtilLockModule implements AbstractModule {
     })
     target.ArousalSettings.Progress = 0
 
-    historyModule.pushReason({ text: "razor-wings lock" }, () => {
+    historyModule.pushReason({text: "razor-wings lock"}, () => {
       if (!razorIsPro()) {
-        sendActivityText(`${Player.Nickname || Player.Name} 上锁了 ${target.Nickname || target.Name} 的拘束。`);
+        sendActivityText(i18n.t('lock.activity', {
+          actor: Player.Nickname || Player.Name,
+          target: target.Nickname || target.Name,
+        }));
       }
 
       ChatRoomCharacterUpdate(target);
@@ -71,7 +75,7 @@ class UtilLockModule implements AbstractModule {
     if (localStorageElement) {
       const config = JSON.parse(localStorageElement);
       this.tiggerTextEnable = config.tiggerTextEnable || false;
-      this.tiggerText = config.tiggerText || '上锁';
+      this.tiggerText = config.tiggerText || i18n.t('lock.defaultTrigger');
     } else {
       this.saveConfig();
     }

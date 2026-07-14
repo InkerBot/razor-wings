@@ -4,8 +4,8 @@
  * Provides access to game state (current module, screen, player login status)
  */
 
-import { useEffect, useState } from 'react';
-import gameStateService, { type GameState } from '../services/GameStateService.ts';
+import {useEffect, useState} from 'react';
+import gameStateService, {type GameState} from '@/services/GameStateService.ts';
 
 export function useGameState() {
   const [gameState, setGameState] = useState<GameState>(

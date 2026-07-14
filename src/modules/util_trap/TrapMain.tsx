@@ -1,8 +1,13 @@
 import React from "react";
-import module from "./module.ts";
-import type { TrapScript } from "./TrapConfig.ts";
-import ScriptEditor from "../map_script/component/ScriptEditor.tsx";
-import PlayerSelector from "../../components/PlayerSelector.tsx";
+import {withTranslation, type WithTranslation} from "react-i18next";
+import module from "@/modules/util_trap/module.ts";
+import type {TrapScript} from "@/modules/util_trap/TrapConfig.ts";
+import ScriptEditor from "@/modules/map_script/component/ScriptEditor.tsx";
+import PlayerSelector from "@/components/PlayerSelector.tsx";
+import Button from "@/components/Button";
+import {TextInput} from "@/components/FieldControls";
+import ToggleRow from "@/components/ToggleRow";
+import {cn} from "@/util/cn";
 
 interface TrapMainState {
   scripts: TrapScript[];
@@ -13,7 +18,7 @@ interface TrapMainState {
   selectedCharacter: Character | null;
 }
 
-export default class TrapMain extends React.Component<object, TrapMainState> {
+class TrapMain extends React.Component<WithTranslation, TrapMainState> {
   state: TrapMainState = {
     scripts: module.config.scripts,
     selectedScriptId: null,
@@ -39,9 +44,10 @@ export default class TrapMain extends React.Component<object, TrapMainState> {
   }
 
   handleNewScript = () => {
+    const {t} = this.props;
     const newScript: TrapScript = {
       id: Date.now().toString(),
-      name: '新脚本',
+      name: t('trap.newScriptName'),
       content: '',
       enabled: true
     };
@@ -55,8 +61,9 @@ export default class TrapMain extends React.Component<object, TrapMainState> {
   };
 
   handleDeleteScript = () => {
+    const {t} = this.props;
     if (!this.state.selectedScriptId) return;
-    if (!confirm('确定要删除这个脚本吗？')) return;
+    if (!confirm(t('trap.confirmDelete'))) return;
 
     const index = module.config.scripts.findIndex(s => s.id === this.state.selectedScriptId);
     if (index >= 0) {
@@ -102,166 +109,128 @@ export default class TrapMain extends React.Component<object, TrapMainState> {
 
   handleToggleTrapRoom = () => {
     module.trapRoomEnabled = !module.trapRoomEnabled;
-    this.setState({ trapRoomEnabled: module.trapRoomEnabled });
+    this.setState({trapRoomEnabled: module.trapRoomEnabled});
   };
 
   render() {
+    const {t} = this.props;
     const selectedScript = this.state.selectedScriptId
       ? module.config.scripts.find(s => s.id === this.state.selectedScriptId)
       : null;
 
     return (
-      <div style={{height: '100%', width: '100%', display: 'flex', flexDirection: 'column', minHeight: 0}}>
-        {/* 顶部陷阱屋开关 */}
-        <div style={{
-          padding: '10px 15px',
-          borderBottom: '2px solid #444',
-          flexShrink: 0,
-          display: 'flex',
-          alignItems: 'center',
-          gap: '10px',
-          backgroundColor: this.state.trapRoomEnabled ? '#2a4a2a' : 'transparent'
-        }}>
-          <input
-            type="checkbox"
+      <div className="flex h-full min-h-[0] w-full flex-col">
+        {/* Trap room toggle */}
+        <div className="rw-panel-toolbar border-b-2">
+          <ToggleRow
             checked={this.state.trapRoomEnabled}
             onChange={this.handleToggleTrapRoom}
-            id="trap-room-toggle"
-            style={{
-              width: '18px',
-              height: '18px',
-              cursor: 'pointer'
-            }}
-          />
-          <label
-            htmlFor="trap-room-toggle"
-            style={{
-              fontSize: '16px',
-              fontWeight: 'bold',
-              cursor: 'pointer',
-              userSelect: 'none'
-            }}
+            padding="none"
           >
-            陷阱屋模式
-          </label>
-          <span style={{
-            marginLeft: 'auto',
-            fontSize: '14px',
-            color: this.state.trapRoomEnabled ? '#5f5' : '#888'
-          }}>
-            {this.state.trapRoomEnabled ? '已启用' : '已禁用'}
-          </span>
+            <span className="text-[16px] font-bold">{t('trap.trapRoomMode')}</span>
+          </ToggleRow>
         </div>
 
-        {/* 主内容区域 */}
-        <div style={{flex: 1, display: 'flex', flexDirection: 'row', minHeight: 0}}>
-        {/* 左侧脚本列表 */}
-        <div style={{width: '250px', borderRight: '1px solid #444', display: 'flex', flexDirection: 'column', minHeight: 0}}>
-          <div style={{padding: '10px', borderBottom: '1px solid #444', flexShrink: 0}}>
-            <button onClick={this.handleNewScript} style={{ width: '100%', marginBottom: '5px' }}>
-              新建脚本
-            </button>
-            <button
-              onClick={this.handleDeleteScript}
-              disabled={!this.state.selectedScriptId}
-              style={{ width: '100%' }}
-            >
-              删除脚本
-            </button>
-          </div>
-          <div style={{flex: 1, overflowY: 'auto', minHeight: 0}}>
-            {this.state.scripts.map(script => (
-              <div
-                key={script.id}
-                onClick={() => this.handleSelectScript(script.id)}
-                style={{
-                  padding: '10px',
-                  cursor: 'pointer',
-                  backgroundColor: this.state.selectedScriptId === script.id ? '#444' : 'transparent',
-                  borderBottom: '1px solid #333',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px'
-                }}
+        {/* Main content */}
+        <div className="flex min-h-[0] flex-1 flex-row">
+          {/* Script list */}
+          <div className="flex min-h-0 w-[250px] flex-col border-r border-r-[color:var(--rw-border-color)]">
+            <div className="rw-panel-toolbar flex-col items-stretch">
+              <Button onClick={this.handleNewScript} className="mb-[5px] w-full">
+                {t('trap.newScript')}
+              </Button>
+              <Button
+                onClick={this.handleDeleteScript}
+                disabled={!this.state.selectedScriptId}
+                variant="danger"
+                className="w-full"
               >
-                <input
-                  type="checkbox"
-                  checked={script.enabled}
-                  onChange={(e) => {
-                    e.stopPropagation();
-                    this.handleToggleEnabled(script.id);
-                  }}
-                  title={script.enabled ? '禁用' : '启用'}
-                />
-                <span style={{flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', opacity: script.enabled ? 1 : 0.5}}>
+                {t('trap.deleteScript')}
+              </Button>
+            </div>
+            <div className="min-h-[0] flex-1 overflow-y-auto">
+              {this.state.scripts.map(script => (
+                <div
+                  key={script.id}
+                  onClick={() => this.handleSelectScript(script.id)}
+                  className={cn(
+                    "flex cursor-pointer items-center gap-[var(--rw-space-2)] border-b border-b-[color:var(--rw-border-color-subtle)] p-[var(--rw-space-3)] transition-colors hover:bg-[var(--rw-surface-hover)]",
+                    this.state.selectedScriptId === script.id ? "bg-[var(--rw-surface-selected)]" : "bg-transparent",
+                  )}
+                >
+                  <input
+                    type="checkbox"
+                    checked={script.enabled}
+                    onChange={(e) => {
+                      e.stopPropagation();
+                      this.handleToggleEnabled(script.id);
+                    }}
+                    title={script.enabled ? t('common.disable') : t('common.enable')}
+                    className="absolute h-[0] w-[0] opacity-0"
+                  />
+                  <span
+                    className={cn(
+                      "flex-1 overflow-hidden text-ellipsis whitespace-nowrap",
+                      script.enabled ? "opacity-100" : "opacity-50",
+                    )}
+                  >
                   {script.name}
                 </span>
-              </div>
-            ))}
-            {this.state.scripts.length === 0 && (
-              <div style={{ padding: '20px', textAlign: 'center', color: '#888' }}>
-                暂无脚本
+                </div>
+              ))}
+              {this.state.scripts.length === 0 && (
+                <div className="p-[var(--rw-space-5)] text-center text-[color:var(--rw-text-muted)]">
+                  {t('trap.noScripts')}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Editor */}
+          <div className="flex min-h-[0] flex-1 flex-col">
+            {selectedScript ? (
+              <>
+                <div className="rw-panel-toolbar">
+                  <span>{t('trap.scriptName')}</span>
+                  <TextInput
+                    type="text"
+                    value={this.state.editingName}
+                    onChange={(e) => this.setState({editingName: e.target.value})}
+                    className="flex-1"
+                  />
+                  <Button onClick={this.handleSaveScript}>{t('common.save')}</Button>
+                  <PlayerSelector characterId={this.state.selectedCharacter?.CharacterID}
+                                  onChange={(character) => this.setState({selectedCharacter: character})}/>
+                  <Button onClick={() => {
+                    if (this.state.selectedCharacter) {
+                      try {
+                        module.runTrapOnCharacter(this.state.selectedCharacter, selectedScript, this.state.editingContent);
+                      } catch (e) {
+                        ToastManager.error(t('trap.runError'));
+                        console.error(e);
+                      }
+                    }
+                  }}>
+                    {t('trap.runScript')}
+                  </Button>
+                </div>
+                <div className="min-h-[0] flex-1 overflow-hidden">
+                  <ScriptEditor
+                    value={this.state.editingContent}
+                    onChange={(content) => this.setState({editingContent: content})}
+                  />
+                </div>
+              </>
+            ) : (
+              <div className="flex h-full items-center justify-center text-[color:var(--rw-text-muted)]">
+                {t('trap.selectOrCreate')}
               </div>
             )}
           </div>
-        </div>
-
-        {/* 右侧编辑器 */}
-        <div style={{flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0}}>
-          {selectedScript ? (
-            <>
-              <div style={{
-                padding: '10px',
-                borderBottom: '1px solid #444',
-                flexShrink: 0,
-                display: 'flex',
-                gap: '10px',
-                alignItems: 'center'
-              }}>
-                <span>脚本名称:</span>
-                <input
-                  type="text"
-                  value={this.state.editingName}
-                  onChange={(e) => this.setState({ editingName: e.target.value })}
-                  style={{
-                    flex: 1,
-                    padding: '5px',
-                    backgroundColor: '#333',
-                    color: '#fff',
-                    border: '1px solid #555',
-                    borderRadius: '3px'
-                  }}
-                />
-                <button onClick={this.handleSaveScript}>保存</button>
-                <PlayerSelector characterId={this.state.selectedCharacter?.CharacterID} onChange={(character) => this.setState({ selectedCharacter: character })} />
-                <button onClick={() => {
-                  if (this.state.selectedCharacter) {
-                    try {
-                      module.runTrapOnCharacter(this.state.selectedCharacter, selectedScript, this.state.editingContent);
-                    } catch (e) {
-                      ToastManager.error('运行脚本时出错，详情请查看控制台');
-                      console.error(e);
-                    }
-                  }
-                }}>
-                  运行脚本
-                </button>
-              </div>
-              <div style={{flex: 1, minHeight: 0, overflow: 'hidden'}}>
-                <ScriptEditor
-                  value={this.state.editingContent}
-                  onChange={(content) => this.setState({ editingContent: content })}
-                />
-              </div>
-            </>
-          ) : (
-            <div style={{display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#888'}}>
-              请选择或新建一个脚本
-            </div>
-          )}
-        </div>
         </div>
       </div>
     );
   }
 }
+
+export default withTranslation()(TrapMain);

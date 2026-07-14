@@ -2,7 +2,7 @@ import React from "react";
 
 let modelIdAlloc = 0;
 
-export default class ServerAppearanceBundlePreview extends React.Component<{bundle?: ServerAppearanceBundle}> {
+export default class ServerAppearanceBundlePreview extends React.Component<{ bundle?: ServerAppearanceBundle }> {
   private canvasRef = React.createRef<HTMLCanvasElement>();
   private modelCharacter: Character
 
@@ -17,6 +17,19 @@ export default class ServerAppearanceBundlePreview extends React.Component<{bund
 
   componentDidUpdate() {
     this.drawBundle();
+  }
+
+  render() {
+    return (<>
+      <div className="relative h-[200px] w-[100px] overflow-visible">
+        <canvas
+          ref={this.canvasRef}
+          width={200}
+          height={400}
+          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-[70%]"
+        />
+      </div>
+    </>);
   }
 
   private drawBundle() {
@@ -41,18 +54,5 @@ export default class ServerAppearanceBundlePreview extends React.Component<{bund
         }
       }
     }
-  }
-
-  render() {
-    return (<>
-      <div style={{ width: 100, height: 200, overflow: 'visible', position: 'relative' }}>
-        <canvas ref={this.canvasRef} width={200} height={400} style={{
-          position: 'absolute',
-          left: '50%',
-          top: '50%',
-          transform: 'translate(-50%, -70%)',
-        }}></canvas>
-      </div>
-    </>);
   }
 }

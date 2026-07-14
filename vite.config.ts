@@ -1,11 +1,18 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import tailwindcss from '@tailwindcss/vite'
 import pageCssPlugin from './vite-plugin-page-css'
+import { fileURLToPath, URL } from 'node:url'
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [pageCssPlugin(), react()],
+  plugins: [pageCssPlugin(), tailwindcss(), react()],
   base: './',
+  resolve: {
+    alias: {
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
+    },
+  },
   server: {
     cors: true,
   },
@@ -16,6 +23,7 @@ export default defineConfig({
     rollupOptions: {
       input: 'src/main.tsx',
       output: {
+        inlineDynamicImports: true,
         entryFileNames: 'assets/[name].js',
         chunkFileNames: 'assets/[name].js',
         assetFileNames: 'assets/[name].[ext]'

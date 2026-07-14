@@ -1,6 +1,6 @@
-import {sendActivityText} from "../../../util/message.ts";
-import type {ApplyConfig} from "../../../util/applier/config.ts";
-import UpdatePropertyApplier from "../../../util/applier/UpdatePropertyApplier.ts";
+import {sendActivityText} from "@/util/message.ts";
+import type {ApplyConfig} from "@/util/applier/config.ts";
+import UpdatePropertyApplier from "@/util/applier/UpdatePropertyApplier.ts";
 
 function ensureCharacter(input: Character | number): Character {
   if (typeof input === "number") {
@@ -43,7 +43,7 @@ export default {
     const hairFront = InventoryGet(character, "HairFront");
     const hairBack = InventoryGet(character, "HairBack");
 
-    let itemColor: string|string[]|undefined;
+    let itemColor: string | string[] | undefined;
     if (hairFront && hairFront.Color) {
       itemColor = hairFront.Color;
     } else if (hairBack && hairBack.Color) {

@@ -1,6 +1,6 @@
-import type AbstractApplier from "./AbstractApplier.ts";
-import historyModule from "../../modules/history/module.ts";
-import {type ApplyConfig, configDisabledGroup} from "./config.ts";
+import type AbstractApplier from "@/util/applier/AbstractApplier.ts";
+import historyModule from "@/modules/history/module.ts";
+import {type ApplyConfig, configDisabledGroup} from "@/util/applier/config.ts";
 
 export default {
   async apply(target: Character, appearance: AppearanceBundle, config?: ApplyConfig) {
@@ -8,7 +8,7 @@ export default {
       throw new Error("ForceSyncSelfApplier can only be applied to Player");
     }
 
-    historyModule.pushReason({ text: "razor-wings editor" }, () => {
+    historyModule.pushReason({text: "razor-wings editor"}, () => {
       Player.Appearance = [
         ...Player.Appearance.filter(it => {
           if (configDisabledGroup(config, it.Asset.Group)) {

@@ -1,9 +1,12 @@
 import type {JSX} from "react";
-import type AbstractModule from "./modules/AbstractModule.ts";
-import {razorIsPro} from "./util/pro.ts";
+import type AbstractModule from "@/modules/AbstractModule.ts";
+
+export type ModuleCategory = 'auxiliary' | 'tools' | 'cheat';
 
 export type ModuleConfig = {
+  id: string;
   displayName: string;
+  category?: ModuleCategory;
   module: (ModuleType | '*')[];
   screen: (RoomName | '*')[];
   moduleProvider?: () => Promise<AbstractModule>;
@@ -11,84 +14,91 @@ export type ModuleConfig = {
   pageProvider: () => Promise<() => JSX.Element>;
 };
 
-const modules: { [key: string]: ModuleConfig } = {
+const moduleDefinitions: { [key: string]: Omit<ModuleConfig, 'id'> } = {
   'translation': {
-    'displayName': '翻译',
+    'displayName': 'translation',
     'module': ['Online'],
     'screen': ['ChatRoom'],
-    'moduleProvider': async () => (await import('./modules/translation/module.ts')).default,
-    'pageProvider': async () => (await import('./modules/translation/page.tsx')).default,
+    'moduleProvider': async () => (await import('@/modules/translation/module.ts')).default,
+    'pageProvider': async () => (await import('@/modules/translation/page.tsx')).default,
   },
   'privacy': {
-    'displayName': '隐私设置',
+    'displayName': 'privacy',
     'module': ['*'],
     'screen': ['*'],
-    'moduleProvider': async () => (await import('./modules/privacy/module.ts')).default,
-    'pageProvider': async () => (await import('./modules/privacy/page.tsx')).default,
+    'moduleProvider': async () => (await import('@/modules/privacy/module.ts')).default,
+    'pageProvider': async () => (await import('@/modules/privacy/page.tsx')).default,
     'precondition': () => true,
   },
   'util_exit': {
-    'displayName': '辅助_退出房间',
+    'displayName': 'util_exit',
+    'category': 'auxiliary',
     'module': ['*'],
     'screen': ['*'],
-    'pageProvider': async () => (await import('./modules/util_exit/page.tsx')).default,
+    'pageProvider': async () => (await import('@/modules/util_exit/page.tsx')).default,
   },
   'util_unlock': {
-    'displayName': '辅助_解锁',
+    'displayName': 'util_unlock',
+    'category': 'auxiliary',
     'module': ['Online'],
     'screen': ['ChatRoom'],
-    'moduleProvider': async () => (await import('./modules/util_unlock/module.ts')).default,
-    'pageProvider': async () => (await import('./modules/util_unlock/page.tsx')).default,
+    'moduleProvider': async () => (await import('@/modules/util_unlock/module.ts')).default,
+    'pageProvider': async () => (await import('@/modules/util_unlock/page.tsx')).default,
   },
   'util_lock': {
-    'displayName': '辅助_上锁',
+    'displayName': 'util_lock',
+    'category': 'auxiliary',
     'module': ['Online'],
     'screen': ['ChatRoom'],
-    'moduleProvider': async () => (await import('./modules/util_lock/module.ts')).default,
-    'pageProvider': async () => (await import('./modules/util_lock/page.tsx')).default,
+    'moduleProvider': async () => (await import('@/modules/util_lock/module.ts')).default,
+    'pageProvider': async () => (await import('@/modules/util_lock/page.tsx')).default,
   },
   'util_editor': {
-    'displayName': '辅助_外观编辑器',
+    'displayName': 'util_editor',
+    'category': 'auxiliary',
     'module': ['Online'],
     'screen': ['ChatRoom'],
-    'pageProvider': async () => (await import('./modules/util_editor/page.tsx')).default
+    'pageProvider': async () => (await import('@/modules/util_editor/page.tsx')).default
   },
   'util_remove_limit': {
-    'displayName': '辅助_解除限制',
+    'displayName': 'util_remove_limit',
+    'category': 'auxiliary',
     'module': ['*'],
     'screen': ['*'],
-    'moduleProvider': async () => (await import('./modules/util_remove_limit/module.ts')).default,
-    'pageProvider': async () => (await import('./modules/util_remove_limit/page.tsx')).default,
+    'moduleProvider': async () => (await import('@/modules/util_remove_limit/module.ts')).default,
+    'pageProvider': async () => (await import('@/modules/util_remove_limit/page.tsx')).default,
   },
   'util_remove_submissive': {
-    'displayName': '辅助_移除奴隶',
+    'displayName': 'util_remove_submissive',
+    'category': 'auxiliary',
     'module': ['*'],
     'screen': ['*'],
-    'pageProvider': async () => (await import('./modules/util_remove_submissive/page.tsx')).default,
+    'pageProvider': async () => (await import('@/modules/util_remove_submissive/page.tsx')).default,
   },
   'util_trap': {
-    'displayName': '工具_陷阱',
+    'displayName': 'util_trap',
+    'category': 'tools',
     'module': ['*'],
     'screen': ['*'],
-    'moduleProvider': async () => (await import('./modules/util_trap/module.ts')).default,
-    'pageProvider': async () => (await import('./modules/util_trap/page.tsx')).default,
+    'moduleProvider': async () => (await import('@/modules/util_trap/module.ts')).default,
+    'pageProvider': async () => (await import('@/modules/util_trap/page.tsx')).default,
   },
   'chat_export': {
-    'displayName': '聊天导出',
+    'displayName': 'chat_export',
     'module': ['Online'],
     'screen': ['ChatRoom'],
-    'pageProvider': async () => (await import('./modules/chat_export/page.tsx')).default,
+    'pageProvider': async () => (await import('@/modules/chat_export/page.tsx')).default,
   },
   'map_script': {
-    'displayName': '地图脚本',
+    'displayName': 'map_script',
     'module': ['*'],
     'screen': ['*'],
-    'moduleProvider': async () => (await import('./modules/map_script/module.ts')).default,
-    'pageProvider': async () => (await import('./modules/map_script/page.tsx')).default,
+    'moduleProvider': async () => (await import('@/modules/map_script/module.ts')).default,
+    'pageProvider': async () => (await import('@/modules/map_script/page.tsx')).default,
   },
   /*
   'util_packet': {
-    'displayName': '辅助_网络调试',
+    'displayName': 'util_packet',
     'module': ['*'],
     'screen': ['*'],
     'moduleProvider': async () => util_packet_module,
@@ -96,33 +106,38 @@ const modules: { [key: string]: ModuleConfig } = {
     'precondition': () => true,
   },//*/
   'history': {
-    'displayName': '外观记录',
+    'displayName': 'history',
     'module': ['*'],
     'screen': ['*'],
-    'moduleProvider': async () => (await import('./modules/history/module.ts')).default,
-    'pageProvider': async () => (await import('./modules/history/page.tsx')).default,
+    'moduleProvider': async () => (await import('@/modules/history/module.ts')).default,
+    'pageProvider': async () => (await import('@/modules/history/page.tsx')).default,
   },
   'dglab': {
-    'displayName': '郊狼',
+    'displayName': 'dglab',
     'module': ['*'],
     'screen': ['*'],
-    'pageProvider': async () => (await import('./modules/dglab/page.tsx')).default,
-    'moduleProvider': async () => (await import('./modules/dglab/module.ts')).default,
+    'pageProvider': async () => (await import('@/modules/dglab/page.tsx')).default,
+    'moduleProvider': async () => (await import('@/modules/dglab/module.ts')).default,
     'precondition': () => true,
   },
   'cheat_allthings': {
-    'displayName': '作弊_获得所有物品',
+    'displayName': 'cheat_allthings',
+    'category': 'cheat',
     'module': ['*'],
     'screen': ['*'],
-    'pageProvider': async () => (await import('./modules/cheat_allthings/page.tsx')).default,
+    'pageProvider': async () => (await import('@/modules/cheat_allthings/page.tsx')).default,
   },
   'ungarbled_messages': {
-    'displayName': '强制开启绒语翻译器',
+    'displayName': 'ungarbled_messages',
     'module': ['Online'],
     'screen': ['ChatRoom'],
-    'moduleProvider': async () => (await import('./modules/ungarbled_messages/module.ts')).default,
-    'pageProvider': async () => (await import('./modules/ungarbled_messages/page.tsx')).default,
+    'moduleProvider': async () => (await import('@/modules/ungarbled_messages/module.ts')).default,
+    'pageProvider': async () => (await import('@/modules/ungarbled_messages/page.tsx')).default,
   }
 }
+
+const modules = Object.fromEntries(
+  Object.entries(moduleDefinitions).map(([id, config]) => [id, {id, ...config}])
+) as { [key: string]: ModuleConfig };
 
 export default modules;

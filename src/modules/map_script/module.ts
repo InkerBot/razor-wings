@@ -1,17 +1,16 @@
-import type AbstractModule from "../AbstractModule.ts";
-import MapScriptEngine from "./MapScriptEngine.ts";
-import razorModSdk from "../../razor-wings";
-import type MapScriptConfig from "./MapScriptConfig.ts";
+import type AbstractModule from "@/modules/AbstractModule.ts";
+import MapScriptEngine from "@/modules/map_script/MapScriptEngine.ts";
+import razorModSdk from "@/razor-wings";
+import type MapScriptConfig from "@/modules/map_script/MapScriptConfig.ts";
 
 class MapScriptModule implements AbstractModule {
-  private latestPosition: WeakMap<Character, ChatRoomMapPos> = new WeakMap();
-  private engine = MapScriptEngine;
-
   playerPos = {X: 0, Y: 0};
-  private playerPosListeners: (() => void)[] = [];
   config: MapScriptConfig = {
     tiggers: {}
   };
+  private latestPosition: WeakMap<Character, ChatRoomMapPos> = new WeakMap();
+  private engine = MapScriptEngine;
+  private playerPosListeners: (() => void)[] = [];
 
   init() {
     razorModSdk.hookFunction('ChatRoomMapViewUpdatePlayerSync', 10, (args, next) => {
@@ -55,13 +54,6 @@ class MapScriptModule implements AbstractModule {
     this.engine.reloadScriptConfig();
   }
 
-  private playerMoveIn(x: number, y: number) {
-    if (this.playerPos.X === x && this.playerPos.Y === y) return;
-    this.playerPos.X = x;
-    this.playerPos.Y = y;
-    this.playerPosListeners.forEach(cb => cb());
-  }
-
   registerPlayerPosListener(cb: () => void) {
     this.playerPosListeners.push(cb);
   }
@@ -73,13 +65,19 @@ class MapScriptModule implements AbstractModule {
     }
   }
 
-
   loadConfig() {
 
   }
 
   saveConfig() {
 
+  }
+
+  private playerMoveIn(x: number, y: number) {
+    if (this.playerPos.X === x && this.playerPos.Y === y) return;
+    this.playerPos.X = x;
+    this.playerPos.Y = y;
+    this.playerPosListeners.forEach(cb => cb());
   }
 }
 

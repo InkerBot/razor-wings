@@ -1,14 +1,15 @@
 import {useState} from "react";
-import {extract} from "./extractor.ts";
+import {useTranslation} from "react-i18next";
+import {extract} from "@/modules/chat_export/extractor.ts";
+import Button from "@/components/Button";
+import ToggleRow from "@/components/ToggleRow";
 
 export default function ChatExportPage() {
+  const {t} = useTranslation();
   const [includePrivate, setIncludePrivate] = useState<boolean>(false);
   return (<>
-    <label>
-      <input type="checkbox" checked={includePrivate} onChange={e => setIncludePrivate(e.target.checked)}/>
-      包含私聊消息
-    </label>
+    <ToggleRow checked={includePrivate} onChange={setIncludePrivate}>{t('chatExport.includePrivate')}</ToggleRow>
 
-    <button onClick={() => extract(includePrivate)}>run</button>
+    <Button onClick={() => extract(includePrivate)}>{t('chatExport.export')}</Button>
   </>)
 }

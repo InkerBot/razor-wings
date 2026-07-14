@@ -1,38 +1,53 @@
-import type DglabProvider from "./DglabProvider.ts";
-import {BrowserSupportStatus, ConnectionStatus} from "./DglabProvider.ts";
+import type DglabProvider from "@/modules/dglab/provider/DglabProvider.ts";
+import {BrowserSupportStatus, ConnectionStatus} from "@/modules/dglab/provider/DglabProvider.ts";
 import {type JSX} from "react";
-import module from "../module.ts";
+import module from "@/modules/dglab/module.ts";
+import Button from "@/components/Button";
+import {InlineLabel, Select} from "@/components/FieldControls";
+import i18n from "@/i18n";
 
-// V3协议常量定义
-const DG3_PREFIX = '47L121000'; // V3设备蓝牙名称前缀
-const DG3_SERVICE_UUID = '0000180c-0000-1000-8000-00805f9b34fb'; // 主服务UUID
-const DG3_WRITE_UUID = '0000150a-0000-1000-8000-00805f9b34fb'; // 写特性UUID
-const DG3_NOTIFY_UUID = '0000150b-0000-1000-8000-00805f9b34fb'; // 通知特性UUID
-const DG3_BATTERY_SERVICE_UUID = '0000180a-0000-1000-8000-00805f9b34fb'; // 电池服务UUID
-const DG3_BATTERY_UUID = '00001500-0000-1000-8000-00805f9b34fb'; // 电池特性UUID
+// Bluetooth GATT identifiers (base UUID 0000xxxx-0000-1000-8000-00805f9b34fb).
+const DG3_NAME_PREFIX = '47L121000';                                       // V3 pulse host advertised name.
+const DG3_SERVICE_UUID = '0000180c-0000-1000-8000-00805f9b34fb';           // Primary service (0x180C).
+const DG3_WRITE_UUID = '0000150a-0000-1000-8000-00805f9b34fb';             // Write characteristic (0x150A): all commands.
+const DG3_NOTIFY_UUID = '0000150b-0000-1000-8000-00805f9b34fb';            // Notify characteristic (0x150B): all responses.
+const DG3_BATTERY_SERVICE_UUID = '0000180a-0000-1000-8000-00805f9b34fb';   // Battery service (0x180A).
+const DG3_BATTERY_UUID = '00001500-0000-1000-8000-00805f9b34fb';           // Battery characteristic (0x1500).
+
+// Protocol constants.
+const STRENGTH_MAX = 200;          // Absolute per-channel strength range is 0-200.
+const SEQ_MAX = 15;                // Sequence number occupies 4 bits (0-15); 0 disables strength feedback.
+const TRANSMIT_INTERVAL_MS = 100;  // The B0 command must be written every 100ms.
+const STRENGTH_ACK_TIMEOUT_MS = 500; // If a B1 acknowledgement is lost, reopen the input gate after this long.
+
+// BF balance parameters (0-255). Written once per connection; persisted across power cycles by the device.
+const DG3_FREQ_BALANCE = 128;      // 频率平衡参数 1: relative feel of low/high frequency waveforms.
+const DG3_STRENGTH_BALANCE = 128;  // 频率平衡参数 2: waveform pulse width.
+
+// Strength interpretation modes for the high (channel A) / low (channel B) nibbles of the parsing byte.
+const PARSE_NO_CHANGE = 0b00;
+const PARSE_ABSOLUTE = 0b11;
 
 interface DglabV3State {
   browserSupportStatus: BrowserSupportStatus;
   connectionStatus: ConnectionStatus;
   selectedWave: 'a' | 'b' | 'c';
-  isTransmitting: boolean;
   errorCount: number;
   transmitCount: number;
   batteryLevel: number;
-  maxPowerA: number;
-  maxPowerB: number;
-  powerLevelA: number;
-  powerLevelB: number;
-  realPowerLevelA: number;
-  realPowerLevelB: number;
-  frequencyBalance1A: number;
-  frequencyBalance2A: number;
-  frequencyBalance1B: number;
-  frequencyBalance2B: number;
+  maxPowerA: number;       // Channel A soft limit (0-200).
+  maxPowerB: number;       // Channel B soft limit (0-200).
+  powerLevelA: number;     // Channel A target strength we want the device to reach.
+  powerLevelB: number;     // Channel B target strength we want the device to reach.
+  realPowerLevelA: number; // Channel A strength last reported by the device (B1).
+  realPowerLevelB: number; // Channel B strength last reported by the device (B1).
 }
 
-// 波形数据定义 - 根据V3协议格式调整
-const coyote3wave = {
+// Each entry describes 100ms of output: 4 frequency/strength pairs, one per 25ms slice.
+// Frequencies use the 10-1000 input scale (converted before transmission); strengths are 0-100.
+type WaveFrame = {freq: [number, number, number, number]; strength: [number, number, number, number]};
+
+const coyote3wave: Record<'a' | 'b' | 'c', WaveFrame[]> = {
   'a': [
     {freq: [10, 10, 10, 10], strength: [0, 10, 20, 30]},
     {freq: [10, 10, 10, 10], strength: [20, 30, 40, 50]},
@@ -63,24 +78,28 @@ const coyote3wave = {
     {freq: [30, 30, 30, 30], strength: [0, 50, 100, 100]},
     {freq: [40, 40, 40, 40], strength: [0, 50, 100, 100]},
     {freq: [50, 50, 50, 50], strength: [0, 50, 100, 70]},
-  ]
+  ],
 };
 
 export default class DglabV3BlueToothProvider implements DglabProvider {
   private stateChangeListeners: Array<() => void> = [];
   private state: DglabV3State;
+
   private gattServer: BluetoothRemoteGATTServer | null = null;
-  private transmitInterval: number | null = null;
   private writeCharacteristic: BluetoothRemoteGATTCharacteristic | null = null;
   private notifyCharacteristic: BluetoothRemoteGATTCharacteristic | null = null;
   private batteryCharacteristic: BluetoothRemoteGATTCharacteristic | null = null;
+  private transmitInterval: number | null = null;
 
-  // V3协议状态管理
-  private orderNo: number = 0;
-  private inputOrderNo: number = 0;
+  // Strength flow control. A strength change carries a sequence number; the device echoes it back in a B1
+  // response. We keep at most one change in flight at a time, as recommended by the protocol.
+  private orderNo: number = 0;       // Rolling sequence counter (1-15).
+  private inputOrderNo: number = 0;  // Sequence number of the in-flight strength change (0 when idle).
   private isInputAllowed: boolean = true;
-  private accumulatedStrengthValueA: number = 0;
-  private accumulatedStrengthValueB: number = 0;
+  private strengthSentAt: number = 0; // Timestamp of the in-flight change, for the lost-ack timeout.
+  private sentPowerA: number = 0;     // Last channel A target acknowledged/sent to the device.
+  private sentPowerB: number = 0;     // Last channel B target acknowledged/sent to the device.
+
   private currentWaveIndex: number = 0;
 
   constructor() {
@@ -88,20 +107,15 @@ export default class DglabV3BlueToothProvider implements DglabProvider {
       browserSupportStatus: BrowserSupportStatus.LOADING,
       connectionStatus: ConnectionStatus.DISCONNECTED,
       selectedWave: 'a',
-      isTransmitting: false,
       errorCount: 0,
       transmitCount: 0,
       batteryLevel: 0,
-      maxPowerA: 200, // V3协议最大值200
-      maxPowerB: 200,
+      maxPowerA: STRENGTH_MAX,
+      maxPowerB: STRENGTH_MAX,
       powerLevelA: 0,
       powerLevelB: 0,
       realPowerLevelA: 0,
       realPowerLevelB: 0,
-      frequencyBalance1A: 128,
-      frequencyBalance2A: 128,
-      frequencyBalance1B: 128,
-      frequencyBalance2B: 128,
     };
   }
 
@@ -119,12 +133,12 @@ export default class DglabV3BlueToothProvider implements DglabProvider {
       this.setState({
         browserSupportStatus: supported ? BrowserSupportStatus.SUPPORTED : BrowserSupportStatus.NOT_SUPPORTED,
       });
-      module.infoLog('Device not connected yet');
+      module.infoLog(i18n.t('dglab.deviceNotConnected'));
     }).catch(() => {
       this.setState({
         browserSupportStatus: BrowserSupportStatus.NOT_SUPPORTED,
       });
-      module.infoLog('Browser does not support Bluetooth');
+      module.infoLog(i18n.t('dglab.browserNoBluetooth'));
     });
   }
 
@@ -136,47 +150,50 @@ export default class DglabV3BlueToothProvider implements DglabProvider {
     return (
       <div>
         {this.state.browserSupportStatus === BrowserSupportStatus.LOADING && (
-          <p>Checking browser support...</p>
+          <p>{i18n.t('dglab.checkingBrowserSupport')}</p>
         )}
 
         {this.state.browserSupportStatus === BrowserSupportStatus.NOT_SUPPORTED ? (
           <>
-            <p>Your browser does not support Bluetooth protocol, please use a browser that supports Bluetooth.</p>
-            <p>It is recommended to use Chrome or Edge browser.</p>
+            <p>{i18n.t('dglab.bluetoothUnsupported')}</p>
+            <p>{i18n.t('dglab.browserRecommendation')}</p>
           </>
         ) : (
           <>
             {this.state.connectionStatus === ConnectionStatus.DISCONNECTED && (
-              <button onClick={this.scanAndConnect}>Scan Coyote V3 Device</button>
+              <Button onClick={this.scanAndConnect}>{i18n.t('dglab.scanCoyoteV3')}</Button>
             )}
 
             {this.state.connectionStatus === ConnectionStatus.CONNECTING && (
-              <button disabled>Connecting...</button>
+              <Button disabled>{i18n.t('dglab.connecting')}</Button>
             )}
 
             {this.state.connectionStatus === ConnectionStatus.CONNECTED && (
-              <button onClick={this.disconnect}>Disconnect Device</button>
+              <Button variant="danger" onClick={this.disconnect}>{i18n.t('dglab.disconnectDevice')}</Button>
             )}
 
             {this.state.connectionStatus === ConnectionStatus.CONNECTED && (
               <>
-                <p>Battery: {this.state.batteryLevel}% | Power Limits: A({this.state.maxPowerA})
+                <p>{i18n.t('dglab.battery')}: {this.state.batteryLevel}% | {i18n.t('dglab.powerLimits')}: A({this.state.maxPowerA})
                   B({this.state.maxPowerB})</p>
-                <p>Strength: A <span style={{
-                  color: (this.state.powerLevelA == this.state.realPowerLevelA) ? 'green' : 'red'
-                }}>{this.state.powerLevelA}-{this.state.realPowerLevelA}</span> | B <span style={{
-                  color: (this.state.powerLevelB == this.state.realPowerLevelB) ? 'green' : 'red'
-                }}>{this.state.powerLevelB}-{this.state.realPowerLevelB}</span></p>
-                <p>Transmit: <span style={{color: 'green'}}>{this.state.transmitCount}</span> | Errors: <span
-                  style={{color: 'red'}}>{this.state.errorCount}</span></p>
+                <p>{i18n.t('dglab.strength')}: A <span
+                  className={(this.state.powerLevelA == this.state.realPowerLevelA) ? "rw-status-success" : "rw-status-error"}>{this.state.powerLevelA}-{this.state.realPowerLevelA}</span> |
+                  B <span
+                    className={(this.state.powerLevelB == this.state.realPowerLevelB) ? "rw-status-success" : "rw-status-error"}>{this.state.powerLevelB}-{this.state.realPowerLevelB}</span>
+                </p>
+                <p>{i18n.t('dglab.transmit')}: <span className="rw-status-success">{this.state.transmitCount}</span> |
+                  {i18n.t('dglab.errors')}: <span
+                    className="rw-status-error">{this.state.errorCount}</span></p>
 
                 <div>
-                  <label>Select waveform:</label>
-                  <select value={this.state.selectedWave} onChange={this.handleWaveChange}>
-                    <option value="a">Waveform A</option>
-                    <option value="b">Waveform B</option>
-                    <option value="c">Waveform C</option>
-                  </select>
+                  <InlineLabel>
+                    <span>{i18n.t('dglab.selectWaveform')}</span>
+                    <Select value={this.state.selectedWave} onChange={this.handleWaveChange}>
+                      <option value="a">{i18n.t('dglab.waveformA')}</option>
+                      <option value="b">{i18n.t('dglab.waveformB')}</option>
+                      <option value="c">{i18n.t('dglab.waveformC')}</option>
+                    </Select>
+                  </InlineLabel>
                 </div>
               </>
             )}
@@ -188,17 +205,13 @@ export default class DglabV3BlueToothProvider implements DglabProvider {
 
   setPower(powerA: number, powerB: number) {
     if (powerA > 1 || powerB > 1 || powerA < 0 || powerB < 0) {
-      module.infoLog('Power value must be between 0 and 1');
+      module.infoLog(i18n.t('dglab.powerRangeError'));
       return;
     }
 
-    // 转换为V3协议的强度值范围(0-200)
-    const targetPowerA = Math.max(1, Math.round(powerA * 200));
-    const targetPowerB = Math.max(1, Math.round(powerB * 200));
-
-    // 计算强度变化累积值
-    this.accumulatedStrengthValueA += targetPowerA - this.state.powerLevelA;
-    this.accumulatedStrengthValueB += targetPowerB - this.state.powerLevelB;
+    // Map the 0-1 fraction onto the per-channel soft limit; the B0 loop drives the device to this target.
+    const targetPowerA = this.clampStrength(Math.round(powerA * this.state.maxPowerA));
+    const targetPowerB = this.clampStrength(Math.round(powerB * this.state.maxPowerB));
 
     this.setState({
       powerLevelA: targetPowerA,
@@ -218,32 +231,34 @@ export default class DglabV3BlueToothProvider implements DglabProvider {
     return 'bluetooth' in navigator;
   }
 
+  private clampStrength(value: number): number {
+    return Math.max(0, Math.min(STRENGTH_MAX, value));
+  }
+
   private scanAndConnect = async () => {
     if (!navigator.bluetooth) {
-      module.infoLog('Your browser does not support Bluetooth API, please use Chrome browser');
+      module.infoLog(i18n.t('dglab.bluetoothApiUnsupported'));
       return;
     }
 
     if (this.gattServer) {
-      module.infoLog('Please disconnect the current device first');
+      module.infoLog(i18n.t('dglab.pleaseDisconnectFirst'));
       return;
     }
 
     this.setState({connectionStatus: ConnectionStatus.CONNECTING});
-    module.infoLog('Scanning for Coyote V3 Device...');
+    module.infoLog(i18n.t('dglab.scanCoyoteV3Status'));
 
     try {
       const device = await navigator.bluetooth.requestDevice({
-        filters: [{
-          namePrefix: DG3_PREFIX
-        }],
-        optionalServices: [DG3_SERVICE_UUID, DG3_BATTERY_SERVICE_UUID]
+        filters: [{namePrefix: DG3_NAME_PREFIX}],
+        optionalServices: [DG3_SERVICE_UUID, DG3_BATTERY_SERVICE_UUID],
       });
 
       device.addEventListener('gattserverdisconnected', this.onDeviceDisconnected);
       module.debugLog('Device Name: ' + device.name);
       module.debugLog('Device Id: ' + device.id);
-      module.infoLog('Connecting to GATT Server...');
+      module.infoLog(i18n.t('dglab.connectingGatt'));
 
       this.gattServer = await device.gatt!.connect();
       await this.initializeDevice();
@@ -251,13 +266,12 @@ export default class DglabV3BlueToothProvider implements DglabProvider {
       this.setState({
         connectionStatus: ConnectionStatus.CONNECTED,
         errorCount: 0,
-        transmitCount: 0
+        transmitCount: 0,
       });
-      module.infoLog('Coyote V3 Device connected');
-
+      module.infoLog(i18n.t('dglab.coyoteV3Connected'));
     } catch (error) {
       console.error('Connection Error: ' + error);
-      module.infoLog('Failed to connect to device. error: ' + error);
+      module.infoLog(i18n.t('dglab.connectionFailed', {message: String(error)}));
       this.setState({connectionStatus: ConnectionStatus.DISCONNECTED});
     }
   };
@@ -266,31 +280,26 @@ export default class DglabV3BlueToothProvider implements DglabProvider {
     if (!this.gattServer) return;
 
     try {
-      module.infoLog('Getting primary service...');
+      module.infoLog(i18n.t('dglab.gettingPrimaryService'));
       const service = await this.gattServer.getPrimaryService(DG3_SERVICE_UUID);
 
-      // 获取写特性
-      module.infoLog('Getting write characteristic...');
+      module.infoLog(i18n.t('dglab.gettingWriteCharacteristic'));
       this.writeCharacteristic = await service.getCharacteristic(DG3_WRITE_UUID);
 
-      // 获取通知特性
-      module.infoLog('Getting notify characteristic...');
+      module.infoLog(i18n.t('dglab.gettingNotifyCharacteristic'));
       this.notifyCharacteristic = await service.getCharacteristic(DG3_NOTIFY_UUID);
-
-      // 监听B1回应消息
       this.notifyCharacteristic.addEventListener('characteristicvaluechanged', this.onNotifyReceived);
       await this.notifyCharacteristic.startNotifications();
 
-      // 初始化电池监控
       await this.initializeBatteryMonitoring();
 
-      // 发送BF指令设置软上限和平衡参数
+      // Reset flow-control state, then push BF so the soft limit/balance parameters are known after reconnect.
+      this.resetStrengthState();
       await this.sendBFCommand();
 
-      // 开始B0指令传输
       this.startTransmitting();
     } catch (error) {
-      module.infoLog('Device initialization failed: ' + error);
+      module.infoLog(i18n.t('dglab.deviceInitializationFailed', {message: String(error)}));
       throw error;
     }
   }
@@ -299,23 +308,24 @@ export default class DglabV3BlueToothProvider implements DglabProvider {
     if (!this.gattServer) return;
 
     try {
-      module.infoLog('Initializing battery monitoring...');
+      module.infoLog(i18n.t('dglab.initializingBatteryMonitoring'));
       const batteryService = await this.gattServer.getPrimaryService(DG3_BATTERY_SERVICE_UUID);
       this.batteryCharacteristic = await batteryService.getCharacteristic(DG3_BATTERY_UUID);
 
       const batteryValue = await this.batteryCharacteristic.readValue();
-      const batteryLevel = batteryValue.getUint8(0);
-      this.setState({batteryLevel});
-      module.debugLog(`Current battery level: ${batteryLevel}%`);
+      this.setState({batteryLevel: batteryValue.getUint8(0)});
+      module.debugLog(i18n.t('dglab.currentBattery', {level: batteryValue.getUint8(0)}));
 
       this.batteryCharacteristic.addEventListener('characteristicvaluechanged', this.onBatteryChanged);
       await this.batteryCharacteristic.startNotifications();
-
     } catch (error) {
-      module.infoLog('Battery monitoring initialization failed: ' + error);
+      module.infoLog(i18n.t('dglab.batteryMonitoringFailed', {message: String(error)}));
     }
   }
 
+  // BF command (7 bytes): 0xBF + AB soft limits (2) + AB frequency balance (2) + AB strength balance (2).
+  // Note: it takes effect immediately, returns nothing, and the soft limit must be rewritten after every
+  // reconnect, otherwise a stale persisted limit could clamp the output unexpectedly.
   private async sendBFCommand() {
     if (!this.writeCharacteristic) return;
 
@@ -323,65 +333,77 @@ export default class DglabV3BlueToothProvider implements DglabProvider {
       const buffer = new ArrayBuffer(7);
       const view = new DataView(buffer);
 
-      // BF指令格式: 0xBF + AB两通道强度软上限(2bytes) + AB两通道波形频率平衡参数(2bytes) + AB两通道波形强度平衡参数(2bytes)
-      view.setUint8(0, 0xBF); // 指令头
-      view.setUint8(1, this.state.maxPowerA); // A通道软上限
-      view.setUint8(2, this.state.maxPowerB); // B通道软上限
-      view.setUint8(3, this.state.frequencyBalance1A); // A通道频率平衡参数
-      view.setUint8(4, this.state.frequencyBalance1B); // B通道频率平衡参数
-      view.setUint8(5, this.state.frequencyBalance2A); // A通道强度平衡参数
-      view.setUint8(6, this.state.frequencyBalance2B); // B通道强度平衡参数
+      view.setUint8(0, 0xBF);
+      view.setUint8(1, this.clampStrength(this.state.maxPowerA)); // Channel A soft limit.
+      view.setUint8(2, this.clampStrength(this.state.maxPowerB)); // Channel B soft limit.
+      view.setUint8(3, DG3_FREQ_BALANCE);                         // Channel A frequency balance.
+      view.setUint8(4, DG3_FREQ_BALANCE);                         // Channel B frequency balance.
+      view.setUint8(5, DG3_STRENGTH_BALANCE);                     // Channel A strength balance.
+      view.setUint8(6, DG3_STRENGTH_BALANCE);                     // Channel B strength balance.
 
       await this.writeCharacteristic.writeValue(buffer);
-      module.debugLog(`BF command sent: maxPowerA=${this.state.maxPowerA}, maxPowerB=${this.state.maxPowerB}`);
+      module.debugLog(`BF sent: softLimit A=${this.state.maxPowerA}, B=${this.state.maxPowerB}`);
     } catch (error) {
-      module.infoLog('Failed to send BF command: ' + error);
+      module.infoLog(i18n.t('dglab.failedBfCommand', {message: String(error)}));
     }
   }
 
-  private strengthDataProcessing(): {
-    sequenceNo: number,
-    strengthParsingMethod: number,
-    strengthValueA: number,
-    strengthValueB: number
+  // Decide the strength portion of the next B0 command. We use absolute interpretation (0b11): each change
+  // tells the device the exact target. At most one change is kept in flight, identified by its sequence
+  // number; subsequent ticks send 0b00 (no change) until the matching B1 arrives or the ack times out.
+  private resolveStrengthCommand(): {
+    sequenceNo: number;
+    parsingMethod: number;
+    strengthValueA: number;
+    strengthValueB: number;
   } {
-    let sequenceNo = 0;
-    let strengthParsingMethod = 0;
+    const idle = {sequenceNo: 0, parsingMethod: 0, strengthValueA: 0, strengthValueB: 0};
+
+    if (!this.isInputAllowed) {
+      // Recover from a dropped B1 acknowledgement so strength updates never deadlock.
+      if (Date.now() - this.strengthSentAt >= STRENGTH_ACK_TIMEOUT_MS) {
+        this.isInputAllowed = true;
+        this.inputOrderNo = 0;
+      } else {
+        return idle;
+      }
+    }
+
+    const needA = this.state.powerLevelA !== this.sentPowerA;
+    const needB = this.state.powerLevelB !== this.sentPowerB;
+    if (!needA && !needB) {
+      return idle;
+    }
+
+    let parsingMethod = 0;
     let strengthValueA = 0;
     let strengthValueB = 0;
 
-    if (this.isInputAllowed) {
-      // 处理A通道
-      if (this.accumulatedStrengthValueA > 0) {
-        strengthParsingMethod |= 0b0100; // A通道相对增加
-      } else if (this.accumulatedStrengthValueA < 0) {
-        strengthParsingMethod |= 0b1000; // A通道相对减少
-      }
-
-      // 处理B通道
-      if (this.accumulatedStrengthValueB > 0) {
-        strengthParsingMethod |= 0b0001; // B通道相对增加
-      } else if (this.accumulatedStrengthValueB < 0) {
-        strengthParsingMethod |= 0b0010; // B通道相对减少
-      }
-
-      if (strengthParsingMethod !== 0) {
-        this.orderNo = (this.orderNo % 15) + 1; // 序列号范围1-15
-        sequenceNo = this.orderNo;
-        this.inputOrderNo = this.orderNo;
-        this.isInputAllowed = false;
-
-        strengthValueA = Math.abs(this.accumulatedStrengthValueA);
-        strengthValueB = Math.abs(this.accumulatedStrengthValueB);
-
-        this.accumulatedStrengthValueA = 0;
-        this.accumulatedStrengthValueB = 0;
-      }
+    if (needA) {
+      parsingMethod |= PARSE_ABSOLUTE << 2; // High nibble controls channel A.
+      strengthValueA = this.state.powerLevelA;
+      this.sentPowerA = this.state.powerLevelA;
+    } else {
+      parsingMethod |= PARSE_NO_CHANGE << 2;
     }
 
-    return {sequenceNo, strengthParsingMethod, strengthValueA, strengthValueB};
+    if (needB) {
+      parsingMethod |= PARSE_ABSOLUTE;       // Low nibble controls channel B.
+      strengthValueB = this.state.powerLevelB;
+      this.sentPowerB = this.state.powerLevelB;
+    } else {
+      parsingMethod |= PARSE_NO_CHANGE;
+    }
+
+    this.orderNo = (this.orderNo % SEQ_MAX) + 1; // Sequence numbers cycle through 1-15.
+    this.inputOrderNo = this.orderNo;
+    this.isInputAllowed = false;
+    this.strengthSentAt = Date.now();
+
+    return {sequenceNo: this.orderNo, parsingMethod, strengthValueA, strengthValueB};
   }
 
+  // Map a 10-1000 input frequency to the 10-240 value transmitted in the B0 command.
   private convertFrequency(inputFreq: number): number {
     if (inputFreq >= 10 && inputFreq <= 100) {
       return inputFreq;
@@ -394,92 +416,67 @@ export default class DglabV3BlueToothProvider implements DglabProvider {
     }
   }
 
+  // B0 command (20 bytes): 0xB0 + (seqNo<<4 | parsingMethod) + A target + B target
+  //   + A frequencies (4) + A strengths (4) + B frequencies (4) + B strengths (4).
   private async sendB0Command() {
     if (!this.writeCharacteristic) return;
 
     try {
-      const {sequenceNo, strengthParsingMethod, strengthValueA, strengthValueB} = this.strengthDataProcessing();
+      const {sequenceNo, parsingMethod, strengthValueA, strengthValueB} = this.resolveStrengthCommand();
 
-      // 获取当前波形数据
-      const selectedWaveform = coyote3wave[this.state.selectedWave];
-      const waveData = selectedWaveform[this.currentWaveIndex % selectedWaveform.length];
+      const waveform = coyote3wave[this.state.selectedWave];
+      const frame = waveform[this.currentWaveIndex % waveform.length];
 
       const buffer = new ArrayBuffer(20);
       const view = new DataView(buffer);
 
-      // B0指令格式: 0xB0(1byte) + 序列号(4bits) + 强度值解读方式(4bits) + A通道强度(1byte) + B通道强度(1byte)
-      // + A通道波形频率(4bytes) + A通道波形强度(4bytes) + B通道波形频率(4bytes) + B通道波形强度(4bytes)
-      view.setUint8(0, 0xB0); // 指令头
-      view.setUint8(1, (sequenceNo << 4) | strengthParsingMethod); // 序列号+强度解读方式
-      view.setUint8(2, strengthValueA); // A通道强度设定值
-      view.setUint8(3, strengthValueB); // B通道强度设定值
+      view.setUint8(0, 0xB0);
+      view.setUint8(1, (sequenceNo << 4) | parsingMethod);
+      view.setUint8(2, strengthValueA);
+      view.setUint8(3, strengthValueB);
 
-      // A通道波形频率(4字节)
-      view.setUint8(4, this.convertFrequency(waveData.freq[0]));
-      view.setUint8(5, this.convertFrequency(waveData.freq[1]));
-      view.setUint8(6, this.convertFrequency(waveData.freq[2]));
-      view.setUint8(7, this.convertFrequency(waveData.freq[3]));
-
-      // A通道波形强度(4字节)
-      view.setUint8(8, waveData.strength[0]);
-      view.setUint8(9, waveData.strength[1]);
-      view.setUint8(10, waveData.strength[2]);
-      view.setUint8(11, waveData.strength[3]);
-
-      // B通道波形频率(4字节) - 使用相同的波形数据
-      view.setUint8(12, this.convertFrequency(waveData.freq[0]));
-      view.setUint8(13, this.convertFrequency(waveData.freq[1]));
-      view.setUint8(14, this.convertFrequency(waveData.freq[2]));
-      view.setUint8(15, this.convertFrequency(waveData.freq[3]));
-
-      // B通道波形强度(4字节)
-      view.setUint8(16, waveData.strength[0]);
-      view.setUint8(17, waveData.strength[1]);
-      view.setUint8(18, waveData.strength[2]);
-      view.setUint8(19, waveData.strength[3]);
+      // Both channels play the same selected waveform; the per-channel strength gates whether it is felt.
+      for (let i = 0; i < 4; i++) {
+        view.setUint8(4 + i, this.convertFrequency(frame.freq[i]));  // Channel A frequencies.
+        view.setUint8(8 + i, frame.strength[i]);                    // Channel A strengths.
+        view.setUint8(12 + i, this.convertFrequency(frame.freq[i])); // Channel B frequencies.
+        view.setUint8(16 + i, frame.strength[i]);                   // Channel B strengths.
+      }
 
       await this.writeCharacteristic.writeValue(buffer);
 
-      this.setState(prevState => ({
-        transmitCount: prevState.transmitCount + 1
-      }));
-
       this.currentWaveIndex++;
-
+      this.setState(prevState => ({transmitCount: prevState.transmitCount + 1}));
     } catch (error) {
-      module.infoLog('Failed to send B0 command: ' + error);
-      this.setState(prevState => ({
-        errorCount: prevState.errorCount + 1
-      }));
+      module.infoLog(i18n.t('dglab.failedB0Command', {message: String(error)}));
+      this.setState(prevState => ({errorCount: prevState.errorCount + 1}));
     }
   }
 
+  // B1 response (4 bytes): 0xB1 + sequenceNo + channel A actual strength + channel B actual strength.
   private onNotifyReceived = (event: Event) => {
     const target = event.target as BluetoothRemoteGATTCharacteristic;
     const value = target.value;
-    if (!value) return;
+    if (!value || value.byteLength < 4) return;
 
-    const command = value.getUint8(0);
+    if (value.getUint8(0) !== 0xB1) return;
 
-    if (command === 0xB1) {
-      // B1消息格式: 0xB1 + 序列号(1byte) + A通道当前实际强度(1byte) + B通道当前实际强度(1byte)
-      const returnOrderNo = value.getUint8(1);
-      const realPowerA = value.getUint8(2);
-      const realPowerB = value.getUint8(3);
+    const returnOrderNo = value.getUint8(1);
+    const realPowerA = value.getUint8(2);
+    const realPowerB = value.getUint8(3);
 
-      this.setState({
-        realPowerLevelA: realPowerA,
-        realPowerLevelB: realPowerB
-      });
+    this.setState({
+      realPowerLevelA: realPowerA,
+      realPowerLevelB: realPowerB,
+    });
 
-      // 如果序列号匹配，允许下次输入
-      if (returnOrderNo === this.inputOrderNo) {
-        this.isInputAllowed = true;
-        this.inputOrderNo = 0;
-      }
-
-      module.debugLog(`B1 received: orderNo=${returnOrderNo}, powerA=${realPowerA}, powerB=${realPowerB}`);
+    // A non-zero sequence number that matches our in-flight change clears the gate for the next update.
+    if (returnOrderNo !== 0 && returnOrderNo === this.inputOrderNo) {
+      this.isInputAllowed = true;
+      this.inputOrderNo = 0;
     }
+
+    module.debugLog(`B1 received: orderNo=${returnOrderNo}, powerA=${realPowerA}, powerB=${realPowerB}`);
   };
 
   private onBatteryChanged = (event: Event) => {
@@ -489,20 +486,33 @@ export default class DglabV3BlueToothProvider implements DglabProvider {
 
     const batteryLevel = value.getUint8(0);
     this.setState({batteryLevel});
-    module.debugLog(`Battery level changed: ${batteryLevel}%`);
+    module.debugLog(i18n.t('dglab.currentBattery', {level: batteryLevel}));
   };
+
+  private resetStrengthState() {
+    this.orderNo = 0;
+    this.inputOrderNo = 0;
+    this.isInputAllowed = true;
+    this.strengthSentAt = 0;
+    this.sentPowerA = 0;
+    this.sentPowerB = 0;
+    this.currentWaveIndex = 0;
+    this.setState({
+      powerLevelA: 0,
+      powerLevelB: 0,
+      realPowerLevelA: 0,
+      realPowerLevelB: 0,
+    });
+  }
 
   private startTransmitting = () => {
     if (this.transmitInterval) return;
 
-    this.setState({isTransmitting: true});
-
-    // 根据V3协议，每100ms发送一次B0指令
     this.transmitInterval = window.setInterval(() => {
       this.sendB0Command();
-    }, 100);
+    }, TRANSMIT_INTERVAL_MS);
 
-    module.infoLog('Started transmitting B0 commands every 100ms');
+    module.infoLog(i18n.t('dglab.startedB0'));
   };
 
   private stopTransmitting = () => {
@@ -510,13 +520,12 @@ export default class DglabV3BlueToothProvider implements DglabProvider {
       clearInterval(this.transmitInterval);
       this.transmitInterval = null;
     }
-    this.setState({isTransmitting: false});
-    module.infoLog('Stopped transmitting');
+    module.infoLog(i18n.t('dglab.stoppedTransmitting'));
   };
 
   private handleWaveChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     this.setState({selectedWave: event.target.value as 'a' | 'b' | 'c'});
-    this.currentWaveIndex = 0; // 重置波形索引
+    this.currentWaveIndex = 0;
   };
 
   private disconnect = () => {
@@ -532,11 +541,11 @@ export default class DglabV3BlueToothProvider implements DglabProvider {
     this.batteryCharacteristic = null;
 
     this.setState({connectionStatus: ConnectionStatus.DISCONNECTED});
-    module.infoLog('Device disconnected');
+    module.infoLog(i18n.t('dglab.deviceDisconnected'));
   };
 
   private onDeviceDisconnected = () => {
-    module.infoLog('Device disconnected unexpectedly');
+    module.infoLog(i18n.t('dglab.deviceDisconnectedUnexpectedly'));
     this.disconnect();
   };
 }

@@ -1,29 +1,60 @@
-import React, { useState, useEffect } from 'react';
-import FloatingWindow from './components/FloatingWindow';
-import LoadingProgress from './components/LoadingProgress';
-import ModuleHeader from './components/ModuleHeader';
-import ModuleList from './components/ModuleList';
-import ModuleContent from './components/ModuleContent';
-import { razorIsPro } from "./util/pro.ts";
-import razorModSdk from "./razor-wings";
-import main from "./main.tsx";
-import { useGameState } from './hooks/useGameState';
-import { useModuleManager } from './hooks/useModuleManager';
+import React, {useEffect, useState} from 'react';
+import {useTranslation} from 'react-i18next';
+import FloatingWindow from '@/components/FloatingWindow';
+import LoadingProgress from '@/components/LoadingProgress';
+import LoadingScreen from '@/components/LoadingScreen';
+import ModuleHeader from '@/components/ModuleHeader';
+import ModuleList from '@/components/ModuleList';
+import ModuleContent from '@/components/ModuleContent';
+import SettingsPanel from '@/components/SettingsPanel';
+import {ViewPanel, ViewTransition} from '@/components/ViewTransition';
+import {applySettings, loadSettings} from '@/settings';
+import {razorIsPro} from "@/util/pro.ts";
+import type {ModuleConfig} from "@/modules.ts";
+import razorModSdk from "@/razor-wings";
+import main from "@/main.tsx";
+import {useGameState} from '@/hooks/useGameState';
+import {useModuleManager} from '@/hooks/useModuleManager';
 
 const Layer: React.FC = () => {
+  const {t} = useTranslation();
   const [isExpanded, setIsExpanded] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [showLoading, setShowLoading] = useState(false);
 
-  // Use custom hooks for game state and module management
+  type NavDir = 'forward' | 'backward' | null;
+  const [navDir, setNavDir] = useState<NavDir>(null);
+
+  // Track animation setting from saved config
+  const [enableAnimations, setEnableAnimations] = useState(() => loadSettings().enableAnimations);
+
   const gameState = useGameState();
   const {
     availableModules,
     loadingState,
     currentOpenModule,
-    openModule,
-    closeModule
+    openModule: _openModule,
+    closeModule: _closeModule
   } = useModuleManager(gameState);
 
-  // Setup keyboard hook on mount
+  // Wrap open/close to inject direction tracking (only when animations enabled)
+  const handleOpenModule = (m: ModuleConfig) => {
+    if (enableAnimations) setNavDir('forward');
+    _openModule(m);
+  };
+  const handleCloseModule = () => {
+    if (enableAnimations) setNavDir('backward');
+    _closeModule();
+  };
+  // Clear direction after animation completes
+  useEffect(() => {
+    if (navDir) {
+      const t = setTimeout(() => setNavDir(null), 250);
+      return () => clearTimeout(t);
+    }
+  }, [navDir, currentOpenModule]);
+
+  // Setup keyboard hook
   useEffect(() => {
     razorModSdk.hookFunction('ChatRoomKeyDown', 10, (args, next) => {
       if (document.activeElement && main.overlay && main.overlay.contains(document.activeElement)) {
@@ -33,38 +64,103 @@ const Layer: React.FC = () => {
     });
   }, []);
 
-  // Toggle expand/collapse state
+  // Apply saved settings on mount (target the shadow host so CSS vars reach inside Shadow DOM)
+  useEffect(() => {
+    const settings = loadSettings();
+    applySettings(settings, main.overlay!);
+  }, []);
+
   const toggleExpanded = () => {
+    if (!isExpanded) {
+      setShowLoading(true);
+    }
     setIsExpanded(!isExpanded);
+  };
+  const toggleSettings = () => {
+    if (enableAnimations) setNavDir('forward');
+    setShowSettings(!showSettings);
+  };
+  const closeSettings = () => {
+    if (enableAnimations) setNavDir('backward');
+    setShowSettings(false);
+    // Refresh animation setting after settings panel closes
+    const s = loadSettings();
+    setEnableAnimations(s.enableAnimations);
+  };
+  const finishLoading = () => setShowLoading(false);
+
+  const listAnimation = enableAnimations && navDir === 'forward'
+    ? 'forward'
+    : enableAnimations && navDir === 'backward'
+      ? 'backward'
+      : false;
+  const contentAnimation = enableAnimations && navDir === 'forward' ? 'forward' : false;
+  const settingsAnimation = enableAnimations ? 'fade' : false;
+
+  const headerConfig = {
+    title: t('common.appName') + (razorIsPro() ? ' Pro' : ''),
+    actions: (
+      <button
+        className="rw-icon-button rw-icon-button--plain"
+        onClick={toggleSettings}
+        title={t('common.settings')}
+      >
+        ⚙
+      </button>
+    ),
   };
 
   return (
     <FloatingWindow
       isExpanded={isExpanded}
       onToggleExpanded={toggleExpanded}
-      header={"Razor Wings" + (razorIsPro() ? ' Pro' : '')}
+      header={headerConfig}
       collapsed="R"
-      initialSize={{ width: 400, height: 300 }}
-      minSize={{ width: 300, height: 200 }}
-      maxSize={{ width: 1152, height: 864 }}
+      initialSize={{width: 520, height: 400}}
+      minSize={{width: 320, height: 240}}
+      maxSize={{width: 1152, height: 864}}
       resizable={true}
     >
-      <LoadingProgress loadingState={loadingState} />
+      {/* Sci-fi boot animation */}
+      {showLoading && <LoadingScreen onComplete={finishLoading}/>}
+
+      <LoadingProgress loadingState={loadingState}/>
 
       <ModuleHeader
         currentModule={gameState.currentModule}
         currentScreen={gameState.currentScreen}
         showBackButton={currentOpenModule !== null}
-        onBack={closeModule}
+        onBack={handleCloseModule}
       />
 
-      {currentOpenModule === null ? (
-        <ModuleList
-          modules={availableModules}
-          onModuleClick={openModule}
-        />
-      ) : (
-        <ModuleContent Component={currentOpenModule} />
+      {/* ── Animated content area ── */}
+      <ViewTransition>
+        {currentOpenModule === null ? (
+          <ViewPanel animation={listAnimation} key="list">
+            <ModuleList
+              modules={availableModules}
+              onModuleClick={handleOpenModule}
+            />
+          </ViewPanel>
+        ) : (
+          <ViewPanel animation={contentAnimation} key="content">
+            <ModuleContent Component={currentOpenModule}/>
+          </ViewPanel>
+        )}
+      </ViewTransition>
+
+      {/* Settings overlay with fade animation */}
+      {showSettings && (
+        <ViewPanel
+          animation={settingsAnimation}
+          className="absolute inset-0 z-[var(--rw-z-settings)]"
+          key="settings"
+        >
+          <SettingsPanel
+            onClose={closeSettings}
+            styleRoot={main.overlay!}
+          />
+        </ViewPanel>
       )}
     </FloatingWindow>
   );

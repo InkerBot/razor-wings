@@ -1,9 +1,8 @@
-import type AbstractModule from "../AbstractModule.ts";
-import razorModSdk from "../../razor-wings";
+import type AbstractModule from "@/modules/AbstractModule.ts";
+import razorModSdk from "@/razor-wings";
 
 export interface SwitchEntry {
   name: string;
-  description: string;
   init: (isEnabledGetter: () => boolean) => void;
   onUpdate?: (enabled: boolean) => void;
 }
@@ -11,7 +10,6 @@ export interface SwitchEntry {
 export const switchEntries: SwitchEntry[] = [
   {
     name: 'unlock_all',
-    description: '可以开启所有锁（除主人锁、恋人锁）',
     init(isEnabledGetter) {
       razorModSdk.hookFunction("DialogCanUnlock", 10, (args, next) => {
         if (isEnabledGetter()) {
@@ -25,7 +23,6 @@ export const switchEntries: SwitchEntry[] = [
   },
   {
     name: 'allow_all_things',
-    description: '允许所有物品',
     init(isEnabledGetter) {
       razorModSdk.hookFunction("InventoryAllow", 10, (args, next) => {
         if (isEnabledGetter()) {
@@ -57,7 +54,6 @@ export const switchEntries: SwitchEntry[] = [
   },
   {
     name: 'skip_inventory_group_block',
-    description: '无视遮挡',
     init(isEnabledGetter) {
       razorModSdk.hookFunction("InventoryGroupIsBlocked", 10, (args, next) => {
         if (isEnabledGetter()) {
@@ -79,7 +75,6 @@ export const switchEntries: SwitchEntry[] = [
   },
   {
     name: 'bypass_distance_limit',
-    description: '可以忽略距离限制',
     init(isEnabledGetter) {
       razorModSdk.hookFunction("InventoryIsBlockedByDistance", 10, (args, next) => {
         if (isEnabledGetter()) {
@@ -101,7 +96,6 @@ export const switchEntries: SwitchEntry[] = [
   },
   {
     name: 'struggle_force',
-    description: '瞬间完成挣扎',
     init(isEnabledGetter) {
       razorModSdk.hookFunction("StruggleProgressCheckEnd", 10, (args, next) => {
         if (isEnabledGetter()) {
@@ -113,7 +107,6 @@ export const switchEntries: SwitchEntry[] = [
   },
   {
     name: 'no_blind',
-    description: '解除失明效果',
     init(isEnabledGetter) {
       razorModSdk.hookFunction("Player.GetBlindLevel", 10, (args, next) => {
         if (isEnabledGetter()) {
@@ -135,7 +128,6 @@ export const switchEntries: SwitchEntry[] = [
   },
   {
     name: 'interact_monkey',
-    description: '解除触碰限制',
     init(isEnabledGetter) {
       razorModSdk.hookFunction("Player.CanInteract", 10, (args, next) => {
         if (isEnabledGetter()) {
@@ -157,7 +149,6 @@ export const switchEntries: SwitchEntry[] = [
   },
   {
     name: 'map_visible_all',
-    description: '地图模式无限视距',
     init(isEnabledGetter) {
       razorModSdk.hookFunction("ChatRoomMapViewCharacterIsVisible", 10, (args, next) => {
         if (isEnabledGetter()) {
@@ -189,7 +180,6 @@ export const switchEntries: SwitchEntry[] = [
   },
   {
     name: 'map_no_tile',
-    description: '地图模式穿墙',
     init(isEnabledGetter) {
       razorModSdk.hookFunction("ChatRoomMapViewCanEnterTile", 10, (args, next) => {
         if (isEnabledGetter()) {
@@ -206,7 +196,7 @@ export const switchEntries: SwitchEntry[] = [
 class UtilRemoveLimitModule implements AbstractModule {
 
   initialized: boolean = false;
-  enabled: {[k:string]: boolean} = Object.fromEntries(switchEntries.map(entry => [entry.name, false]));
+  enabled: { [k: string]: boolean } = Object.fromEntries(switchEntries.map(entry => [entry.name, false]));
 
   init() {
   }

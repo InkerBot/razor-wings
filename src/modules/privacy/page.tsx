@@ -1,8 +1,14 @@
 import {useState} from "react";
-import module from "./module.ts";
-import PlayerSelector from "../../components/PlayerSelector";
+import {useTranslation} from "react-i18next";
+import module from "@/modules/privacy/module.ts";
+import PlayerSelector from "@/components/PlayerSelector";
+import Button from "@/components/Button";
+import {FormSectionTitle} from "@/components/Form";
+import {TextInput} from "@/components/FieldControls";
+import ToggleRow, {ToggleRowGroup} from "@/components/ToggleRow";
 
 export default function PrivacyPage() {
+  const {t} = useTranslation();
   const [settings, setSettings] = useState({
     disableWceBeepMetadata: module.disableWceBeepMetadata || false,
     disableWceReport: module.disableWceReport || false,
@@ -49,7 +55,7 @@ export default function PrivacyPage() {
       setHiddenMods(newHiddenMods);
       module.hiddenMods = newHiddenMods;
       module.saveConfig();
-      setNewModName(""); // 清空输入框
+      setNewModName("");
     }
   };
 
@@ -61,151 +67,109 @@ export default function PrivacyPage() {
   };
 
   return (<>
-    WCE
-    <div>
-      <label>
-        <input
-          type="checkbox"
-          checked={settings.disableWceBeepMetadata}
-          onChange={(e) => handleSettingChange("disableWceBeepMetadata", e.target.checked)}
-        />
-        禁用 WCE Beep 元数据（防止 WCE 在 Beep 消息中添加额外信息）
-      </label>
-    </div>
+    <FormSectionTitle>WCE</FormSectionTitle>
+    <ToggleRowGroup>
+      <ToggleRow card checked={settings.disableWceBeepMetadata}
+                 onChange={checked => handleSettingChange("disableWceBeepMetadata", checked)}>
+        {t('privacy.disableWceBeepMetadata')}
+      </ToggleRow>
+      <ToggleRow card checked={settings.disableWceReport}
+                 onChange={checked => handleSettingChange("disableWceReport", checked)}>
+        {t('privacy.disableWceReport')}
+      </ToggleRow>
+    </ToggleRowGroup>
+
+    <FormSectionTitle>BCX</FormSectionTitle>
+    <ToggleRowGroup>
+      <ToggleRow card checked={settings.disableBcxBeepFingerPrint}
+                 onChange={checked => handleSettingChange("disableBcxBeepFingerPrint", checked)}>
+        {t('privacy.disableBcxBeepFingerPrint')}
+      </ToggleRow>
+      <ToggleRow card checked={settings.disableBcxMessage}
+                 onChange={checked => handleSettingChange("disableBcxMessage", checked)}>
+        {t('privacy.disableBcxMessage')}
+      </ToggleRow>
+    </ToggleRowGroup>
+
+    <FormSectionTitle>Echo Extension</FormSectionTitle>
+    <ToggleRowGroup>
+      <ToggleRow card checked={settings.disableEchoMessage}
+                 onChange={checked => handleSettingChange("disableEchoMessage", checked)}>
+        {t('privacy.disableEchoMessage')}
+      </ToggleRow>
+    </ToggleRowGroup>
+
+    <FormSectionTitle>LSCG</FormSectionTitle>
+    <ToggleRowGroup>
+      <ToggleRow card checked={settings.disableLscgMessage}
+                 onChange={checked => handleSettingChange("disableLscgMessage", checked)}>
+        {t('privacy.disableLscgMessage')}
+      </ToggleRow>
+    </ToggleRowGroup>
+
+    <FormSectionTitle>MPA</FormSectionTitle>
+    <ToggleRowGroup>
+      <ToggleRow card checked={settings.disableMpaMessage}
+                 onChange={checked => handleSettingChange("disableMpaMessage", checked)}>
+        {t('privacy.disableMpaMessage')}
+      </ToggleRow>
+    </ToggleRowGroup>
+
+    <FormSectionTitle>{t('privacy.global')}</FormSectionTitle>
+    <ToggleRowGroup>
+      <ToggleRow card checked={settings.disableAllActions}
+                 onChange={checked => handleSettingChange("disableAllActions", checked)}>
+        {t('privacy.disableAllActions')}
+      </ToggleRow>
+    </ToggleRowGroup>
 
     <div>
-      <label>
-        <input
-          type="checkbox"
-          checked={settings.disableWceReport}
-          onChange={(e) => handleSettingChange("disableWceReport", e.target.checked)}
-        />
-        禁用 WCE 报告（阻止 WCE 隐藏消息的发送）
-      </label>
-    </div>
-
-    <hr/>
-    BCX
-    <div>
-      <label>
-        <input
-          type="checkbox"
-          checked={settings.disableBcxBeepFingerPrint}
-          onChange={(e) => handleSettingChange("disableBcxBeepFingerPrint", e.target.checked)}
-        />
-        禁用 BCX Beep 指纹（阻止 BCX Leash 和 BCX 类型的 Beep）
-      </label>
-    </div>
-
-    <div>
-      <label>
-        <input
-          type="checkbox"
-          checked={settings.disableBcxMessage}
-          onChange={(e) => handleSettingChange("disableBcxMessage", e.target.checked)}
-        />
-        限制 BCX 消息（仅向白名单中的玩家发送 BCX 消息）
-      </label>
-    </div>
-
-    <hr/>
-    Echo Extension
-    <div>
-      <label>
-        <input
-          type="checkbox"
-          checked={settings.disableEchoMessage}
-          onChange={(e) => handleSettingChange("disableEchoMessage", e.target.checked)}
-        />
-        禁用 Echo 扩展消息（阻止 Echo 扩展消息的发送）
-      </label>
-    </div>
-
-    <hr/>
-    LSCG
-    <div>
-      <label>
-        <input
-          type="checkbox"
-          checked={settings.disableLscgMessage}
-          onChange={(e) => handleSettingChange("disableLscgMessage", e.target.checked)}
-        />
-        禁用 LSCG 消息（阻止 LSCG 消息的发送）
-      </label>
-    </div>
-
-    <hr/>
-    MPA
-    <div>
-      <label>
-        <input
-          type="checkbox"
-          checked={module.disableMpaMessage}
-          onChange={(e) => handleSettingChange("disableMpaMessage", e.target.checked)}
-        />
-        禁用 MPA 消息（阻止 MPA 消息的发送）
-      </label>
-    </div>
-    <hr/>
-
-    <div>
-      <label>
-        <input
-          type="checkbox"
-          checked={settings.disableAllActions}
-          onChange={(e) => handleSettingChange("disableAllActions", e.target.checked)}
-        />
-        禁用所有动作（阻止所有动作的发送）
-      </label>
-    </div>
-
-    <div>
-      隐藏的Mod列表（在WCE报告中隐藏）
-      <div>
-        <input
+      <p>{t('privacy.hiddenMods')}</p>
+      <div className="rw-field-row">
+        <TextInput
           type="text"
           value={newModName}
           onChange={(e) => setNewModName(e.target.value)}
-          placeholder="输入Mod名称"
+          placeholder={t('privacy.hiddenModPlaceholder')}
         />
-        <button onClick={addModToHiddenMods} disabled={!newModName}>
-          添加Mod到隐藏列表
-        </button>
+        <Button onClick={addModToHiddenMods} disabled={!newModName}>
+          {t('privacy.addHiddenMod')}
+        </Button>
       </div>
       {hiddenMods.length > 0 ? (
-        <ul style={{margin: 0, padding: 0, listStyle: 'none'}}>
+        <ul className="rw-plain-list">
           {hiddenMods.map(mod => (
-            <li key={mod}>
+            <li key={mod} className="rw-list-row">
               {mod}
-              <button onClick={() => removeFromHiddenMods(mod)}>删除</button>
+              <Button size="small" variant="danger" onClick={() => removeFromHiddenMods(mod)}>{t('common.delete')}</Button>
             </li>
           ))}
         </ul>
       ) : (
-        <p>没有隐藏的Mod</p>
+        <p>{t('privacy.noHiddenMods')}</p>
       )}
     </div>
     <hr/>
 
     <div>
-      消息白名单
-      <div>
+      <p>{t('privacy.whitelist')}</p>
+      <div className="rw-field-row">
         <PlayerSelector characterId={selectedPlayer?.CharacterID} onChange={setSelectedPlayer}/>
-        <button onClick={addSelectedPlayerToWhitelist} disabled={!selectedPlayer}>
-          添加选中玩家到白名单
-        </button>
+        <Button onClick={addSelectedPlayerToWhitelist} disabled={!selectedPlayer}>
+          {t('privacy.addSelectedPlayer')}
+        </Button>
       </div>
       {whitelistNumbers.length > 0 ? (
-        <ul style={{margin: 0, padding: 0, listStyle: 'none'}}>
+        <ul className="rw-plain-list">
           {whitelistNumbers.map(num => (
-            <li key={num}>
+            <li key={num} className="rw-list-row">
               {num}
-              <button onClick={() => removeFromWhitelist(num)}>删除</button>
+              <Button size="small" variant="danger" onClick={() => removeFromWhitelist(num)}>{t('common.delete')}</Button>
             </li>
           ))}
         </ul>
       ) : (
-        <p>白名单为空</p>
+        <p>{t('privacy.emptyWhitelist')}</p>
       )}
     </div>
 

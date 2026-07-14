@@ -1,5 +1,6 @@
-import type DglabProvider from "./DglabProvider.ts";
+import type DglabProvider from "@/modules/dglab/provider/DglabProvider.ts";
 import React, {type JSX} from "react";
+import i18n from "@/i18n";
 
 interface TestProviderState {
   powerA: number;
@@ -46,8 +47,8 @@ export default class TestProvider implements DglabProvider {
 
   render(): JSX.Element {
     return (<>
-      <p>Power A: {this.state.powerA}</p>
-      <p>Power B: {this.state.powerB}</p>
+      <p>{i18n.t('dglab.powerA')} {this.state.powerA}</p>
+      <p>{i18n.t('dglab.powerB')} {this.state.powerB}</p>
     </>);
   }
 
