@@ -11,6 +11,8 @@
 // @match https://www.bondage-europe.com/*
 // @match https://bondageprojects.com/*
 // @match https://www.bondageprojects.com/*
+// @match https://bondage-asia.com/*
+// @match https://www.bondage-asia.com/*
 // @grant none
 // @run-at document-end
 // ==/UserScript==

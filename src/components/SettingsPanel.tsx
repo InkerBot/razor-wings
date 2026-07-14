@@ -70,26 +70,27 @@ const SettingsPanel: React.FC<Props> = ({onClose, styleRoot}) => {
 
   return (
     <div className="rw-settings-panel">
-      <div className="rw-settings-header">
-        <div className="flex items-center gap-[8px]">
+      <div className="rw-settings-panel__inner">
+        <div className="rw-settings-header">
+          <div className="flex items-center gap-[8px]">
+            <button
+              className="rw-icon-button rw-icon-button--cyan"
+              onClick={onClose}
+              title={t('common.backToMainMenu')}
+            >
+              ←
+            </button>
+            <h3 className="rw-settings-title">{t('settings.title')}</h3>
+          </div>
           <button
-            className="rw-icon-button rw-icon-button--cyan"
+            className="rw-icon-button rw-icon-button--magenta"
             onClick={onClose}
-            title={t('common.backToMainMenu')}
+            title={t('common.close')}
           >
-            ←
+            ✕
           </button>
-          <h3 className="rw-settings-title">{t('settings.title')}</h3>
         </div>
-        <button
-          className="rw-icon-button rw-icon-button--magenta"
-          onClick={onClose}
-          title={t('common.close')}
-        >
-          ✕
-        </button>
-      </div>
-      <div className="flex-1 overflow-y-auto p-[var(--rw-space-3)]">
+        <div className="flex-1 overflow-y-auto p-[var(--rw-space-3)]">
 
         {/* Font Size */}
         <FormSectionTitle>{t('settings.sections.typography')}</FormSectionTitle>
@@ -231,6 +232,7 @@ const SettingsPanel: React.FC<Props> = ({onClose, styleRoot}) => {
         </div>
       </div>
     </div>
+  </div>
   );
 };
 

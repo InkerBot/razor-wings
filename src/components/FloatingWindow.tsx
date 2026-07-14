@@ -263,6 +263,12 @@ class FloatingWindow extends Component<FloatingWindowProps, FloatingWindowState>
           height: animHeight,
           opacity: isStartVisual ? 0 : 1,
           borderRadius: isStartVisual ? '50%' : 'var(--rw-radius-md)',
+          // Expose the canvas scale and logical window size so overlays
+          // (e.g. the settings panel) can scale their content to match the
+          // main menu that lives inside the transformed inner wrapper.
+          ['--rw-scale' as any]: scale,
+          ['--rw-window-width' as any]: `${size.width}px`,
+          ['--rw-window-height' as any]: `${size.height}px`,
         }}
         onMouseDown={this.onMouseDown}
         onMouseMove={this.onMouseMoveForCursor}

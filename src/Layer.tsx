@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState, useCallback} from 'react';
 import {useTranslation} from 'react-i18next';
 import FloatingWindow from '@/components/FloatingWindow';
 import LoadingProgress from '@/components/LoadingProgress';
@@ -8,7 +8,7 @@ import ModuleList from '@/components/ModuleList';
 import ModuleContent from '@/components/ModuleContent';
 import SettingsPanel from '@/components/SettingsPanel';
 import {ViewPanel, ViewTransition} from '@/components/ViewTransition';
-import {applySettings, loadSettings} from '@/settings';
+import {applySettings, loadSettings, loadGeometry, saveGeometry, type WindowGeometry} from '@/settings';
 import {razorIsPro} from "@/util/pro.ts";
 import type {ModuleConfig} from "@/modules.ts";
 import razorModSdk from "@/razor-wings";
@@ -27,6 +27,25 @@ const Layer: React.FC = () => {
 
   // Read animation setting fresh from storage each render so toggles apply immediately
   const enableAnimations = loadSettings().enableAnimations;
+
+  // ── Window geometry persistence ──
+  // Sensible first-load default; once the user moves/resizes the window we
+  // save it to localStorage and restore it on the next load so the window
+  // remembers its position and (expanded) size across BC page refreshes.
+  const DEFAULT_WINDOW_SIZE = {width: 600, height: 780};
+  const DEFAULT_WINDOW_POSITION = {x: 30, y: 30};
+  const savedGeo = useRef<WindowGeometry>(
+    loadGeometry() ?? {
+      position: {...DEFAULT_WINDOW_POSITION},
+      size: {...DEFAULT_WINDOW_SIZE},
+      expanded: false,
+    }
+  );
+  const persistGeometry = useCallback((patch: Partial<WindowGeometry>) => {
+    const next = {...savedGeo.current, ...patch};
+    savedGeo.current = next;
+    saveGeometry(next);
+  }, []);
 
   const gameState = useGameState();
   const {
@@ -114,7 +133,10 @@ const Layer: React.FC = () => {
       enableAnimations={enableAnimations}
       header={headerConfig}
       collapsed="R"
-      initialSize={{width: 520, height: 400}}
+      initialPosition={savedGeo.current.position}
+      initialSize={savedGeo.current.size}
+      onMove={(position) => persistGeometry({position})}
+      onResize={(size) => persistGeometry({size})}
       minSize={{width: 320, height: 240}}
       maxSize={{width: 1152, height: 864}}
       resizable={true}

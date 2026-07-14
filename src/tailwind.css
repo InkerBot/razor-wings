@@ -433,10 +433,17 @@
            the open/close transition plays, and animate the size/opacity/
            radius so it grows/shrinks from the R button into the panel. */
         overflow: hidden;
+        /* Depth + glow halo live on the element's OWN box-shadow so they are
+           NOT clipped by this element's own overflow:hidden (only descendants
+           are clipped). This is what makes the "glow intensity" setting
+           visibly affect the floating window — previously the glow was on the
+           inner .rw-window-backdrop, whose outer halo was clipped away. */
+        box-shadow: var(--rw-shadow-lg), var(--rw-glow-cyan);
         transition: width var(--rw-anim-duration, 220ms) cubic-bezier(0.22, 0.61, 0.36, 1),
                     height var(--rw-anim-duration, 220ms) cubic-bezier(0.22, 0.61, 0.36, 1),
                     opacity var(--rw-anim-duration, 220ms) ease,
-                    border-radius var(--rw-anim-duration, 220ms) ease;
+                    border-radius var(--rw-anim-duration, 220ms) ease,
+                    box-shadow var(--rw-anim-duration, 220ms) ease;
     }
 
     /* When animations are disabled, kill the transition so the window
@@ -455,7 +462,8 @@
         border-radius: var(--rw-radius-md);
         border: 1px solid var(--rw-border-color-strong);
         background-color: var(--rw-surface-overlay);
-        box-shadow: var(--rw-shadow-lg), var(--rw-glow-cyan);
+        /* box-shadow moved to .rw-floating-window--expanded so the halo is
+           not clipped by that element's overflow:hidden */
         pointer-events: none;
     }
 
@@ -558,8 +566,19 @@
     }
 
     .rw-settings-panel {
-        @apply absolute inset-0 flex flex-col overflow-hidden rounded-[var(--rw-radius-md)] bg-[var(--rw-surface-overlay)] [backdrop-filter:blur(6px)] [-webkit-backdrop-filter:blur(6px)];
+        @apply absolute inset-0 overflow-hidden rounded-[var(--rw-radius-md)] [backdrop-filter:blur(6px)] [-webkit-backdrop-filter:blur(6px)];
         z-index: var(--rw-z-settings);
+    }
+
+    .rw-settings-panel__inner {
+        width: var(--rw-window-width);
+        height: var(--rw-window-height);
+        transform: scale(var(--rw-scale));
+        transform-origin: top left;
+        background-color: var(--rw-surface-overlay);
+        border-radius: var(--rw-radius-md);
+        display: flex;
+        flex-direction: column;
     }
 
     .rw-settings-header {

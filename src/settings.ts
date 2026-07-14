@@ -1,4 +1,5 @@
 const STORAGE_KEY = 'rw_settings';
+const GEOMETRY_KEY = 'rw_window_geometry';
 
 export interface UserSettings {
   fontSize: number;          // 12-20, default 14
@@ -38,6 +39,42 @@ export function loadSettings(): UserSettings {
 export function saveSettings(s: UserSettings): void {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
+  } catch { /* empty */
+  }
+}
+
+/** Persisted window geometry (position + size) so the floating window
+ *  remembers where the user put it and how big they made it across reloads. */
+export interface WindowGeometry {
+  position: { x: number; y: number };
+  size: { width: number; height: number };
+  expanded: boolean;
+}
+
+export function loadGeometry(): WindowGeometry | null {
+  try {
+    const raw = localStorage.getItem(GEOMETRY_KEY);
+    if (!raw) return null;
+    const g = JSON.parse(raw);
+    if (
+      g &&
+      typeof g.position?.x === 'number' && typeof g.position?.y === 'number' &&
+      typeof g.size?.width === 'number' && typeof g.size?.height === 'number'
+    ) {
+      return {
+        position: {x: g.position.x, y: g.position.y},
+        size: {width: g.size.width, height: g.size.height},
+        expanded: !!g.expanded,
+      };
+    }
+  } catch { /* empty */
+  }
+  return null;
+}
+
+export function saveGeometry(g: WindowGeometry): void {
+  try {
+    localStorage.setItem(GEOMETRY_KEY, JSON.stringify(g));
   } catch { /* empty */
   }
 }
