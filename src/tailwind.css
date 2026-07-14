@@ -428,23 +428,27 @@
 
     .rw-floating-window--expanded {
         position: relative;
-        overflow: hidden;
-        border-radius: var(--rw-radius-md);
-        border: 1px solid var(--rw-border-color-strong);
-        background-color: transparent;
         color: var(--rw-text-primary);
-        box-shadow: var(--rw-shadow-lg), var(--rw-glow-cyan);
     }
 
-    .rw-floating-window--expanded::before {
-        content: "";
+    /* Blurred background. This sits as a SIBLING of the scaled inner
+       wrapper and has NO transformed ancestor, which is what makes
+       backdrop-filter actually sample the page behind the window. */
+    .rw-window-backdrop {
         position: absolute;
         inset: 0;
-        z-index: -1;
+        z-index: 0;
         border-radius: var(--rw-radius-md);
+        border: 1px solid var(--rw-border-color-strong);
         background-color: var(--rw-surface-overlay);
-        backdrop-filter: var(--rw-backdrop-blur);
-        -webkit-backdrop-filter: var(--rw-backdrop-blur);
+        box-shadow: var(--rw-shadow-lg), var(--rw-glow-cyan);
+        pointer-events: none;
+    }
+
+    /* The only element that carries the canvas scale transform. */
+    .rw-window-inner {
+        position: relative;
+        z-index: 1;
     }
 
     .rw-floating-window--collapsed {

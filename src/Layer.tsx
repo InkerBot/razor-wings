@@ -117,10 +117,28 @@ const Layer: React.FC = () => {
       minSize={{width: 320, height: 240}}
       maxSize={{width: 1152, height: 864}}
       resizable={true}
-    >
-      {/* Sci-fi boot animation */}
-      {showLoading && <LoadingScreen onComplete={finishLoading}/>}
+      overlays={
+        <>
+          {/* Sci-fi boot animation */}
+          {showLoading && <LoadingScreen onComplete={finishLoading}/>}
 
+          {/* Settings overlay with fade animation — rendered outside the
+              scaled inner wrapper so its backdrop-filter works */}
+          {showSettings && (
+            <ViewPanel
+              animation={settingsAnimation}
+              className="absolute inset-0 z-[var(--rw-z-settings)]"
+              key="settings"
+            >
+              <SettingsPanel
+                onClose={closeSettings}
+                styleRoot={main.overlay!}
+              />
+            </ViewPanel>
+          )}
+        </>
+      }
+    >
       <LoadingProgress loadingState={loadingState}/>
 
       <ModuleHeader
@@ -145,20 +163,6 @@ const Layer: React.FC = () => {
           </ViewPanel>
         )}
       </ViewTransition>
-
-      {/* Settings overlay with fade animation */}
-      {showSettings && (
-        <ViewPanel
-          animation={settingsAnimation}
-          className="absolute inset-0 z-[var(--rw-z-settings)]"
-          key="settings"
-        >
-          <SettingsPanel
-            onClose={closeSettings}
-            styleRoot={main.overlay!}
-          />
-        </ViewPanel>
-      )}
     </FloatingWindow>
   );
 };

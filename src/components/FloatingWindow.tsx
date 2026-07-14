@@ -59,6 +59,9 @@ export interface FloatingWindowProps extends FloatingWindowCallbacks {
   className?: string;
   /** Show header in expanded mode */
   showHeader?: boolean;
+  /** Overlay layers (loading screen, settings panel) rendered OUTSIDE the
+   *  scaled inner wrapper so their own backdrop-filter works */
+  overlays?: ReactNode;
 }
 
 interface FloatingWindowState {
@@ -132,6 +135,7 @@ class FloatingWindow extends Component<FloatingWindowProps, FloatingWindowState>
     const {
       isExpanded,
       children,
+      overlays,
       header,
       collapsed,
       footer,
@@ -148,49 +152,82 @@ class FloatingWindow extends Component<FloatingWindowProps, FloatingWindowState>
 
     const scale = dimensions.scale;
 
+    // ── Collapsed: simple button, no transform, no backdrop ──
+    if (!isExpanded) {
+      return (
+        <div
+          ref={this.floatingWindowRef}
+          className={cn("rw-floating-window rw-floating-window--collapsed", className)}
+          style={{left: position.x, top: position.y}}
+          onMouseDown={this.onMouseDown}
+          onMouseMove={this.onMouseMoveForCursor}
+          onTouchStart={this.onTouchStart}
+        >
+          {this.renderCollapsed(collapsedConfig)}
+        </div>
+      );
+    }
+
+    // ── Expanded ──
+    // The OUTER element is intentionally NOT transformed. Only the inner
+    // content wrapper carries `transform: scale()`. This keeps the
+    // backdrop-filter element (and any overlay) free of a transformed
+    // ancestor, which is required for backdrop-filter to sample the page
+    // behind the window. (A transformed ancestor becomes a "backdrop root"
+    // and leaves the blur with nothing to sample.)
     return (
       <div
         ref={this.floatingWindowRef}
-        className={cn(
-          "rw-floating-window",
-          isExpanded ? "rw-floating-window--expanded" : "rw-floating-window--collapsed",
-          className,
-        )}
+        className={cn("rw-floating-window rw-floating-window--expanded", className)}
         style={{
           left: position.x,
           top: position.y,
-          width: isExpanded ? size.width : undefined,
-          height: isExpanded ? size.height : undefined,
-          transform: `scale(${scale})`,
-          transformOrigin: 'top left'
+          width: size.width * scale,
+          height: size.height * scale,
         }}
         onMouseDown={this.onMouseDown}
         onMouseMove={this.onMouseMoveForCursor}
         onTouchStart={this.onTouchStart}
       >
-        {isExpanded && (
-          <span
-            aria-hidden="true"
-            className="rw-window-corner-accent"
-          />
-        )}
-        {/* Expanded Content */}
+        {/* Blurred background — sibling of the transformed inner, so it has
+            no transformed ancestor and backdrop-filter actually works.
+            backdrop-filter is set inline (not via the CSS file) because
+            LightningCSS drops the unprefixed property when its value is a
+            CSS variable, which would break the blur in Chrome. */}
         <div
-          className={cn("rw-window-shell", isExpanded ? "flex" : "hidden")}
+          className="rw-window-backdrop"
+          aria-hidden="true"
+          style={{
+            backdropFilter: 'var(--rw-backdrop-blur)',
+            WebkitBackdropFilter: 'var(--rw-backdrop-blur)',
+          }}
+        />
+
+        {/* Scaled content wrapper — the only transformed element. */}
+        <div
+          className="rw-window-inner"
+          style={{
+            width: size.width,
+            height: size.height,
+            transform: `scale(${scale})`,
+            transformOrigin: 'top left'
+          }}
         >
-            {/* Header */}
+          {isExpanded && (
+            <span
+              aria-hidden="true"
+              className="rw-window-corner-accent"
+            />
+          )}
+          <div className={cn("rw-window-shell", "flex")}>
             {showHeader && this.renderHeader(headerConfig)}
 
-            {/* Body */}
-            <div
-              className="rw-window-body">
+            <div className="rw-window-body">
               {children}
             </div>
 
-            {/* Footer (optional) */}
             {footer && (
-              <div
-                className="rw-window-footer">
+              <div className="rw-window-footer">
                 {footer}
               </div>
             )}
@@ -199,9 +236,11 @@ class FloatingWindow extends Component<FloatingWindowProps, FloatingWindowState>
               className="rw-scanlines"
             />
           </div>
+        </div>
 
-          {/* Collapsed Content */}
-          {!isExpanded && this.renderCollapsed(collapsedConfig)}
+        {/* Overlays (loading / settings) rendered outside the transformed
+            inner so their own backdrop-filter also works. */}
+        {overlays}
       </div>
     );
   }
