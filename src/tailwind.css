@@ -427,14 +427,24 @@
     }
 
     .rw-floating-window--expanded {
-        @apply overflow-hidden rounded-[var(--rw-radius-md)] border border-[color:var(--rw-border-color-strong)] bg-[var(--rw-surface-overlay)] text-[color:var(--rw-text-primary)];
+        position: relative;
+        overflow: hidden;
+        border-radius: var(--rw-radius-md);
+        border: 1px solid var(--rw-border-color-strong);
+        background-color: transparent;
+        color: var(--rw-text-primary);
         box-shadow: var(--rw-shadow-lg), var(--rw-glow-cyan);
     }
 
-    .rw-window-backdrop {
-        @apply fixed overflow-hidden [backdrop-filter:var(--rw-backdrop-blur)] [-webkit-backdrop-filter:var(--rw-backdrop-blur)];
-        pointer-events: none;
-        z-index: 0;
+    .rw-floating-window--expanded::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+        border-radius: var(--rw-radius-md);
+        background-color: var(--rw-surface-overlay);
+        backdrop-filter: var(--rw-backdrop-blur);
+        -webkit-backdrop-filter: var(--rw-backdrop-blur);
     }
 
     .rw-floating-window--collapsed {

@@ -149,51 +149,35 @@ class FloatingWindow extends Component<FloatingWindowProps, FloatingWindowState>
     const scale = dimensions.scale;
 
     return (
-      <>
-        {/* Backdrop layer — separate from transformed element so backdrop-filter works */}
+      <div
+        ref={this.floatingWindowRef}
+        className={cn(
+          "rw-floating-window",
+          isExpanded ? "rw-floating-window--expanded" : "rw-floating-window--collapsed",
+          className,
+        )}
+        style={{
+          left: position.x,
+          top: position.y,
+          width: isExpanded ? size.width : undefined,
+          height: isExpanded ? size.height : undefined,
+          transform: `scale(${scale})`,
+          transformOrigin: 'top left'
+        }}
+        onMouseDown={this.onMouseDown}
+        onMouseMove={this.onMouseMoveForCursor}
+        onTouchStart={this.onTouchStart}
+      >
         {isExpanded && (
-          <div
-            className="rw-window-backdrop"
-            style={{
-              left: position.x,
-              top: position.y,
-              width: size.width * scale,
-              height: size.height * scale,
-              borderRadius: `calc(var(--rw-radius-md) * ${scale})`,
-            }}
+          <span
             aria-hidden="true"
+            className="rw-window-corner-accent"
           />
         )}
-        {/* Main window — has transform for scaling, backdrop-filter moved to sibling */}
+        {/* Expanded Content */}
         <div
-          ref={this.floatingWindowRef}
-          className={cn(
-            "rw-floating-window",
-            isExpanded ? "rw-floating-window--expanded" : "rw-floating-window--collapsed",
-            className,
-          )}
-          style={{
-            left: position.x,
-            top: position.y,
-            width: isExpanded ? size.width : undefined,
-            height: isExpanded ? size.height : undefined,
-            transform: `scale(${scale})`,
-            transformOrigin: 'top left'
-          }}
-          onMouseDown={this.onMouseDown}
-          onMouseMove={this.onMouseMoveForCursor}
-          onTouchStart={this.onTouchStart}
+          className={cn("rw-window-shell", isExpanded ? "flex" : "hidden")}
         >
-          {isExpanded && (
-            <span
-              aria-hidden="true"
-              className="rw-window-corner-accent"
-            />
-          )}
-          {/* Expanded Content */}
-          <div
-            className={cn("rw-window-shell", isExpanded ? "flex" : "hidden")}
-          >
             {/* Header */}
             {showHeader && this.renderHeader(headerConfig)}
 
@@ -218,8 +202,7 @@ class FloatingWindow extends Component<FloatingWindowProps, FloatingWindowState>
 
           {/* Collapsed Content */}
           {!isExpanded && this.renderCollapsed(collapsedConfig)}
-        </div>
-      </>
+      </div>
     );
   }
 
