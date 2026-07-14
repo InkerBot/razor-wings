@@ -25,8 +25,8 @@ const Layer: React.FC = () => {
   type NavDir = 'forward' | 'backward' | null;
   const [navDir, setNavDir] = useState<NavDir>(null);
 
-  // Track animation setting from saved config
-  const [enableAnimations, setEnableAnimations] = useState(() => loadSettings().enableAnimations);
+  // Read animation setting fresh from storage each render so toggles apply immediately
+  const enableAnimations = loadSettings().enableAnimations;
 
   const gameState = useGameState();
   const {
@@ -72,7 +72,7 @@ const Layer: React.FC = () => {
 
   const toggleExpanded = () => {
     if (!isExpanded) {
-      setShowLoading(true);
+      setShowLoading(loadSettings().enableBootAnimation);
     }
     setIsExpanded(!isExpanded);
   };
@@ -83,9 +83,6 @@ const Layer: React.FC = () => {
   const closeSettings = () => {
     if (enableAnimations) setNavDir('backward');
     setShowSettings(false);
-    // Refresh animation setting after settings panel closes
-    const s = loadSettings();
-    setEnableAnimations(s.enableAnimations);
   };
   const finishLoading = () => setShowLoading(false);
 

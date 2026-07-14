@@ -71,6 +71,7 @@ const resources = {
           backdropBlur: '毛玻璃模糊',
           glowIntensity: '发光强度',
           menuAnimation: '菜单动画',
+          bootAnimation: '启动动画',
         },
         theme: {
           dark: '深色',
@@ -85,6 +86,7 @@ const resources = {
           pink: '粉色',
         },
         enableAnimations: '启用切换动画',
+        enableBootAnimation: '展开时显示加载动画',
       },
       modules: {
         translation: '翻译',
@@ -429,6 +431,7 @@ const resources = {
           backdropBlur: 'Backdrop blur',
           glowIntensity: 'Glow intensity',
           menuAnimation: 'Menu animation',
+          bootAnimation: 'Boot animation',
         },
         theme: {
           dark: 'Dark',
@@ -443,6 +446,7 @@ const resources = {
           pink: 'Pink',
         },
         enableAnimations: 'Enable transition animations',
+        enableBootAnimation: 'Show loading animation on expand',
       },
       modules: {
         translation: 'Translation',

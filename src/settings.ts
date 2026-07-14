@@ -8,6 +8,7 @@ export interface UserSettings {
   showScanlines: boolean;    // default true (hardcoded ON)
   backdropBlur: number;      // 0-20, default 16 (px)
   enableAnimations: boolean; // default true
+  enableBootAnimation: boolean; // default true
   themeMode: 'dark' | 'light'; // default 'dark'
   language: 'zh-CN' | 'en-US'; // default 'zh-CN'
 }
@@ -20,6 +21,7 @@ const DEFAULTS: UserSettings = {
   showScanlines: true,
   backdropBlur: 16,
   enableAnimations: true,
+  enableBootAnimation: true,
   themeMode: 'dark',
   language: 'zh-CN',
 };

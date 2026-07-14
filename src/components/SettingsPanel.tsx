@@ -53,6 +53,7 @@ const SettingsPanel: React.FC<Props> = ({onClose, styleRoot}) => {
       showScanlines: true,
       backdropBlur: 16,
       enableAnimations: true,
+      enableBootAnimation: true,
       themeMode: 'dark',
       language: 'zh-CN',
     };
@@ -211,6 +212,14 @@ const SettingsPanel: React.FC<Props> = ({onClose, styleRoot}) => {
             onChange={enableAnimations => update({enableAnimations})}
           >
             {t('settings.enableAnimations')}
+          </ToggleRow>
+        </FormField>
+        <FormField label={t('settings.fields.bootAnimation')}>
+          <ToggleRow
+            checked={settings.enableBootAnimation}
+            onChange={enableBootAnimation => update({enableBootAnimation})}
+          >
+            {t('settings.enableBootAnimation')}
           </ToggleRow>
         </FormField>
 

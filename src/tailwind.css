@@ -427,8 +427,14 @@
     }
 
     .rw-floating-window--expanded {
-        @apply overflow-hidden rounded-[var(--rw-radius-md)] border border-[color:var(--rw-border-color-strong)] bg-[var(--rw-surface-overlay)] text-[color:var(--rw-text-primary)] [backdrop-filter:var(--rw-backdrop-blur)] [-webkit-backdrop-filter:var(--rw-backdrop-blur)];
+        @apply overflow-hidden rounded-[var(--rw-radius-md)] border border-[color:var(--rw-border-color-strong)] bg-[var(--rw-surface-overlay)] text-[color:var(--rw-text-primary)];
         box-shadow: var(--rw-shadow-lg), var(--rw-glow-cyan);
+    }
+
+    .rw-window-backdrop {
+        @apply fixed overflow-hidden [backdrop-filter:var(--rw-backdrop-blur)] [-webkit-backdrop-filter:var(--rw-backdrop-blur)];
+        pointer-events: none;
+        z-index: 0;
     }
 
     .rw-floating-window--collapsed {
