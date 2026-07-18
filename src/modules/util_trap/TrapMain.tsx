@@ -233,4 +233,5 @@ class TrapMain extends React.Component<WithTranslation, TrapMainState> {
   }
 }
 
-export default withTranslation()(TrapMain);
+const TrapMainWithTranslation = withTranslation()(TrapMain);
+export default TrapMainWithTranslation;

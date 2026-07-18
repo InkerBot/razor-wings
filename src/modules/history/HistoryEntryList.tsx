@@ -157,4 +157,5 @@ class HistoryEntryList extends React.Component<WithTranslation, HistoryEntryList
   }
 }
 
-export default withTranslation()(HistoryEntryList);
+const HistoryEntryListWithTranslation = withTranslation()(HistoryEntryList);
+export default HistoryEntryListWithTranslation;

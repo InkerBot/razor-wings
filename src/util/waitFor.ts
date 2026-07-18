@@ -5,7 +5,6 @@ export default async function waitFor(func: () => boolean, cancelFunc: () => boo
     if (cancelFunc()) {
       return false;
     }
-    // eslint-disable-next-line no-await-in-loop
     await sleep(10);
   }
   return true;

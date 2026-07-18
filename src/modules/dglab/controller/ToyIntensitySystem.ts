@@ -19,7 +19,7 @@ export class ToyIntensitySystem {
     this.registry.get(name)!.sort((a, b) => (b.priority || 0) - (a.priority || 0));
   }
 
-  setContext(context: Record<string, any>) {
+  setContext(context: Record<string, unknown>) {
     this.context = {...this.context, ...context};
   }
 

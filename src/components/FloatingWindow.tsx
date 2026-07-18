@@ -205,10 +205,6 @@ class FloatingWindow extends Component<FloatingWindowProps, FloatingWindowState>
 
     const scale = dimensions.scale;
 
-    // Whether we are currently in an open/close transition
-    const isAnimating = animation !== 'idle';
-    // The expanded window stays mounted while entering OR leaving
-    const showExpanded = isExpanded || animation === 'leave-start' || animation === 'leave-active';
     // The collapsed button is shown only when fully collapsed (not during a transition)
     const showCollapsed = !isExpanded && animation === 'idle';
 
@@ -266,10 +262,10 @@ class FloatingWindow extends Component<FloatingWindowProps, FloatingWindowState>
           // Expose the canvas scale and logical window size so overlays
           // (e.g. the settings panel) can scale their content to match the
           // main menu that lives inside the transformed inner wrapper.
-          ['--rw-scale' as any]: scale,
-          ['--rw-window-width' as any]: `${size.width}px`,
-          ['--rw-window-height' as any]: `${size.height}px`,
-        }}
+          '--rw-scale': scale,
+          '--rw-window-width': `${size.width}px`,
+          '--rw-window-height': `${size.height}px`,
+        } as React.CSSProperties}
         onMouseDown={this.onMouseDown}
         onMouseMove={this.onMouseMoveForCursor}
         onTouchStart={this.onTouchStart}

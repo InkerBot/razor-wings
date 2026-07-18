@@ -60,4 +60,5 @@ class MapMainPage extends React.Component<WithTranslation, MapScriptMainState> {
   }
 }
 
-export default withTranslation()(MapMainPage);
+const MapMainPageWithTranslation = withTranslation()(MapMainPage);
+export default MapMainPageWithTranslation;
