@@ -36,7 +36,8 @@ https://raw.githubusercontent.com/InkerBot/razor-wings/refs/heads/master/loader.
 - 阻止多种常见模组（WCE、BCX、Echo、LSCG、MPA）共享你的信息
 - 阻止 BCX 发送你的设备指纹
 - 支持设置白名单，仅向特定玩家发送扩展消息
-- 隐藏特定模组，防止在 WCE 报告中暴露
+- 隐藏特定模组，防止在 WCE 和 Bondage Club ModSDK 报告中暴露
+- 限制 Bondage Club ModSDK 模组列表查询，仅向白名单玩家返回列表
 - 禁用所有动作发送（用于RP等场景）
 
 ### 🚪 辅助工具

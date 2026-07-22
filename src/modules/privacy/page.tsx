@@ -12,6 +12,7 @@ export default function PrivacyPage() {
   const [settings, setSettings] = useState({
     disableWceBeepMetadata: module.disableWceBeepMetadata || false,
     disableWceReport: module.disableWceReport || false,
+    disableModSdkQuery: module.disableModSdkQuery || false,
     disableBcxBeepFingerPrint: module.disableBcxBeepFingerPrint || false,
     disableBcxMessage: module.disableBcxMessage || false,
     disableEchoMessage: module.disableEchoMessage || false,
@@ -76,6 +77,14 @@ export default function PrivacyPage() {
       <ToggleRow card checked={settings.disableWceReport}
                  onChange={checked => handleSettingChange("disableWceReport", checked)}>
         {t('privacy.disableWceReport')}
+      </ToggleRow>
+    </ToggleRowGroup>
+
+    <FormSectionTitle>Bondage Club ModSDK</FormSectionTitle>
+    <ToggleRowGroup>
+      <ToggleRow card checked={settings.disableModSdkQuery}
+                 onChange={checked => handleSettingChange("disableModSdkQuery", checked)}>
+        {t('privacy.disableModSdkQuery')}
       </ToggleRow>
     </ToggleRowGroup>
 

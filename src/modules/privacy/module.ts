@@ -1,5 +1,9 @@
 import type AbstractModule from "@/modules/AbstractModule.ts";
 import razorModSdk from "@/razor-wings";
+import {
+  filterModSdkModsReplyPayload,
+  isModSdkModsReplyPayload,
+} from "@/modules/privacy/modsdk.ts";
 
 /** Beep request with mod-extended Message field (BCX, LSCG, etc. send objects instead of strings) */
 interface ModBeepRequest extends Omit<ServerAccountBeepRequest, 'Message'> {
@@ -11,6 +15,8 @@ class PrivacyModule implements AbstractModule {
   disableWceBeepMetadata: boolean = false;
   disableWceReport: boolean = false;
   hiddenMods: string[] = ['RazorWings'];
+  // Bondage Club ModSDK query
+  disableModSdkQuery: boolean = false;
   // bcx
   disableBcxBeepFingerPrint: boolean = false;
   disableBcxMessage: boolean = false;
@@ -86,6 +92,10 @@ class PrivacyModule implements AbstractModule {
 
         // skip if target is in whitelist
         for (const entry of (args as ServerChatRoomMessage[])) {
+          if (entry.Type === 'Hidden' && entry.Content === 'ModSdkModsReply') {
+            filtered.push(this.filterModSdkReply(entry));
+            continue;
+          }
           // remove hidden mods from wce report
           if (this.hiddenMods.length != 0 && entry.Type === 'Hidden' && entry.Content == 'BCEMsg' && entry.Dictionary) {
             for (const dictionaryElement of (entry.Dictionary as never[])) {
@@ -136,6 +146,20 @@ class PrivacyModule implements AbstractModule {
     });
   }
 
+  private filterModSdkReply(entry: ServerChatRoomMessage): ServerChatRoomMessage {
+    const restrictToWhitelist = this.disableModSdkQuery
+      && (entry.Target == null || !this.whitelist.includes(entry.Target));
+
+    if (!entry.Dictionary) return entry;
+
+    const dictionary = entry.Dictionary.map(dictionaryEntry => {
+      if (!isModSdkModsReplyPayload(dictionaryEntry)) return dictionaryEntry;
+      return filterModSdkModsReplyPayload(dictionaryEntry, this.hiddenMods, !restrictToWhitelist);
+    });
+
+    return {...entry, Dictionary: dictionary as ChatMessageDictionary};
+  }
+
   loadConfig() {
     const localStorageElement = localStorage['razorwings.privacy'];
     if (localStorageElement) {
@@ -143,6 +167,7 @@ class PrivacyModule implements AbstractModule {
       this.disableWceBeepMetadata = config.disableWceBeepMetadata ?? false;
       this.disableBcxBeepFingerPrint = config.disableBcxBeepFingerPrint ?? false;
       this.hiddenMods = config.hiddenMods || ['RazorWings'];
+      this.disableModSdkQuery = config.disableModSdkQuery ?? false;
       this.disableWceReport = config.disableWceReport ?? false;
       this.disableBcxMessage = config.disableBcxMessage ?? false;
       this.disableEchoMessage = config.disableEchoMessage ?? false;
@@ -160,6 +185,7 @@ class PrivacyModule implements AbstractModule {
       disableWceBeepMetadata: this.disableWceBeepMetadata,
       disableWceReport: this.disableWceReport,
       hiddenMods: this.hiddenMods,
+      disableModSdkQuery: this.disableModSdkQuery,
       disableBcxBeepFingerPrint: this.disableBcxBeepFingerPrint,
       disableBcxMessage: this.disableBcxMessage,
       disableEchoMessage: this.disableEchoMessage,

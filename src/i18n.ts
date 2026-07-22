@@ -123,6 +123,7 @@ const resources = {
       privacy: {
         disableWceBeepMetadata: '禁用 WCE Beep 元数据（防止 WCE 在 Beep 消息中添加额外信息）',
         disableWceReport: '禁用 WCE 报告（阻止 WCE 隐藏消息的发送）',
+        disableModSdkQuery: '限制 ModSDK 模组列表查询（仅向白名单中的玩家返回模组列表）',
         disableBcxBeepFingerPrint: '禁用 BCX Beep 指纹（阻止 BCX Leash 和 BCX 类型的 Beep）',
         disableBcxMessage: '限制 BCX 消息（仅向白名单中的玩家发送 BCX 消息）',
         disableEchoMessage: '禁用 Echo 扩展消息（阻止 Echo 扩展消息的发送）',
@@ -130,7 +131,7 @@ const resources = {
         disableMpaMessage: '禁用 MPA 消息（阻止 MPA 消息的发送）',
         global: '全局',
         disableAllActions: '禁用所有动作（阻止所有动作的发送）',
-        hiddenMods: '隐藏的 Mod 列表（在 WCE 报告中隐藏）',
+        hiddenMods: '隐藏的 Mod 列表（在 WCE 和 ModSDK 报告中隐藏）',
         hiddenModPlaceholder: '输入 Mod 名称',
         addHiddenMod: '添加 Mod 到隐藏列表',
         noHiddenMods: '没有隐藏的 Mod',
@@ -483,6 +484,7 @@ const resources = {
       privacy: {
         disableWceBeepMetadata: 'Disable WCE Beep metadata (prevents WCE from adding extra information to Beep messages)',
         disableWceReport: 'Disable WCE reports (blocks hidden WCE report messages)',
+        disableModSdkQuery: 'Restrict ModSDK list queries (only return the Mod list to whitelisted players)',
         disableBcxBeepFingerPrint: 'Disable BCX Beep fingerprint (blocks BCX Leash and BCX-style Beeps)',
         disableBcxMessage: 'Limit BCX messages (only send BCX messages to whitelisted players)',
         disableEchoMessage: 'Disable Echo extension messages (blocks Echo extension messages)',
@@ -490,7 +492,7 @@ const resources = {
         disableMpaMessage: 'Disable MPA messages',
         global: 'Global',
         disableAllActions: 'Disable all actions (blocks all outgoing actions)',
-        hiddenMods: 'Hidden Mod list (hidden in WCE reports)',
+        hiddenMods: 'Hidden Mod list (hidden in WCE and ModSDK reports)',
         hiddenModPlaceholder: 'Enter Mod name',
         addHiddenMod: 'Add Mod to hidden list',
         noHiddenMods: 'No hidden Mods',
